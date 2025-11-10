@@ -1,39 +1,46 @@
 'use client';
 
+import { Button, PageLoader, ErrorMessage } from '@shared/components';
+import { CreateDeckForm } from '@features/decks';
+
 import { useServiceQuery } from '@shared/hooks';
-import { CreateDeckForm, deckService } from '@features/decks';
+
+import { deckService } from '@features/decks';
+
+import { DECKS_QUERY_KEYS } from '@features/decks';
+
+import styles from './page.module.scss';
 
 export default function DecksPage() {
-  const decks = useServiceQuery(['decks'], deckService.getAll, undefined, {
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-  });
+  const { isLoading, error, result, refetch, isRefetching } = useServiceQuery(
+    DECKS_QUERY_KEYS.all,
+    deckService.getAll
+  );
 
   return (
-    <main style={{ padding: 24 }}>
+    <main className={styles.container}>
       <h1>Decks</h1>
 
       <CreateDeckForm />
 
-      {decks.isLoading && <p>Loading decks...</p>}
+      {isLoading && <PageLoader />}
 
-      {decks.error && (
-        <p style={{ color: 'red' }}>Error loading decks: {decks.error.message}</p>
-      )}
+      {error && <ErrorMessage message={error.message} />}
 
-      {decks.result && (
+      {result && (
         <>
-          <button
-            onClick={() => decks.refetch()}
-            style={{ marginBottom: 16 }}
-            disabled={decks.isRefetching}
+          <Button
+            onClick={() => refetch()}
+            className={styles.refreshButton}
+            isLoading={isRefetching}
           >
-            {decks.isRefetching ? 'Refreshing...' : 'Refresh Decks'}
-          </button>
+            Refresh Decks
+          </Button>
 
-          <ul>
-            {decks.result.map((d) => (
-              <li key={d.id}>
-                <strong>{d.name}</strong> — {d.count} cards
+          <ul className={styles.decksList}>
+            {result.map((d) => (
+              <li key={d.id} className={styles.deckItem}>
+                <span className={styles.deckName}>{d.name}</span> — {d.count} cards
               </li>
             ))}
           </ul>

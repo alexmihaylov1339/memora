@@ -7,3 +7,6 @@ export type { ErrorMessageProps } from './ErrorMessage';
 export { FormBuilder } from './FormBuilder';
 export type { FieldConfig, FormBuilderProps } from './FormBuilder';
 
+export { PageLoader } from './PageLoader';
+export type { PageLoaderProps } from './PageLoader';
+

@@ -1,0 +1,14 @@
+@import '@/styles/colors.scss';
+
+.container {
+  margin-bottom: 24px;
+}
+
+.successMessage {
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: $success-bg;
+  color: $success-text;
+  border-radius: 4px;
+}
+

@@ -1,12 +1,24 @@
 'use client';
 
+// Modules
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
+// Components
+import { FormBuilder } from '@shared/components';
+import type { FieldConfig } from '@shared/components';
+
+// Hooks
 import { useService } from '@shared/hooks';
-import { FormBuilder, FieldConfig } from '@shared/components';
+
+// Services
 import { deckService } from '../services';
-import type { Deck } from '../types';
+
+// Constants
+import { DECKS_QUERY_KEYS } from '../constants';
+
+// Styles
+import styles from './CreateDeckForm.module.scss';
 
 const formFields: FieldConfig[] = [
   {
@@ -31,7 +43,7 @@ export default function CreateDeckForm() {
   const createDeck = useService(deckService.create, {
     onSuccess: (data) => {
       // Invalidate decks cache to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['decks'] });
+      queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
 
       // Show success message
       setSuccessMessage(`Deck "${data.name}" created successfully!`);
@@ -58,9 +70,9 @@ export default function CreateDeckForm() {
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div className={styles.container}>
       {successMessage && (
-        <div style={{ padding: 12, marginBottom: 16, backgroundColor: '#d4edda', color: '#155724', borderRadius: 4 }}>
+        <div className={styles.successMessage}>
           {successMessage}
         </div>
       )}

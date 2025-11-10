@@ -1,0 +1,23 @@
+@import '@/styles/colors.scss';
+
+.container {
+  padding: 24px;
+}
+
+.refreshButton {
+  margin-bottom: 16px;
+}
+
+.decksList {
+  list-style: none;
+  padding: 0;
+}
+
+.deckItem {
+  margin-bottom: 8px;
+}
+
+.deckName {
+  font-weight: bold;
+}
+

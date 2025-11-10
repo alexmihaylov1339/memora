@@ -1,4 +1,4 @@
-export { useServiceQuery, useServiceQueryWithoutParams } from './useServiceQuery';
+export { useServiceQuery } from './useServiceQuery';
 export type {
   QueryServiceFunction,
   QueryServiceFunctionWithoutParams,
