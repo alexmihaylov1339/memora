@@ -6,3 +6,4 @@ export interface TextareaFieldConfig extends BaseFieldConfig {
   cols?: number;
 }
 
+

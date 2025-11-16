@@ -4,3 +4,4 @@ export interface EmailFieldConfig extends BaseFieldConfig {
   type: 'email';
 }
 
+

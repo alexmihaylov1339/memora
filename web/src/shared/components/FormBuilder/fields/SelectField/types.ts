@@ -5,3 +5,4 @@ export interface SelectFieldConfig extends BaseFieldConfig {
   options: Array<{ value: string; label: string }>;
 }
 
+

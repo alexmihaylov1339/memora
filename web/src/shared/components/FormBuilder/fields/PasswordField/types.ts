@@ -4,3 +4,4 @@ export interface PasswordFieldConfig extends BaseFieldConfig {
   type: 'password';
 }
 
+

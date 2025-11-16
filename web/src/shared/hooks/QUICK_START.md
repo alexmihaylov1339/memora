@@ -236,3 +236,4 @@ const data = useServiceQuery(...);
 - `README.md` - Detailed documentation
 - `EXAMPLES.md` - Real-world examples
 - [TanStack Query Docs](https://tanstack.com/query/latest)
+

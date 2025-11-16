@@ -1,5 +1,10 @@
+import styles from './PageLoader.module.scss';
+
 export default function PageLoader() {
-  // TODO: Replace with spinner icon when ready
-  return <p>Loading...</p>;
+  return (
+    <div className={styles.loader}>
+      <div className={styles.spinner} />
+    </div>
+  );
 }
 

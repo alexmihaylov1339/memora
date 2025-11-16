@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // Components
 import { FormBuilder } from '@shared/components';
-import type { FieldConfig } from '@shared/components';
 
 // Hooks
 import { useService } from '@shared/hooks';
@@ -15,26 +14,10 @@ import { useService } from '@shared/hooks';
 import { deckService } from '../services';
 
 // Constants
-import { DECKS_QUERY_KEYS } from '../constants';
+import { DECKS_QUERY_KEYS, createDeckFormFields } from '../constants';
 
 // Styles
 import styles from './CreateDeckForm.module.scss';
-
-const formFields: FieldConfig[] = [
-  {
-    type: 'text',
-    name: 'name',
-    label: 'Deck Name',
-    required: true,
-    placeholder: 'Enter deck name',
-  },
-  {
-    type: 'text',
-    name: 'description',
-    label: 'Description',
-    placeholder: 'Optional description',
-  },
-];
 
 export default function CreateDeckForm() {
   const queryClient = useQueryClient();
@@ -78,7 +61,7 @@ export default function CreateDeckForm() {
       )}
 
       <FormBuilder
-        fields={formFields}
+        fields={createDeckFormFields}
         onSubmit={handleSubmit}
         submitLabel={createDeck.isLoading ? 'Creating...' : 'Create Deck'}
         errorMessage={createDeck.error?.message}

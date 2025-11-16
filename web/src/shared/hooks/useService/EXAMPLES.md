@@ -434,3 +434,4 @@ function DecksListWithPrefetch() {
 | Optimistic UI        | `useService`      | onMutate callback                 |
 | Dependent data       | `useServiceQuery` | `enabled` option                  |
 | Real-time updates    | `useServiceQuery` | `refetchInterval`                 |
+

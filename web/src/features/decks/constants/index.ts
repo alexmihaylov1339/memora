@@ -6,3 +6,5 @@ export const DECKS_QUERY_KEYS = {
   detail: (id: string) => ['decks', id],
 };
 
+export { createDeckFormFields } from './formFields';
+
