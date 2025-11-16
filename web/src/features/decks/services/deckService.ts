@@ -1,48 +1,40 @@
+import { ManageService, HTTP_METHODS } from '@shared/services';
 import type { CreateDeckDto, Deck } from '../types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { DECK_ENDPOINTS } from '../constants';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const api = ManageService(API_URL);
 
 /**
  * Deck service with all CRUD operations
- * Use with useServiceQuery for reads and useService for mutations
+ * Built with ManageService for centralized request handling
  */
 export const deckService = {
   /**
    * Fetch all decks
    * @example
    * ```typescript
-   * const decks = useServiceQuery(['decks'], deckService.getAll, undefined);
+   * const decks = useServiceQuery(DECKS_QUERY_KEYS.all, deckService.getAll);
    * ```
    */
   async getAll(): Promise<Deck[]> {
-    const res = await fetch(`${API_URL}/v1/decks`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch decks');
-    }
-
-    return res.json();
+    return api
+      .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .execRequest<Deck[]>();
   },
 
   /**
    * Fetch a single deck by ID
    * @example
    * ```typescript
-   * const deck = useServiceQuery(['deck', id], deckService.getById, { id });
+   * const deck = useServiceQuery(DECKS_QUERY_KEYS.detail(id), deckService.getById, { id });
    * ```
    */
   async getById(params: { id: string }): Promise<Deck> {
-    const res = await fetch(`${API_URL}/v1/decks/${params.id}`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch deck');
-    }
-
-    return res.json();
+    return api
+      .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
+      .execRequest<Deck>();
   },
 
   /**
@@ -50,23 +42,16 @@ export const deckService = {
    * @example
    * ```typescript
    * const createDeck = useService(deckService.create, {
-   *   onSuccess: () => queryClient.invalidateQueries({ queryKey: ['decks'] })
+   *   onSuccess: () => queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all })
    * });
    * await createDeck.fetch({ name: 'My Deck', description: 'Description' });
    * ```
    */
   async create(params: CreateDeckDto): Promise<Deck> {
-    const res = await fetch(`${API_URL}/v1/decks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to create deck');
-    }
-
-    return res.json();
+    return api
+      .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.POST)
+      .setBody(params)
+      .execRequest<Deck>();
   },
 
   /**
@@ -79,17 +64,10 @@ export const deckService = {
    */
   async update(params: { id: string; name?: string; description?: string }): Promise<Deck> {
     const { id, ...data } = params;
-    const res = await fetch(`${API_URL}/v1/decks/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to update deck');
-    }
-
-    return res.json();
+    return api
+      .prepareRequest(DECK_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
+      .setBody(data)
+      .execRequest<Deck>();
   },
 
   /**
@@ -101,13 +79,9 @@ export const deckService = {
    * ```
    */
   async delete(params: { id: string }): Promise<void> {
-    const res = await fetch(`${API_URL}/v1/decks/${params.id}`, {
-      method: 'DELETE',
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to delete deck');
-    }
+    return api
+      .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
+      .execRequest<void>();
   },
 };
 

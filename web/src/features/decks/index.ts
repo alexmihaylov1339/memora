@@ -14,5 +14,5 @@ export type { Deck, CreateDeckDto } from './types';
 export { deckService } from './services';
 
 // Constants
-export { DECKS_QUERY_KEYS } from './constants';
+export { DECKS_QUERY_KEYS, DECK_ENDPOINTS } from './constants';
 

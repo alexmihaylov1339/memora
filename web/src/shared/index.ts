@@ -3,4 +3,5 @@ export type { ButtonProps, ErrorMessageProps, FieldConfig, FormBuilderProps } fr
 
 export * from './hooks';
 export * from './providers';
+export * from './services';
 
