@@ -32,9 +32,9 @@ export type FieldConfig =
   | CheckboxFieldConfig
   | RadioFieldConfig;
 
-export interface FormBuilderProps {
+export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   fields: FieldConfig[];
-  onSubmit: (formData: FormData) => Promise<void> | void;
+  onSubmit: (values: TFormValues) => Promise<unknown> | void;
   submitLabel?: string;
   errorMessage?: string;
   resetOnSubmit?: boolean;
