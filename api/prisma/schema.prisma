@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/** Basic grading enum for SRS */
+enum Grade {
+  again
+  hard
+  good
+  easy
+}
+
+/** A deck of cards */
+model Deck {
+  id        String  @id @default(cuid())
+  name      String
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards     Card[]
+
+  @@index([createdAt])
+}
+
+/** A card can be of different kinds; payload stored in JSON for flexibility */
+model Card {
+  id        String   @id @default(cuid())
+  deckId    String
+  kind      String   // 'basic' | 'cloze' | 'mcq' (we'll enforce in app layer)
+  fields    Json     // payload per kind
+  createdAt DateTime @default(now())
+
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  state     ReviewState?
+  logs      ReviewLog[]
+
+  @@index([deckId])
+  @@index([createdAt])
+}
+
+/** Current spaced-repetition state for a card (single-user MVP) */
+model ReviewState {
+  id        String   @id @default(cuid())
+  cardId    String   @unique
+  ease      Float
+  interval  Int
+  due       DateTime
+  reps      Int       @default(0)
+  lapses    Int       @default(0)
+  lastGrade Grade?
+
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([due])
+}
+
+/** Immutable log of each review event */
+model ReviewLog {
+  id          String   @id @default(cuid())
+  cardId      String
+  reviewedAt  DateTime @default(now())
+  grade       Grade
+  oldInterval Int
+  newInterval Int
+  oldEase     Float
+  newEase     Float
+  mode        String    // 'basic' | 'cloze' | 'mcq'
+  latencyMs   Int?
+  wasCorrect  Boolean?
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, reviewedAt])
+}

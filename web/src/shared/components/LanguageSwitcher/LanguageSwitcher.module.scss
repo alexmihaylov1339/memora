@@ -1,0 +1,31 @@
+@use '@/styles/colors.scss' as *;
+
+.languageSwitcher {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background-color: $bg-light;
+  border-radius: 8px;
+}
+
+.languageButton {
+  padding: 8px 16px;
+  border: 1px solid $border-light;
+  border-radius: 4px;
+  background-color: $bg-white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $bg-light;
+  }
+
+  &.active {
+    background-color: $spinner-active;
+    color: $bg-white;
+    border-color: $spinner-active;
+    font-weight: 600;
+  }
+}
+
