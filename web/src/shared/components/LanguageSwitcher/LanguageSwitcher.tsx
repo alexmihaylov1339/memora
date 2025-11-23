@@ -1,8 +1,7 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { locales, localeNames } from '@/i18n';
+import { useRouter, usePathname, locales, localeNames } from '@/i18n';
 import type { Locale } from '@/i18n';
 
 import styles from './LanguageSwitcher.module.scss';
@@ -15,15 +14,8 @@ export default function LanguageSwitcher() {
   const handleLanguageChange = (newLocale: Locale) => {
     if (newLocale === currentLocale) return;
 
-    // Remove current locale from pathname if it exists
-    const pathnameWithoutLocale = pathname.replace(/^\/(en|de|bg)/, '') || '/';
-
-    // Add new locale if it's not the default
-    const newPath = newLocale === 'en'
-      ? pathnameWithoutLocale
-      : `/${newLocale}${pathnameWithoutLocale}`;
-
-    router.push(newPath);
+    // Use next-intl's router which handles locale switching automatically
+    router.push(pathname, { locale: newLocale });
     router.refresh();
   };
 
@@ -32,6 +24,7 @@ export default function LanguageSwitcher() {
       {locales.map((locale) => (
         <button
           key={locale}
+          type="button"
           onClick={() => handleLanguageChange(locale)}
           className={`${styles.languageButton} ${
             currentLocale === locale ? styles.active : ''
