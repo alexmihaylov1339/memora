@@ -1,5 +1,7 @@
 import { CheckboxFieldConfig } from '../types';
 
+import styles from './CheckboxField.module.scss';
+
 interface CheckboxFieldProps {
   config: CheckboxFieldConfig;
   disabled?: boolean;
@@ -7,8 +9,8 @@ interface CheckboxFieldProps {
 
 export default function CheckboxField({ config, disabled }: CheckboxFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className={styles.field}>
+      <label htmlFor={config.name} className={styles.label}>
         <input
           type="checkbox"
           id={config.name}
@@ -18,7 +20,7 @@ export default function CheckboxField({ config, disabled }: CheckboxFieldProps) 
           disabled={disabled || config.disabled}
         />
         {config.label}
-        {config.required && <span style={{ color: 'red' }}>*</span>}
+        {config.required && <span className={styles.required}>*</span>}
       </label>
     </div>
   );

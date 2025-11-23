@@ -1,0 +1,38 @@
+{
+  "common": {
+    "loading": "Lädt...",
+    "submit": "Absenden",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "refresh": "Aktualisieren"
+  },
+  "errors": {
+    "generic": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "required": "Dieses Feld ist erforderlich",
+    "networkError": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
+  },
+  "decks": {
+    "title": "Decks",
+    "createTitle": "Neues Deck erstellen",
+    "deckName": "Deck-Name",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Optionale Beschreibung",
+    "namePlaceholder": "Deck-Name eingeben",
+    "createButton": "Deck erstellen",
+    "creating": "Wird erstellt...",
+    "refreshButton": "Decks aktualisieren",
+    "cardsCount": "Karten",
+    "createSuccess": "Deck \"{name}\" erfolgreich erstellt!",
+    "createError": "Deck konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+  },
+  "notifications": {
+    "success": "Erfolg",
+    "error": "Fehler",
+    "info": "Information",
+    "warning": "Warnung"
+  }
+}
+

@@ -1,0 +1,38 @@
+{
+  "common": {
+    "loading": "Зареждане...",
+    "submit": "Изпрати",
+    "cancel": "Отказ",
+    "save": "Запази",
+    "delete": "Изтрий",
+    "edit": "Редактирай",
+    "create": "Създай",
+    "refresh": "Обнови"
+  },
+  "errors": {
+    "generic": "Нещо се обърка. Моля, опитайте отново.",
+    "required": "Това поле е задължително",
+    "networkError": "Мрежова грешка. Моля, проверете връзката си."
+  },
+  "decks": {
+    "title": "Тестета",
+    "createTitle": "Създай ново тесте",
+    "deckName": "Име на тестето",
+    "description": "Описание",
+    "descriptionPlaceholder": "Незадължително описание",
+    "namePlaceholder": "Въведете име на тестето",
+    "createButton": "Създай тесте",
+    "creating": "Създаване...",
+    "refreshButton": "Обнови тестетата",
+    "cardsCount": "карти",
+    "createSuccess": "Тесте \"{name}\" създадено успешно!",
+    "createError": "Неуспешно създаване на тесте. Моля, опитайте отново."
+  },
+  "notifications": {
+    "success": "Успех",
+    "error": "Грешка",
+    "info": "Информация",
+    "warning": "Предупреждение"
+  }
+}
+

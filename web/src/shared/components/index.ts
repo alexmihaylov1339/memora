@@ -13,3 +13,8 @@ export type { PageLoaderProps } from './PageLoader';
 export { Notification, NotificationContainer } from './Notification';
 export type { NotificationProps, NotificationType, NotificationData } from './Notification';
 
+export { Translate } from './Translation';
+export type { TranslationProps } from './Translation';
+
+export { LanguageSwitcher } from './LanguageSwitcher';
+

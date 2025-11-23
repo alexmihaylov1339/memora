@@ -1,5 +1,7 @@
 import { SelectFieldConfig } from '../types';
 
+import styles from './SelectField.module.scss';
+
 interface SelectFieldProps {
   config: SelectFieldConfig;
   disabled?: boolean;
@@ -7,20 +9,20 @@ interface SelectFieldProps {
 
 export default function SelectField({ config, disabled }: SelectFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name}>
+    <div className={styles.field}>
+      <label htmlFor={config.name} className={styles.label}>
         {config.label}
-        {config.required && <span style={{ color: 'red' }}> *</span>}
+        {config.required && <span className={styles.required}> *</span>}
       </label>
-      <br />
       <select
         id={config.name}
         name={config.name}
         required={config.required}
         disabled={disabled || config.disabled}
-        style={{ padding: 8, width: 316 }}
+        className={styles.select}
       >
-        <option value="">Select {config.label}</option>
+        {/* Empty option - label is already translated */}
+        <option value="">{config.label}</option>
         {config.options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

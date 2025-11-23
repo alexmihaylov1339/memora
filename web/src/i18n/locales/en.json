@@ -1,0 +1,38 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "refresh": "Refresh"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "required": "This field is required",
+    "networkError": "Network error. Please check your connection."
+  },
+  "decks": {
+    "title": "Decks",
+    "createTitle": "Create New Deck",
+    "deckName": "Deck Name",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description",
+    "namePlaceholder": "Enter deck name",
+    "createButton": "Create Deck",
+    "creating": "Creating...",
+    "refreshButton": "Refresh Decks",
+    "cardsCount": "cards",
+    "createSuccess": "Deck \"{name}\" created successfully!",
+    "createError": "Failed to create deck. Please try again."
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "info": "Information",
+    "warning": "Warning"
+  }
+}
+

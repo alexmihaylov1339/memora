@@ -1,5 +1,7 @@
 import { NumberFieldConfig } from '../types';
 
+import styles from './NumberField.module.scss';
+
 interface NumberFieldProps {
   config: NumberFieldConfig;
   disabled?: boolean;
@@ -7,12 +9,11 @@ interface NumberFieldProps {
 
 export default function NumberField({ config, disabled }: NumberFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name}>
+    <div className={styles.field}>
+      <label htmlFor={config.name} className={styles.label}>
         {config.label}
-        {config.required && <span style={{ color: 'red' }}> *</span>}
+        {config.required && <span className={styles.required}> *</span>}
       </label>
-      <br />
       <input
         type="number"
         id={config.name}
@@ -23,7 +24,7 @@ export default function NumberField({ config, disabled }: NumberFieldProps) {
         min={config.min}
         max={config.max}
         step={config.step}
-        style={{ padding: 8, width: 300 }}
+        className={styles.input}
       />
     </div>
   );

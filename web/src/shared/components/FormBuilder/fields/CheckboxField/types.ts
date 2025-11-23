@@ -6,3 +6,4 @@ export interface CheckboxFieldConfig extends Omit<BaseFieldConfig, 'placeholder'
 }
 
 
+

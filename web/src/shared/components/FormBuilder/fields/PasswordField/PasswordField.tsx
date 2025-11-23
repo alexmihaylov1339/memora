@@ -1,5 +1,7 @@
 import type { PasswordFieldConfig } from './types';
 
+import styles from './PasswordField.module.scss';
+
 interface PasswordFieldProps {
   config: PasswordFieldConfig;
   disabled?: boolean;
@@ -7,12 +9,11 @@ interface PasswordFieldProps {
 
 export default function PasswordField({ config, disabled }: PasswordFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name}>
+    <div className={styles.fieldWrapper}>
+      <label htmlFor={config.name} className={styles.label}>
         {config.label}
-        {config.required && <span style={{ color: 'red' }}> *</span>}
+        {config.required && <span className={styles.required}> *</span>}
       </label>
-      <br />
       <input
         type="password"
         id={config.name}
@@ -21,7 +22,7 @@ export default function PasswordField({ config, disabled }: PasswordFieldProps) 
         required={config.required}
         disabled={disabled || config.disabled}
         autoComplete="current-password"
-        style={{ padding: 8, width: 300 }}
+        className={styles.input}
       />
     </div>
   );

@@ -1,5 +1,7 @@
 import { TextareaFieldConfig } from '../types';
 
+import styles from './TextareaField.module.scss';
+
 interface TextareaFieldProps {
   config: TextareaFieldConfig;
   disabled?: boolean;
@@ -7,12 +9,11 @@ interface TextareaFieldProps {
 
 export default function TextareaField({ config, disabled }: TextareaFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name}>
+    <div className={styles.field}>
+      <label htmlFor={config.name} className={styles.label}>
         {config.label}
-        {config.required && <span style={{ color: 'red' }}> *</span>}
+        {config.required && <span className={styles.required}> *</span>}
       </label>
-      <br />
       <textarea
         id={config.name}
         name={config.name}
@@ -21,7 +22,7 @@ export default function TextareaField({ config, disabled }: TextareaFieldProps) 
         disabled={disabled || config.disabled}
         rows={config.rows || 4}
         cols={config.cols}
-        style={{ padding: 8, width: 300 }}
+        className={styles.textarea}
       />
     </div>
   );

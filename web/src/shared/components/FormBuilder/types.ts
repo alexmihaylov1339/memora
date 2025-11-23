@@ -3,9 +3,11 @@ export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 
 
 export interface BaseFieldConfig {
   name: string;
+  /** Translation key for the field label (will be translated automatically) */
   label: string;
   required?: boolean;
   disabled?: boolean;
+  /** Translation key for the field placeholder (will be translated automatically) */
   placeholder?: string;
 }
 
@@ -35,7 +37,9 @@ export type FieldConfig =
 export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   fields: FieldConfig[];
   onSubmit: (values: TFormValues) => Promise<unknown> | void;
+  /** Already translated submit button label */
   submitLabel?: string;
+  /** Error message from backend (NOT translated - displayed as-is) */
   errorMessage?: string;
   resetOnSubmit?: boolean;
 }

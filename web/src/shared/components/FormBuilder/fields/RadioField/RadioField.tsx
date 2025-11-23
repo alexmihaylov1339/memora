@@ -1,5 +1,7 @@
 import { RadioFieldConfig } from '../types';
 
+import styles from './RadioField.module.scss';
+
 interface RadioFieldProps {
   config: RadioFieldConfig;
   disabled?: boolean;
@@ -7,17 +9,17 @@ interface RadioFieldProps {
 
 export default function RadioField({ config, disabled }: RadioFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-        <legend>
+    <div className={styles.field}>
+      <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>
           {config.label}
-          {config.required && <span style={{ color: 'red' }}> *</span>}
+          {config.required && <span className={styles.required}> *</span>}
         </legend>
         {config.options.map((option) => (
           <label
             key={option.value}
             htmlFor={`${config.name}-${option.value}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}
+            className={styles.option}
           >
             <input
               type="radio"

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Translate } from '../Translation';
 import type { NotificationProps } from './types';
 
 import styles from './Notification.module.scss';
@@ -6,7 +7,8 @@ import styles from './Notification.module.scss';
 export default function Notification({
   id,
   type,
-  message,
+  translationKey,
+  values,
   duration = 3000,
   onClose,
 }: NotificationProps) {
@@ -22,7 +24,7 @@ export default function Notification({
 
   return (
     <div className={`${styles.notification} ${styles[type]}`}>
-      <p className={styles.message}>{message}</p>
+      <Translate tKey={translationKey} values={values} as="p" className={styles.message} />
       <button
         className={styles.closeButton}
         onClick={() => onClose(id)}

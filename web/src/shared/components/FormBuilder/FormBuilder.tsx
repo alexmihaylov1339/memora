@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '../Button';
 import { ErrorMessage } from '../ErrorMessage';
@@ -16,6 +17,7 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   resetOnSubmit = true,
 }: FormBuilderProps<TFormValues>) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,10 +58,17 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
 
   return (
     <form onSubmit={handleSubmit}>
-      {fields.map((field) => (
-        <Field key={field.name} config={field} disabled={isPending} />
-      ))}
+      {fields.map((field) => {
+        // Translate label and placeholder (they are always translation keys)
+        const translatedField = {
+          ...field,
+          label: field.label ? t(field.label) : field.label,
+          ...('placeholder' in field && field.placeholder ? { placeholder: t(field.placeholder) } : {}),
+        };
+        return <Field key={field.name} config={translatedField} disabled={isPending} />;
+      })}
 
+      {/* errorMessage comes from BE - do NOT translate */}
       {errorMessage && <ErrorMessage message={errorMessage} />}
 
       <Button type="submit" isLoading={isPending}>

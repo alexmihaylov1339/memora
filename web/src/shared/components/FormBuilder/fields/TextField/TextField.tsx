@@ -1,5 +1,7 @@
 import type { TextFieldConfig } from './types';
 
+import styles from './TextField.module.scss';
+
 interface TextFieldProps {
   config: TextFieldConfig;
   disabled?: boolean;
@@ -7,12 +9,11 @@ interface TextFieldProps {
 
 export default function TextField({ config, disabled }: TextFieldProps) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <label htmlFor={config.name}>
+    <div className={styles.fieldWrapper}>
+      <label htmlFor={config.name} className={styles.label}>
         {config.label}
-        {config.required && <span style={{ color: 'red' }}> *</span>}
+        {config.required && <span className={styles.required}> *</span>}
       </label>
-      <br />
       <input
         type="text"
         id={config.name}
@@ -20,7 +21,7 @@ export default function TextField({ config, disabled }: TextFieldProps) {
         placeholder={config.placeholder}
         required={config.required}
         disabled={disabled || config.disabled}
-        style={{ padding: 8, width: 300 }}
+        className={styles.input}
       />
     </div>
   );

@@ -5,11 +5,16 @@ import { NotificationContainer } from '@shared/components/Notification';
 import type { NotificationData, NotificationType } from '@shared/components/Notification';
 
 interface NotificationContextType {
-  showNotification: (message: string, type?: NotificationType, duration?: number) => void;
-  success: (message: string, duration?: number) => void;
-  error: (message: string, duration?: number) => void;
-  info: (message: string, duration?: number) => void;
-  warning: (message: string, duration?: number) => void;
+  showNotification: (
+    translationKey: string,
+    type?: NotificationType,
+    values?: Record<string, string | number>,
+    duration?: number
+  ) => void;
+  success: (translationKey: string, values?: Record<string, string | number>, duration?: number) => void;
+  error: (translationKey: string, values?: Record<string, string | number>, duration?: number) => void;
+  info: (translationKey: string, values?: Record<string, string | number>, duration?: number) => void;
+  warning: (translationKey: string, values?: Record<string, string | number>, duration?: number) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -22,12 +27,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showNotification = useCallback(
-    (message: string, type: NotificationType = 'info', duration = 3000) => {
+    (
+      translationKey: string,
+      type: NotificationType = 'info',
+      values?: Record<string, string | number>,
+      duration = 3000
+    ) => {
       const id = `${Date.now()}-${Math.random()}`;
       const notification: NotificationData = {
         id,
         type,
-        message,
+        translationKey,
+        values,
         duration,
       };
 
@@ -37,29 +48,29 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   );
 
   const success = useCallback(
-    (message: string, duration?: number) => {
-      showNotification(message, 'success', duration);
+    (translationKey: string, values?: Record<string, string | number>, duration?: number) => {
+      showNotification(translationKey, 'success', values, duration);
     },
     [showNotification]
   );
 
   const error = useCallback(
-    (message: string, duration?: number) => {
-      showNotification(message, 'error', duration);
+    (translationKey: string, values?: Record<string, string | number>, duration?: number) => {
+      showNotification(translationKey, 'error', values, duration);
     },
     [showNotification]
   );
 
   const info = useCallback(
-    (message: string, duration?: number) => {
-      showNotification(message, 'info', duration);
+    (translationKey: string, values?: Record<string, string | number>, duration?: number) => {
+      showNotification(translationKey, 'info', values, duration);
     },
     [showNotification]
   );
 
   const warning = useCallback(
-    (message: string, duration?: number) => {
-      showNotification(message, 'warning', duration);
+    (translationKey: string, values?: Record<string, string | number>, duration?: number) => {
+      showNotification(translationKey, 'warning', values, duration);
     },
     [showNotification]
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, PageLoader, ErrorMessage } from '@shared/components';
+import { Button, PageLoader, ErrorMessage, Translate, LanguageSwitcher } from '@shared/components';
 import { CreateDeckForm } from '@features/decks';
 
 import { useServiceQuery } from '@shared/hooks';
@@ -8,6 +8,7 @@ import { useServiceQuery } from '@shared/hooks';
 import { deckService } from '@features/decks';
 
 import { DECKS_QUERY_KEYS } from '@features/decks';
+import { TRANSLATION_KEYS } from '@/i18n';
 
 import styles from './page.module.scss';
 
@@ -19,7 +20,9 @@ export default function DecksPage() {
 
   return (
     <main className={styles.container}>
-      <h1>Decks</h1>
+      <LanguageSwitcher />
+
+      <Translate tKey={TRANSLATION_KEYS.decks.title} as="h1" />
 
       <CreateDeckForm />
 
@@ -34,13 +37,13 @@ export default function DecksPage() {
             className={styles.refreshButton}
             isLoading={isRefetching}
           >
-            Refresh Decks
+            <Translate tKey={TRANSLATION_KEYS.decks.refreshButton} />
           </Button>
 
           <ul className={styles.decksList}>
             {result.map((d) => (
               <li key={d.id} className={styles.deckItem}>
-                <span className={styles.deckName}>{d.name}</span> — {d.count} cards
+                <span className={styles.deckName}>{d.name}</span> — {d.count} <Translate tKey={TRANSLATION_KEYS.decks.cardsCount} />
               </li>
             ))}
           </ul>

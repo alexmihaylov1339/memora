@@ -5,5 +5,3 @@ export interface TextareaFieldConfig extends BaseFieldConfig {
   rows?: number;
   cols?: number;
 }
-
-

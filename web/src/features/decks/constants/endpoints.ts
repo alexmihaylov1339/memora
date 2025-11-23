@@ -6,3 +6,4 @@ export const DECK_ENDPOINTS = {
   DETAIL: (id: string) => `/v1/decks/${id}`,
 } as const;
 
+

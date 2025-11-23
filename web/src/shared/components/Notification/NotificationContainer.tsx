@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Notification from './Notification';
 import type { Notification as NotificationData } from './types';
@@ -15,8 +16,14 @@ export default function NotificationContainer({
   notifications,
   onClose,
 }: NotificationContainerProps) {
-  // Only render portal on client side
-  if (typeof window === 'undefined') return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Ensure consistent rendering between server and client
+  if (!mounted) return null;
 
   return createPortal(
     <div className={styles.container}>

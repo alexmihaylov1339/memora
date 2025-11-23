@@ -1,22 +1,18 @@
-// TODO: Import from your design system
-// @import 'src/styles/colors';
+@use '@/styles/colors.scss' as *;
 
 .fieldWrapper {
   margin-bottom: 12px;
 }
 
 .label {
-  // Add label styles from design system
+  display: block;
 }
 
 .required {
-  color: red; // TODO: Use design system error color
+  color: $error-red;
 }
 
 .input {
   padding: 8px;
   width: 300px;
-  // TODO: Add design system input styles
 }
-
-
