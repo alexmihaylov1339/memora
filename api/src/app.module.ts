@@ -3,11 +3,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DecksController } from './decks/decks.controller';
 import { DecksService } from './decks/decks.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from './prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [],
+  imports: [PrismaModule, AuthModule],
   controllers: [AppController, DecksController],
-  providers: [AppService, DecksService, PrismaService],
+  providers: [AppService, DecksService],
 })
 export class AppModule {}

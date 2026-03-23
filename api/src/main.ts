@@ -1,9 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import 'dotenv/config';
+import { PrismaKnownRequestExceptionFilter } from './prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalFilters(new PrismaKnownRequestExceptionFilter());
 
   // Enable CORS for frontend access
   app.enableCors({

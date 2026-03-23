@@ -1,4 +1,4 @@
-import { ManageService, HTTP_METHODS } from '@shared/services';
+import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import type { CreateDeckDto, Deck } from '../types';
 
 import { DECK_ENDPOINTS } from '../constants';
@@ -21,6 +21,7 @@ export const deckService = {
   async getAll(): Promise<Deck[]> {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
       .execRequest<Deck[]>();
   },
 
@@ -34,6 +35,7 @@ export const deckService = {
   async getById(params: { id: string }): Promise<Deck> {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
       .execRequest<Deck>();
   },
 
@@ -50,6 +52,7 @@ export const deckService = {
   async create(params: CreateDeckDto): Promise<Deck> {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
       .setBody(params)
       .execRequest<Deck>();
   },
@@ -66,6 +69,7 @@ export const deckService = {
     const { id, ...data } = params;
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
+      .setHeaders(getAuthHeaders())
       .setBody(data)
       .execRequest<Deck>();
   },
@@ -81,6 +85,7 @@ export const deckService = {
   async delete(params: { id: string }): Promise<void> {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
+      .setHeaders(getAuthHeaders())
       .execRequest<void>();
   },
 };

@@ -8,6 +8,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+/** Application user (JWT auth) */
+model User {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  name                   String?
+  passwordHash           String?
+  passwordResetToken     String?
+  passwordResetExpiresAt DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
 /** Basic grading enum for SRS */
 enum Grade {
   again

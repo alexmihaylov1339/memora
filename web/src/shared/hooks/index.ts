@@ -6,7 +6,10 @@ export type {
   UseServiceOptions,
 } from './useService';
 
-export { useServiceQuery, useServiceQueryWithoutParams } from './useServiceQuery';
+export { useLogout } from './useLogout';
+export type { UseLogoutOptions } from './useLogout';
+
+export { useServiceQuery } from './useServiceQuery';
 export type {
   QueryServiceFunction,
   QueryServiceFunctionWithoutParams,

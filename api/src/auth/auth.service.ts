@@ -1,0 +1,289 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { EmailService } from '../email/email.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
+const SALT_ROUNDS = 10;
+const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+type RegisterInput = { email: string; password: string; name?: string };
+type LoginInput = { email: string; password: string };
+type DevLoginInput = { email: string; name?: string };
+type ForgotPasswordInput = { email: string };
+type ResetPasswordInput = { token: string; password: string };
+type UpdateAccountInput = { name?: string; email?: string };
+
+function publicUser(u: {
+  id: string;
+  email: string;
+  name: string | null;
+}) {
+  return { id: u.id, email: u.email, name: u.name ?? undefined };
+}
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+    private readonly emailService: EmailService,
+  ) {}
+
+  async register(input: RegisterInput) {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) throw new BadRequestException('Email is required');
+    if (!input.password || input.password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '89934e',
+      },
+      body: JSON.stringify({
+        sessionId: '89934e',
+        runId: 'pre-fix',
+        hypothesisId: 'H1',
+        location: 'auth.service.ts:register',
+        message: 'register_after_validation',
+        data: { prismaConnected: this.prisma.isConnected() },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    let existing;
+    try {
+      existing = await this.prisma.user.findUnique({ where: { email } });
+    } catch (e: unknown) {
+      const err = e as { code?: string; meta?: unknown };
+      // #region agent log
+      fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Debug-Session-Id': '89934e',
+        },
+        body: JSON.stringify({
+          sessionId: '89934e',
+          runId: 'pre-fix',
+          hypothesisId: 'H1',
+          location: 'auth.service.ts:register',
+          message: 'findUnique_failed',
+          data: {
+            prismaCode: err?.code,
+            metaModel: (err.meta as { modelName?: string })?.modelName,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      throw e;
+    }
+    if (existing) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        name: input.name?.trim() || undefined,
+        passwordHash,
+      },
+    });
+
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = await this.jwt.signAsync(payload);
+
+    // #region agent log
+    fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '89934e',
+      },
+      body: JSON.stringify({
+        sessionId: '89934e',
+        runId: 'post-fix',
+        hypothesisId: 'H1',
+        location: 'auth.service.ts:register',
+        message: 'register_success',
+        data: { userIdLen: user.id.length },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    return { accessToken, user: publicUser(user) };
+  }
+
+  async login(input: LoginInput) {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) throw new UnauthorizedException('Email is required');
+    if (!input.password) throw new UnauthorizedException('Password is required');
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new UnauthorizedException('Invalid email or password');
+
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(
+        'Account was created without password. Please use the forgot password flow.',
+      );
+    }
+
+    const valid = await bcrypt.compare(input.password, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Invalid email or password');
+
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = await this.jwt.signAsync(payload);
+
+    return { accessToken, user: publicUser(user) };
+  }
+
+  async devLogin(input: DevLoginInput) {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) throw new UnauthorizedException('Email is required');
+
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name: input.name?.trim() || undefined,
+        },
+      });
+    } else if (input.name && input.name !== user.name) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { name: input.name.trim() },
+      });
+    }
+
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = await this.jwt.signAsync(payload);
+
+    return { accessToken, user: publicUser(user) };
+  }
+
+  async forgotPassword(input: ForgotPasswordInput) {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) throw new BadRequestException('Email is required');
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return {
+        message:
+          'If an account exists with this email, you will receive a reset link.',
+      };
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MS);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: token,
+        passwordResetExpiresAt: expiresAt,
+      },
+    });
+
+    const resetLink = `${FRONTEND_URL.replace(/\/$/, '')}/reset-password?token=${token}`;
+    let sent = false;
+    try {
+      sent = await this.emailService.sendPasswordReset(user.email, resetLink);
+    } catch {
+      sent = false;
+    }
+
+    if (process.env.NODE_ENV !== 'production' && !sent) {
+      return {
+        message:
+          'If an account exists with this email, you will receive a reset link.',
+        resetToken: token,
+      };
+    }
+    return {
+      message:
+        'If an account exists with this email, you will receive a reset link.',
+    };
+  }
+
+  async resetPassword(input: ResetPasswordInput) {
+    if (!input.token?.trim()) throw new BadRequestException('Token is required');
+    if (!input.password || input.password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { passwordResetToken: input.token.trim() },
+    });
+    if (
+      !user ||
+      !user.passwordResetExpiresAt ||
+      user.passwordResetExpiresAt < new Date()
+    ) {
+      throw new UnauthorizedException(
+        'Invalid or expired reset link. Please request a new one.',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpiresAt: null,
+      },
+    });
+
+    return { message: 'Password has been reset. You can now sign in.' };
+  }
+
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    return publicUser(user);
+  }
+
+  async updateAccount(userId: string, input: UpdateAccountInput) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const data: { name?: string | null; email?: string } = {};
+
+    if (input.email !== undefined) {
+      const email = input.email.trim().toLowerCase();
+      if (!email) throw new BadRequestException('Email is required');
+      const existing = await this.prisma.user.findUnique({ where: { email } });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException('User with this email already exists');
+      }
+      data.email = email;
+    }
+
+    if (input.name !== undefined) {
+      data.name = input.name?.trim() || null;
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+    return publicUser(updated);
+  }
+}

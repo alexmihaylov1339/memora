@@ -18,3 +18,7 @@ export type { TranslationProps } from './Translation';
 
 export { LanguageSwitcher } from './LanguageSwitcher';
 
+export { Navigation } from './Navigation';
+
+export { AuthProvider, ProtectedRoute, GuestOnlyRoute, useAuth } from './AuthProvider';
+

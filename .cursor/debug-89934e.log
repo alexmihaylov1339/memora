@@ -1,0 +1,6 @@
+{"sessionId":"89934e","runId":"pre-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"register_after_validation","data":{"prismaConnected":true},"timestamp":1774176465136}
+{"sessionId":"89934e","runId":"pre-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"findUnique_failed","data":{"prismaCode":"P2021","metaModel":"User"},"timestamp":1774176465531}
+{"sessionId":"89934e","runId":"pre-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"register_after_validation","data":{"prismaConnected":true},"timestamp":1774176466539}
+{"sessionId":"89934e","runId":"pre-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"findUnique_failed","data":{"prismaCode":"P2021","metaModel":"User"},"timestamp":1774176466777}
+{"sessionId":"89934e","runId":"pre-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"register_after_validation","data":{"prismaConnected":true},"timestamp":1774250113320}
+{"sessionId":"89934e","runId":"post-fix","hypothesisId":"H1","location":"auth.service.ts:register","message":"register_success","data":{"userIdLen":25},"timestamp":1774250114110}

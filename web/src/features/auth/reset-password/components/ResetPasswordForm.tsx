@@ -1,0 +1,64 @@
+'use client';
+
+import { useState } from 'react';
+
+import { Link } from '@/i18n/navigation';
+
+import AuthFormBuilder from '@/shared/components/auth-form/AuthFormBuilder';
+
+import {
+  useResetPasswordFormFields,
+  useResetPasswordMutation,
+} from '../hooks';
+
+type ResetPasswordFormProps = {
+  token: string;
+};
+
+export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+  const fields = useResetPasswordFormFields();
+  const mutation = useResetPasswordMutation(token);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleSubmit = (values: Record<string, string>) => {
+    setValidationError(null);
+
+    if (values.password !== values.confirmPassword) {
+      setValidationError('Passwords do not match');
+      return;
+    }
+
+    mutation.mutate(values.password);
+  };
+
+  const error =
+    validationError ||
+    (mutation.isError
+      ? mutation.error instanceof Error
+        ? mutation.error.message
+        : 'Failed to reset password'
+      : null);
+
+  return (
+    <fieldset
+      disabled={mutation.isPending}
+      className="border-none p-0 m-0 min-w-0"
+    >
+      {error && (
+        <p className="mb-4 text-sm text-[var(--destructive)]" role="alert">
+          {error}
+        </p>
+      )}
+      <AuthFormBuilder
+        fields={fields}
+        onSubmit={handleSubmit}
+        submitLabel={mutation.isPending ? 'Resetting…' : 'Reset password'}
+      />
+      <p className="mt-4 text-sm">
+        <Link href="/login" className="text-[var(--primary)] hover:underline">
+          Back to sign in
+        </Link>
+      </p>
+    </fieldset>
+  );
+}

@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 
 @Controller('decks')
+@UseGuards(AuthGuard)
 export class DecksController {
   constructor(private decks: DecksService) {}
 

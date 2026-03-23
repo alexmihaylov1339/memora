@@ -1,6 +1,13 @@
 'use client';
 
-import { Button, PageLoader, ErrorMessage, Translate, LanguageSwitcher } from '@shared/components';
+import {
+  Button,
+  PageLoader,
+  ErrorMessage,
+  Translate,
+  LanguageSwitcher,
+  ProtectedRoute,
+} from '@shared/components';
 import { CreateDeckForm } from '@features/decks';
 
 import { useServiceQuery } from '@shared/hooks';
@@ -19,6 +26,7 @@ export default function DecksPage() {
   );
 
   return (
+    <ProtectedRoute>
     <main className={styles.container}>
       <LanguageSwitcher />
 
@@ -50,5 +58,6 @@ export default function DecksPage() {
         </>
       )}
     </main>
+    </ProtectedRoute>
   );
 }
