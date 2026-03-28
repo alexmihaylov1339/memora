@@ -1,5 +1,13 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
-import type { CreateDeckDto, Deck } from '../types';
+import type {
+  CreateDeckDto,
+  CreateDeckResponse,
+  Deck,
+  DeckIdParams,
+  GetDeckByIdResponse,
+  UpdateDeckDto,
+  UpdateDeckResponse,
+} from '../types';
 
 import { DECK_ENDPOINTS } from '../constants';
 
@@ -32,11 +40,11 @@ export const deckService = {
    * const deck = useServiceQuery(DECKS_QUERY_KEYS.detail(id), deckService.getById, { id });
    * ```
    */
-  async getById(params: { id: string }): Promise<Deck> {
+  async getById(params: DeckIdParams): Promise<GetDeckByIdResponse> {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
-      .execRequest<Deck>();
+      .execRequest<GetDeckByIdResponse>();
   },
 
   /**
@@ -49,12 +57,12 @@ export const deckService = {
    * await createDeck.fetch({ name: 'My Deck', description: 'Description' });
    * ```
    */
-  async create(params: CreateDeckDto): Promise<Deck> {
+  async create(params: CreateDeckDto): Promise<CreateDeckResponse> {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.POST)
       .setHeaders(getAuthHeaders())
       .setBody(params)
-      .execRequest<Deck>();
+      .execRequest<CreateDeckResponse>();
   },
 
   /**
@@ -65,13 +73,13 @@ export const deckService = {
    * await updateDeck.fetch({ id: '123', name: 'Updated Name' });
    * ```
    */
-  async update(params: { id: string; name?: string; description?: string }): Promise<Deck> {
+  async update(params: DeckIdParams & UpdateDeckDto): Promise<UpdateDeckResponse> {
     const { id, ...data } = params;
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
       .setHeaders(getAuthHeaders())
       .setBody(data)
-      .execRequest<Deck>();
+      .execRequest<UpdateDeckResponse>();
   },
 
   /**
@@ -82,11 +90,10 @@ export const deckService = {
    * await deleteDeck.fetch({ id: '123' });
    * ```
    */
-  async delete(params: { id: string }): Promise<void> {
+  async delete(params: DeckIdParams): Promise<void> {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
       .setHeaders(getAuthHeaders())
       .execRequest<void>();
   },
 };
-

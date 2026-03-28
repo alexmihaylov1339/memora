@@ -179,3 +179,74 @@ Mitigation:
 - Auth and deck happy paths pass manually and in automated tests.
 - Step 1 changes are isolated and ready for chunk/review work in Step 2+.
 
+---
+
+## Implementation ticket checklist
+
+### Ticket metadata
+
+- **Recommended branch:** `feat/step1-api-contract-cleanup`
+- **PR title suggestion:** `Step 1: stabilize API contracts and remove auth debug instrumentation`
+
+### Task list (execution order)
+
+- [x] **T1 - Lock deck API contract (no behavior expansion yet)**
+  - Files: `api/src/decks/decks.controller.ts`, `web/src/features/decks/services/deckService.ts`, `web/src/features/decks/types/index.ts`
+  - Confirm final request/response shape for: list/create/detail/update/delete.
+  - Confirm status codes: `200`, `201`, `204`, `400`, `401`, `404`.
+  - Preserve existing list payload compatibility (`id`, `name`, `count`).
+  - **Acceptance:** Written contract is consistent between backend and frontend service expectations.
+
+- [ ] **T2 - Complete backend deck CRUD endpoints**
+  - Files: `api/src/decks/decks.controller.ts`, `api/src/decks/decks.service.ts`
+  - Add backend handlers and service methods for `GET :id`, `PUT :id`, `DELETE :id`.
+  - Keep controller thin and logic in service.
+  - Keep `AuthGuard` protection unchanged.
+  - **Acceptance:** All deck methods used by frontend service exist and return expected shapes/codes.
+
+- [ ] **T3 - Validate inputs at boundary**
+  - Files: deck controller (and DTO files if added)
+  - Ensure required validation for create/update payloads and `id` params.
+  - Keep error semantics consistent with current API style.
+  - **Acceptance:** Invalid payloads are rejected consistently without breaking happy paths.
+
+- [ ] **T4 - Remove temporary auth instrumentation**
+  - File: `api/src/auth/auth.service.ts`
+  - Remove temporary debug `fetch('http://127.0.0.1:7502/ingest/...')` blocks only.
+  - Do not alter register/login/reset behavior.
+  - **Acceptance:** No debug ingestion calls remain; auth behavior remains unchanged.
+
+- [ ] **T5 - Frontend contract verification (keep project patterns)**
+  - Files: `web/src/features/decks/services/deckService.ts`, optional `web/src/features/decks/constants/endpoints.ts`
+  - Keep `ManageService` usage (no direct ad-hoc fetch).
+  - Keep existing hooks architecture (`useService`, `useServiceQuery`).
+  - Confirm delete flow works with `204` response handling.
+  - **Acceptance:** Frontend service layer remains pattern-consistent and contract-aligned.
+
+- [ ] **T6 - Happy-path test coverage**
+  - Files: `api/test/app.e2e-spec.ts` (or split e2e files)
+  - Add/adjust tests for:
+    - register -> login
+    - create -> list
+    - detail -> update -> delete
+  - **Acceptance:** E2E suite covers all Step 1 happy paths and passes.
+
+- [ ] **T7 - Final verification and cleanup**
+  - Run tests/lint for touched areas.
+  - Manual smoke: register/login/create/list/detail/update/delete.
+  - Ensure no chunk/review scope leaks into this PR.
+  - **Acceptance:** Step 1 meets Definition of done and is merge-ready.
+
+### Commit plan (recommended)
+
+1. `chore(api): align decks CRUD contract with frontend service`
+2. `chore(api): remove temporary auth debug instrumentation`
+3. `test(api): cover auth and decks happy paths in e2e`
+4. `chore(web): verify deck service contract compatibility`
+
+### Guardrails for this step
+
+- Keep functionality unchanged from user perspective.
+- Use existing project patterns (`ManageService`, shared hooks, helpers).
+- Prefer small focused commits per task.
+- Do not include chunk scheduling or new exercise-type logic in this branch.

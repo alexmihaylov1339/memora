@@ -8,11 +8,21 @@ export { CreateDeckForm } from './components';
 // export { validateDeck } from './utils';
 
 // Types
-export type { Deck, CreateDeckDto } from './types';
+export type {
+  CreateDeckDto,
+  CreateDeckResponse,
+  Deck,
+  DeckDetail,
+  DeckIdParams,
+  DeckListItem,
+  DeckRecord,
+  GetDeckByIdResponse,
+  UpdateDeckDto,
+  UpdateDeckResponse,
+} from './types';
 
 // Services
 export { deckService } from './services';
 
 // Constants
 export { DECKS_QUERY_KEYS, DECK_ENDPOINTS } from './constants';
-
