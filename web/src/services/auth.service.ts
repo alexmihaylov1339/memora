@@ -1,18 +1,8 @@
+import { ManageService, HTTP_METHODS } from '@shared/services';
+import { AUTH_ENDPOINTS } from '@features/auth/constants';
 import { API_V1_URL } from './config';
 
-function formatApiError(data: unknown, fallback: string): string {
-  if (data && typeof data === 'object' && 'message' in data) {
-    const m = (data as { message: unknown }).message;
-    if (Array.isArray(m)) return m.join(', ');
-    if (typeof m === 'string') return m;
-  }
-  return fallback;
-}
-
-const AUTH_HEADERS = (token: string) => ({
-  Authorization: `Bearer ${token}`,
-  'Content-Type': 'application/json',
-});
+const api = ManageService(API_V1_URL);
 
 export type RegisterCredentials = {
   email: string;
@@ -40,137 +30,65 @@ export type AuthResponse = {
   user: { id: string; email: string; name?: string };
 };
 
-export async function register(
-  credentials: RegisterCredentials,
-): Promise<AuthResponse> {
-  const res = await fetch(`${API_V1_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+export function register(credentials: RegisterCredentials): Promise<AuthResponse> {
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.REGISTER, HTTP_METHODS.POST)
+    .setBody({
       email: credentials.email?.trim().toLowerCase(),
       password: credentials.password,
       name: credentials.name?.trim() || undefined,
-    }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as AuthResponse;
+    })
+    .execRequest<AuthResponse>();
 }
 
-export async function login(
-  credentials: LoginCredentials,
-): Promise<AuthResponse> {
-  const res = await fetch(`${API_V1_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+export function login(credentials: LoginCredentials): Promise<AuthResponse> {
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.LOGIN, HTTP_METHODS.POST)
+    .setBody({
       email: credentials.email?.trim().toLowerCase(),
       password: credentials.password,
-    }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as AuthResponse;
+    })
+    .execRequest<AuthResponse>();
 }
 
-export async function forgotPassword(
-  email: string,
-): Promise<ForgotPasswordResponse> {
-  const res = await fetch(`${API_V1_URL}/auth/forgot-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email?.trim().toLowerCase() }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as ForgotPasswordResponse;
+export function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.FORGOT_PASSWORD, HTTP_METHODS.POST)
+    .setBody({ email: email?.trim().toLowerCase() })
+    .execRequest<ForgotPasswordResponse>();
 }
 
-export async function resetPassword(
-  input: ResetPasswordInput,
-): Promise<{ message: string }> {
-  const res = await fetch(`${API_V1_URL}/auth/reset-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+export function resetPassword(input: ResetPasswordInput): Promise<{ message: string }> {
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.RESET_PASSWORD, HTTP_METHODS.POST)
+    .setBody({
       token: input.token.trim(),
       password: input.password,
-    }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as { message: string };
+    })
+    .execRequest<{ message: string }>();
 }
 
 export type User = { id: string; email: string; name?: string };
 
-export async function getCurrentUser(accessToken: string): Promise<{ user: User }> {
-  const res = await fetch(`${API_V1_URL}/me`, {
-    method: 'GET',
-    headers: AUTH_HEADERS(accessToken),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as { user: User };
+export function getCurrentUser(accessToken: string): Promise<{ user: User }> {
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.ME, HTTP_METHODS.GET)
+    .setHeaders({ Authorization: `Bearer ${accessToken}` })
+    .execRequest<{ user: User }>();
 }
 
 export type UpdateAccountInput = { name?: string; email?: string };
 
-export async function updateAccount(
+export function updateAccount(
   accessToken: string,
   input: UpdateAccountInput,
 ): Promise<{ user: User }> {
-  const res = await fetch(`${API_V1_URL}/me`, {
-    method: 'PATCH',
-    headers: AUTH_HEADERS(accessToken),
-    body: JSON.stringify({
+  return api
+    .prepareRequest(AUTH_ENDPOINTS.ME, HTTP_METHODS.PATCH)
+    .setHeaders({ Authorization: `Bearer ${accessToken}` })
+    .setBody({
       name: input.name?.trim() || undefined,
       email: input.email?.trim().toLowerCase() || undefined,
-    }),
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(
-      formatApiError(data, `Request failed (${res.status})`),
-    );
-  }
-
-  return data as { user: User };
+    })
+    .execRequest<{ user: User }>();
 }
