@@ -197,7 +197,7 @@ Mitigation:
   - Preserve existing list payload compatibility (`id`, `name`, `count`).
   - **Acceptance:** Written contract is consistent between backend and frontend service expectations.
 
-- [ ] **T2 - Complete backend deck CRUD endpoints**
+- [x] **T2 - Complete backend deck CRUD endpoints**
   - Files: `api/src/decks/decks.controller.ts`, `api/src/decks/decks.service.ts`
   - Add backend handlers and service methods for `GET :id`, `PUT :id`, `DELETE :id`.
   - Keep controller thin and logic in service.

@@ -26,7 +26,9 @@
     "refreshButton": "Decks aktualisieren",
     "cardsCount": "Karten",
     "createSuccess": "Deck \"{name}\" erfolgreich erstellt!",
-    "createError": "Deck konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+    "createError": "Deck konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "deleteSuccess": "Deck erfolgreich gelöscht!",
+    "deleteError": "Deck konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
   },
   "notifications": {
     "success": "Erfolg",
@@ -35,4 +37,3 @@
     "warning": "Warnung"
   }
 }
-

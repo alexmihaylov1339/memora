@@ -1,4 +1,17 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 
@@ -24,8 +37,60 @@ export class DecksController {
   @Post()
   create(@Body() body: { name: string; description?: string }) {
     if (!body?.name) {
-      return { error: 'name is required' };
+      throw new BadRequestException('name is required');
     }
     return this.decks.create(body.name, body.description);
+  }
+
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    if (!id?.trim()) {
+      throw new BadRequestException('id is required');
+    }
+
+    const deck = await this.decks.findOne(id);
+    if (!deck) {
+      throw new NotFoundException('deck not found');
+    }
+
+    return deck;
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() body: { name?: string; description?: string },
+  ) {
+    if (!id?.trim()) {
+      throw new BadRequestException('id is required');
+    }
+
+    if (!body || (body.name === undefined && body.description === undefined)) {
+      throw new BadRequestException('at least one field is required');
+    }
+
+    if (body.name !== undefined && !body.name.trim()) {
+      throw new BadRequestException('name cannot be empty');
+    }
+
+    const deck = await this.decks.update(id, body);
+    if (!deck) {
+      throw new NotFoundException('deck not found');
+    }
+
+    return deck;
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    if (!id?.trim()) {
+      throw new BadRequestException('id is required');
+    }
+
+    const removed = await this.decks.remove(id);
+    if (!removed) {
+      throw new NotFoundException('deck not found');
+    }
   }
 }

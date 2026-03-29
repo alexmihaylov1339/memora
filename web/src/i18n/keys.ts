@@ -32,6 +32,8 @@ export const TRANSLATION_KEYS = {
     cardsCount: 'decks.cardsCount',
     createSuccess: 'decks.createSuccess',
     createError: 'decks.createError',
+    deleteSuccess: 'decks.deleteSuccess',
+    deleteError: 'decks.deleteError',
   },
   notifications: {
     success: 'notifications.success',
@@ -40,4 +42,3 @@ export const TRANSLATION_KEYS = {
     warning: 'notifications.warning',
   },
 } as const;
-

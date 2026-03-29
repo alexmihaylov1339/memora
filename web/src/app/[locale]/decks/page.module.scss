@@ -15,9 +15,27 @@
 
 .deckItem {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.deckInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .deckName {
   font-weight: bold;
 }
 
+.deleteButton {
+  border: 1px solid $error-border;
+  background: transparent;
+  color: $error-border;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
