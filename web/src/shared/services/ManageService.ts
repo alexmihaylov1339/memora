@@ -10,6 +10,40 @@ interface RequestConfig {
   headers?: Record<string, string>;
 }
 
+function extractErrorMessage(raw: string, fallback: string): string {
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as {
+      message?: string | string[];
+      error?: string;
+    };
+
+    if (typeof parsed.message === 'string' && parsed.message.trim()) {
+      return parsed.message;
+    }
+
+    if (Array.isArray(parsed.message) && parsed.message.length > 0) {
+      const firstMessage = parsed.message.find(
+        (msg): msg is string => typeof msg === 'string' && msg.trim().length > 0
+      );
+      if (firstMessage) {
+        return firstMessage;
+      }
+    }
+
+    if (typeof parsed.error === 'string' && parsed.error.trim()) {
+      return parsed.error;
+    }
+  } catch {
+    // Keep raw response for non-JSON error bodies.
+  }
+
+  return raw;
+}
+
 class RequestBuilder {
   private config: RequestConfig;
   private baseUrl: string;
@@ -75,11 +109,11 @@ class RequestBuilder {
 
       // Handle errors
       if (!response.ok) {
-        const errorMessage = await response.text();
+        const rawError = await response.text();
+        const fallback = response.statusText || 'Request failed';
+        const errorMessage = extractErrorMessage(rawError, fallback);
 
-        throw new Error(
-          `HTTP ${response.status}: ${errorMessage || response.statusText}`
-        );
+        throw new Error(errorMessage);
       }
 
       // Parse response
@@ -108,4 +142,3 @@ export function ManageService(baseUrl: string) {
     },
   };
 }
-
