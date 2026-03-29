@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -14,6 +13,14 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
+import type { CreateDeckDto } from './dto/create-deck.dto';
+import type { DeckIdParamDto } from './dto/deck-id-param.dto';
+import type { UpdateDeckDto } from './dto/update-deck.dto';
+import {
+  validateCreateDeckInput,
+  validateDeckId,
+  validateUpdateDeckInput,
+} from './dto/deck-validation';
 
 /**
  * Deck API contract (Step 1 lock):
@@ -35,18 +42,15 @@ export class DecksController {
   }
 
   @Post()
-  create(@Body() body: { name: string; description?: string }) {
-    if (!body?.name) {
-      throw new BadRequestException('name is required');
-    }
-    return this.decks.create(body.name, body.description);
+  create(@Body() body: CreateDeckDto) {
+    validateCreateDeckInput(body);
+
+    return this.decks.create(body.name.trim(), body.description?.trim());
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
-    if (!id?.trim()) {
-      throw new BadRequestException('id is required');
-    }
+  async getById(@Param() params: DeckIdParamDto) {
+    const id = validateDeckId(params.id);
 
     const deck = await this.decks.findOne(id);
     if (!deck) {
@@ -57,23 +61,14 @@ export class DecksController {
   }
 
   @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() body: { name?: string; description?: string },
-  ) {
-    if (!id?.trim()) {
-      throw new BadRequestException('id is required');
-    }
+  async update(@Param() params: DeckIdParamDto, @Body() body: UpdateDeckDto) {
+    const id = validateDeckId(params.id);
+    validateUpdateDeckInput(body);
 
-    if (!body || (body.name === undefined && body.description === undefined)) {
-      throw new BadRequestException('at least one field is required');
-    }
-
-    if (body.name !== undefined && !body.name.trim()) {
-      throw new BadRequestException('name cannot be empty');
-    }
-
-    const deck = await this.decks.update(id, body);
+    const deck = await this.decks.update(id, {
+      name: body.name?.trim(),
+      description: body.description?.trim(),
+    });
     if (!deck) {
       throw new NotFoundException('deck not found');
     }
@@ -83,10 +78,8 @@ export class DecksController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
-    if (!id?.trim()) {
-      throw new BadRequestException('id is required');
-    }
+  async remove(@Param() params: DeckIdParamDto) {
+    const id = validateDeckId(params.id);
 
     const removed = await this.decks.remove(id);
     if (!removed) {

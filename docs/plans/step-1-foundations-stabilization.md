@@ -204,7 +204,7 @@ Mitigation:
   - Keep `AuthGuard` protection unchanged.
   - **Acceptance:** All deck methods used by frontend service exist and return expected shapes/codes.
 
-- [ ] **T3 - Validate inputs at boundary**
+- [x] **T3 - Validate inputs at boundary**
   - Files: deck controller (and DTO files if added)
   - Ensure required validation for create/update payloads and `id` params.
   - Keep error semantics consistent with current API style.
