@@ -9,10 +9,7 @@ import type { Response } from 'express';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaKnownRequestExceptionFilter implements ExceptionFilter {
-  catch(
-    exception: Prisma.PrismaClientKnownRequestError,
-    host: ArgumentsHost,
-  ) {
+  catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     const res = host.switchToHttp().getResponse<Response>();
 
     if (exception.code === 'P2021') {

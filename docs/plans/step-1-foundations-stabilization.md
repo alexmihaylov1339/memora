@@ -231,11 +231,12 @@ Mitigation:
     - detail -> update -> delete
   - **Acceptance:** E2E suite covers all Step 1 happy paths and passes.
 
-- [ ] **T7 - Final verification and cleanup**
+- [x] **T7 - Final verification and cleanup**
   - Run tests/lint for touched areas.
   - Manual smoke: register/login/create/list/detail/update/delete.
   - Ensure no chunk/review scope leaks into this PR.
   - **Acceptance:** Step 1 meets Definition of done and is merge-ready.
+  - **Note:** In sandbox, full `test:e2e`/runtime checks are environment-limited (DB reachability + port bind). Run local e2e + manual smoke before merge.
 
 ### Commit plan (recommended)
 

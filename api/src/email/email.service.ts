@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
-const FROM_EMAIL =
-  process.env.EMAIL_FROM || 'aleksandermihaylov@gmail.com';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'aleksandermihaylov@gmail.com';
 
 @Injectable()
 export class EmailService {
