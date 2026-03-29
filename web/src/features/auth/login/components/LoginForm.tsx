@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/navigation';
 
 import { FormBuilder } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 
 import { useLoginFormFields, useLoginMutation } from '../hooks';
 
@@ -42,7 +43,7 @@ export default function LoginForm() {
       />
       <p className="mt-4 text-sm">
         <Link
-          href="/forgot-password"
+          href={APP_ROUTES.forgotPassword}
           className="text-[var(--primary)] hover:underline"
         >
           Forgot password?

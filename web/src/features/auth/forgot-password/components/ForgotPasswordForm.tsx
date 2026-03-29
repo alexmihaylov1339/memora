@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/navigation';
 
 import { FormBuilder } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 
 import {
   useForgotPasswordFormFields,
@@ -42,7 +43,7 @@ export default function ForgotPasswordForm() {
             <p className="text-xs text-[var(--secondary)] break-all">
               Dev reset link:{' '}
               <Link
-                href={`/reset-password?token=${success.resetToken}`}
+                href={APP_ROUTES.resetPasswordWithToken(success.resetToken)}
                 className="text-[var(--primary)] underline"
               >
                 Reset password
@@ -61,7 +62,7 @@ export default function ForgotPasswordForm() {
         />
       )}
       <p className="mt-4 text-sm">
-        <Link href="/login" className="text-[var(--primary)] hover:underline">
+        <Link href={APP_ROUTES.login} className="text-[var(--primary)] hover:underline">
           Back to sign in
         </Link>
       </p>

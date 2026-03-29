@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/navigation';
 
 import { useAuth } from '@/shared/components/AuthProvider';
+import { APP_ROUTES } from '@/shared/constants';
 import { useLogout } from '@/shared/hooks/useLogout';
 
 export default function Navigation() {
@@ -15,13 +16,13 @@ export default function Navigation() {
         {isReady &&
           (isAuthenticated ? (
             <>
-              <Link href="/">
+              <Link href={APP_ROUTES.home}>
                 <span className="text-blue-600 hover:underline">Home</span>
               </Link>
-              <Link href="/decks">
+              <Link href={APP_ROUTES.decks}>
                 <span className="text-blue-600 hover:underline">Decks</span>
               </Link>
-              <Link href="/account">
+              <Link href={APP_ROUTES.account}>
                 <span className="text-blue-600 hover:underline">Account</span>
               </Link>
               <button
@@ -34,10 +35,10 @@ export default function Navigation() {
             </>
           ) : (
             <>
-              <Link href="/login">
+              <Link href={APP_ROUTES.login}>
                 <span className="text-blue-600 hover:underline">Login</span>
               </Link>
-              <Link href="/register">
+              <Link href={APP_ROUTES.register}>
                 <span className="text-blue-600 hover:underline">Register</span>
               </Link>
             </>

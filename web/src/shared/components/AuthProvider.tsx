@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useRouter } from '@/i18n/navigation';
 
-import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
+import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
 import { PageLoader } from '@/shared/components/PageLoader';
 
 type AuthContextType = {
@@ -50,7 +50,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isReady && !isAuthenticated) {
-      router.replace('/login');
+      router.replace(APP_ROUTES.login);
     }
   }, [isReady, isAuthenticated, router]);
 
@@ -72,7 +72,7 @@ export function GuestOnlyRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isReady && isAuthenticated) {
-      router.replace('/');
+      router.replace(APP_ROUTES.home);
     }
   }, [isReady, isAuthenticated, router]);
 

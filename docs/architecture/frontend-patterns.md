@@ -13,6 +13,8 @@
 9. Keep solutions simple; it is acceptable to violate DRY when it improves clarity and maintainability.
 10. Reuse already existing project building blocks before creating new ones: components, custom hooks, helpers, utils, and services.
 11. Avoid ad-hoc inline type/value checks (`=== undefined`, `typeof x === 'string'`, etc.); use shared helper/type-guard functions.
+12. Form `FieldConfig[]` definitions must be placed in dedicated feature hooks/constants files, not created inline in page/component bodies.
+13. Do not hardcode API endpoints or app routes in components/hooks; use centralized constants/builders.
 
 ## Decision Order
 
@@ -23,6 +25,7 @@ When implementing a feature, apply decisions in this order:
 3. Use `FormBuilder` for forms.
 4. Split into reusable components/hooks where it improves readability.
 5. Prefer existing helpers/utils first; add new shared helpers when checks repeat.
+6. Prefer route/endpoint constants instead of inline path strings.
 
 ## Enforcement Intent
 

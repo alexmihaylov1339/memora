@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 
 import { FormBuilder } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 
 import {
   useResetPasswordFormFields,
@@ -57,7 +58,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         translateFields={false}
       />
       <p className="mt-4 text-sm">
-        <Link href="/login" className="text-[var(--primary)] hover:underline">
+        <Link href={APP_ROUTES.login} className="text-[var(--primary)] hover:underline">
           Back to sign in
         </Link>
       </p>

@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 
 import { ProtectedRoute } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 import { ChunkCreatePlaceholder } from './components';
 
 export default function NewChunkPage() {
@@ -16,7 +17,7 @@ export default function NewChunkPage() {
         <h1 className="mb-4 text-2xl font-semibold">Create Chunk</h1>
 
         <div className="mb-4">
-          <Link href="/decks" className="text-sm text-[var(--primary)] hover:underline">
+          <Link href={APP_ROUTES.decks} className="text-sm text-[var(--primary)] hover:underline">
             Back to Decks
           </Link>
         </div>

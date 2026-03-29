@@ -13,5 +13,6 @@ export {
   useUpdateCardMutation,
   useDeleteCardMutation,
 } from './useCardMutations';
-
+export { useDeckEditFormFields } from './useDeckFormFields';
+export { useCreateCardFormFields, useEditCardFormFields } from './useCardFormFields';
 

@@ -10,6 +10,7 @@ import { FormBuilder } from '@shared/components';
 
 // Hooks
 import { useNotification } from '@shared/providers';
+import { APP_ROUTES } from '@shared/constants';
 import { useCreateDeckMutation } from '../hooks';
 
 // Types
@@ -31,7 +32,7 @@ export default function CreateDeckForm() {
   const handleCreateSuccess = (data: { name: string }) => {
     queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
     success(TRANSLATION_KEYS.decks.createSuccess, { name: data.name });
-    router.replace('/decks');
+    router.replace(APP_ROUTES.decks);
   };
 
   const handleCreateError = () => {

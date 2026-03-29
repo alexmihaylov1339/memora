@@ -5,7 +5,7 @@ import { useRouter } from '@/i18n/navigation';
 
 import { login, type LoginCredentials } from '@/services';
 import { useAuth } from '@/shared/components/AuthProvider';
-import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
+import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
 
 export function useLoginMutation() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export function useLoginMutation() {
         localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
       }
       setAuthenticated(true);
-      router.replace('/');
+      router.replace(APP_ROUTES.home);
     },
   });
 }

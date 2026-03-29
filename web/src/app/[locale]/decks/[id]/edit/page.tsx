@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
 import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 import {
   useDeckDetailQuery,
   useDeleteDeckMutation,
@@ -27,7 +28,7 @@ export default function EditDeckPage() {
 
   const deleteDeck = useDeleteDeckMutation({
     onSuccess: () => {
-      router.replace('/decks');
+      router.replace(APP_ROUTES.decks);
     },
   });
 

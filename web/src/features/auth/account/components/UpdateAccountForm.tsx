@@ -2,28 +2,16 @@
 
 import { useMemo } from 'react';
 
-import { FormBuilder, type FieldConfig } from '@shared/components';
+import { FormBuilder } from '@shared/components';
 
-import { useGetCurrentUser, useUpdateAccountMutation } from '../hooks';
-
-const ACCOUNT_FORM_FIELDS: FieldConfig[] = [
-  {
-    name: 'name',
-    label: 'Display name',
-    type: 'text',
-    placeholder: 'Your name',
-  },
-  {
-    name: 'email',
-    label: 'Email',
-    type: 'email',
-    placeholder: 'you@example.com',
-    required: true,
-  },
-];
+import {
+  useGetCurrentUser,
+  useUpdateAccountFormFields,
+  useUpdateAccountMutation,
+} from '../hooks';
 
 export default function UpdateAccountForm() {
-  const fields = useMemo(() => ACCOUNT_FORM_FIELDS, []);
+  const fields = useUpdateAccountFormFields();
   const { data: user, isLoading, isError, error } = useGetCurrentUser();
   const mutation = useUpdateAccountMutation();
 
