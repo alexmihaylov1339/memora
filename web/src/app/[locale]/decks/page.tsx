@@ -7,7 +7,6 @@ import {
   PageLoader,
   ErrorMessage,
   Translate,
-  LanguageSwitcher,
   ProtectedRoute,
 } from '@shared/components';
 import { CreateDeckForm } from '@features/decks';
@@ -42,8 +41,6 @@ export default function DecksPage() {
   return (
     <ProtectedRoute>
       <main className="p-6">
-        <LanguageSwitcher />
-
         <Translate tKey={TRANSLATION_KEYS.decks.title} as="h1" />
 
         <CreateDeckForm />

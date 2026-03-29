@@ -216,7 +216,7 @@ Mitigation:
   - Do not alter register/login/reset behavior.
   - **Acceptance:** No debug ingestion calls remain; auth behavior remains unchanged.
 
-- [ ] **T5 - Frontend contract verification (keep project patterns)**
+- [x] **T5 - Frontend contract verification (keep project patterns)**
   - Files: `web/src/features/decks/services/deckService.ts`, optional `web/src/features/decks/constants/endpoints.ts`
   - Keep `ManageService` usage (no direct ad-hoc fetch).
   - Keep existing hooks architecture (`useService`, `useServiceQuery`).
