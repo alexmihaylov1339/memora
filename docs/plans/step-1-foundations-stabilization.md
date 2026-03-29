@@ -210,7 +210,7 @@ Mitigation:
   - Keep error semantics consistent with current API style.
   - **Acceptance:** Invalid payloads are rejected consistently without breaking happy paths.
 
-- [ ] **T4 - Remove temporary auth instrumentation**
+- [x] **T4 - Remove temporary auth instrumentation**
   - File: `api/src/auth/auth.service.ts`
   - Remove temporary debug `fetch('http://127.0.0.1:7502/ingest/...')` blocks only.
   - Do not alter register/login/reset behavior.

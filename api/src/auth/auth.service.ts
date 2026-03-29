@@ -21,11 +21,7 @@ type ForgotPasswordInput = { email: string };
 type ResetPasswordInput = { token: string; password: string };
 type UpdateAccountInput = { name?: string; email?: string };
 
-function publicUser(u: {
-  id: string;
-  email: string;
-  name: string | null;
-}) {
+function publicUser(u: { id: string; email: string; name: string | null }) {
   return { id: u.id, email: u.email, name: u.name ?? undefined };
 }
 
@@ -44,53 +40,7 @@ export class AuthService {
       throw new BadRequestException('Password must be at least 6 characters');
     }
 
-    // #region agent log
-    fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Debug-Session-Id': '89934e',
-      },
-      body: JSON.stringify({
-        sessionId: '89934e',
-        runId: 'pre-fix',
-        hypothesisId: 'H1',
-        location: 'auth.service.ts:register',
-        message: 'register_after_validation',
-        data: { prismaConnected: this.prisma.isConnected() },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
-    let existing;
-    try {
-      existing = await this.prisma.user.findUnique({ where: { email } });
-    } catch (e: unknown) {
-      const err = e as { code?: string; meta?: unknown };
-      // #region agent log
-      fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Debug-Session-Id': '89934e',
-        },
-        body: JSON.stringify({
-          sessionId: '89934e',
-          runId: 'pre-fix',
-          hypothesisId: 'H1',
-          location: 'auth.service.ts:register',
-          message: 'findUnique_failed',
-          data: {
-            prismaCode: err?.code,
-            metaModel: (err.meta as { modelName?: string })?.modelName,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
-      throw e;
-    }
+    const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ConflictException('User with this email already exists');
     }
@@ -107,32 +57,14 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     const accessToken = await this.jwt.signAsync(payload);
 
-    // #region agent log
-    fetch('http://127.0.0.1:7502/ingest/5fa0f245-10d5-4e5a-929a-0ef71aad029d', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Debug-Session-Id': '89934e',
-      },
-      body: JSON.stringify({
-        sessionId: '89934e',
-        runId: 'post-fix',
-        hypothesisId: 'H1',
-        location: 'auth.service.ts:register',
-        message: 'register_success',
-        data: { userIdLen: user.id.length },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     return { accessToken, user: publicUser(user) };
   }
 
   async login(input: LoginInput) {
     const email = input.email?.trim().toLowerCase();
     if (!email) throw new UnauthorizedException('Email is required');
-    if (!input.password) throw new UnauthorizedException('Password is required');
+    if (!input.password)
+      throw new UnauthorizedException('Password is required');
 
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new UnauthorizedException('Invalid email or password');
@@ -223,7 +155,8 @@ export class AuthService {
   }
 
   async resetPassword(input: ResetPasswordInput) {
-    if (!input.token?.trim()) throw new BadRequestException('Token is required');
+    if (!input.token?.trim())
+      throw new BadRequestException('Token is required');
     if (!input.password || input.password.length < 6) {
       throw new BadRequestException('Password must be at least 6 characters');
     }
