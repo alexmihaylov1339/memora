@@ -81,6 +81,7 @@ export default function DecksPage() {
             </ul>
           </>
         )}
+
       </main>
     </ProtectedRoute>
   );
