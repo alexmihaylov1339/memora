@@ -223,7 +223,7 @@ Mitigation:
   - Confirm delete flow works with `204` response handling.
   - **Acceptance:** Frontend service layer remains pattern-consistent and contract-aligned.
 
-- [ ] **T6 - Happy-path test coverage**
+- [x] **T6 - Happy-path test coverage**
   - Files: `api/test/app.e2e-spec.ts` (or split e2e files)
   - Add/adjust tests for:
     - register -> login
