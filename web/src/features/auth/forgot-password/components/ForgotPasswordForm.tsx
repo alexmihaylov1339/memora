@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/navigation';
 
-import AuthFormBuilder from '@/shared/components/auth-form/AuthFormBuilder';
+import { FormBuilder } from '@shared/components';
 
 import {
   useForgotPasswordFormFields,
@@ -52,10 +52,12 @@ export default function ForgotPasswordForm() {
         </div>
       )}
       {!success && (
-        <AuthFormBuilder
+        <FormBuilder<Record<string, string>>
           fields={fields}
           onSubmit={handleSubmit}
           submitLabel={mutation.isPending ? 'Sending…' : 'Send reset link'}
+          submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+          translateFields={false}
         />
       )}
       <p className="mt-4 text-sm">

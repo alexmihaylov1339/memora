@@ -1,9 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import type { CreateDeckDto } from './create-deck.dto';
 import type { UpdateDeckDto } from './update-deck.dto';
+import { hasTrimmedText, isUndefined } from '../../common/utils/type-guards';
 
 export function validateDeckId(id: string): string {
-  if (!id?.trim()) {
+  if (!hasTrimmedText(id)) {
     throw new BadRequestException('id is required');
   }
 
@@ -11,17 +12,17 @@ export function validateDeckId(id: string): string {
 }
 
 export function validateCreateDeckInput(body: CreateDeckDto) {
-  if (!body?.name?.trim()) {
+  if (!hasTrimmedText(body?.name)) {
     throw new BadRequestException('name is required');
   }
 }
 
 export function validateUpdateDeckInput(body: UpdateDeckDto) {
-  if (!body || (body.name === undefined && body.description === undefined)) {
+  if (!body || (isUndefined(body.name) && isUndefined(body.description))) {
     throw new BadRequestException('at least one field is required');
   }
 
-  if (body.name !== undefined && !body.name.trim()) {
+  if (!isUndefined(body.name) && !hasTrimmedText(body.name)) {
     throw new BadRequestException('name cannot be empty');
   }
 }

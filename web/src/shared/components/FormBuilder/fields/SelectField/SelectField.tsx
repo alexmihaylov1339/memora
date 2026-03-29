@@ -17,6 +17,7 @@ export default function SelectField({ config, disabled }: SelectFieldProps) {
       <select
         id={config.name}
         name={config.name}
+        defaultValue={config.defaultValue}
         required={config.required}
         disabled={disabled || config.disabled}
         className={styles.select}
@@ -32,4 +33,3 @@ export default function SelectField({ config, disabled }: SelectFieldProps) {
     </div>
   );
 }
-

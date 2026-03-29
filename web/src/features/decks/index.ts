@@ -2,7 +2,17 @@
 export { CreateDeckForm } from './components';
 
 // Hooks
-// export { useDecks } from './hooks';
+export {
+  useDecksListQuery,
+  useDeckDetailQuery,
+  useCreateDeckMutation,
+  useUpdateDeckMutation,
+  useDeleteDeckMutation,
+  useCardDetailQuery,
+  useCreateCardMutation,
+  useUpdateCardMutation,
+  useDeleteCardMutation,
+} from './hooks';
 
 // Utils
 // export { validateDeck } from './utils';
@@ -23,6 +33,7 @@ export type {
 
 // Services
 export { deckService } from './services';
+export { cardService } from './services';
 
 // Constants
 export { DECKS_QUERY_KEYS, DECK_ENDPOINTS } from './constants';

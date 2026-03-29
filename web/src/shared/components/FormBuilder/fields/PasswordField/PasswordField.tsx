@@ -18,6 +18,7 @@ export default function PasswordField({ config, disabled }: PasswordFieldProps) 
         type="password"
         id={config.name}
         name={config.name}
+        defaultValue={config.defaultValue}
         placeholder={config.placeholder}
         required={config.required}
         disabled={disabled || config.disabled}
@@ -27,4 +28,3 @@ export default function PasswordField({ config, disabled }: PasswordFieldProps) 
     </div>
   );
 }
-

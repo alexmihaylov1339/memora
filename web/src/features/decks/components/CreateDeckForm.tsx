@@ -3,16 +3,14 @@
 // Modules
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 
 // Components
 import { FormBuilder } from '@shared/components';
 
 // Hooks
-import { useService } from '@shared/hooks';
 import { useNotification } from '@shared/providers';
-
-// Services
-import { deckService } from '../services';
+import { useCreateDeckMutation } from '../hooks';
 
 // Types
 import type { CreateDeckDto } from '../types';
@@ -25,6 +23,7 @@ import { TRANSLATION_KEYS } from '@/i18n';
 import styles from './CreateDeckForm.module.scss';
 
 export default function CreateDeckForm() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error } = useNotification();
   const t = useTranslations();
@@ -32,14 +31,14 @@ export default function CreateDeckForm() {
   const handleCreateSuccess = (data: { name: string }) => {
     queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
     success(TRANSLATION_KEYS.decks.createSuccess, { name: data.name });
+    router.replace('/decks');
   };
 
-  const handleCreateError = (err: Error) => {
-    console.error('Failed to create deck:', err);
+  const handleCreateError = () => {
     error(TRANSLATION_KEYS.decks.createError);
   };
 
-  const createDeck = useService(deckService.create, {
+  const createDeck = useCreateDeckMutation({
     onSuccess: handleCreateSuccess,
     onError: handleCreateError,
   });
@@ -54,10 +53,10 @@ export default function CreateDeckForm() {
         fields={createDeckFormFields}
         onSubmit={handleSubmit}
         submitLabel={createDeck.isLoading ? t(TRANSLATION_KEYS.decks.creating) : t(TRANSLATION_KEYS.decks.createButton)}
+        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
         errorMessage={createDeck.error?.message}
         resetOnSubmit={true}
       />
     </div>
   );
 }
-

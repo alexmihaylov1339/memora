@@ -18,6 +18,7 @@ export default function TextField({ config, disabled }: TextFieldProps) {
         type="text"
         id={config.name}
         name={config.name}
+        defaultValue={config.defaultValue}
         placeholder={config.placeholder}
         required={config.required}
         disabled={disabled || config.disabled}
@@ -26,4 +27,3 @@ export default function TextField({ config, disabled }: TextFieldProps) {
     </div>
   );
 }
-

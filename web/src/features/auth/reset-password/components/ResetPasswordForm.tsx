@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { Link } from '@/i18n/navigation';
 
-import AuthFormBuilder from '@/shared/components/auth-form/AuthFormBuilder';
+import { FormBuilder } from '@shared/components';
 
 import {
   useResetPasswordFormFields,
@@ -49,10 +49,12 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           {error}
         </p>
       )}
-      <AuthFormBuilder
+      <FormBuilder<Record<string, string>>
         fields={fields}
         onSubmit={handleSubmit}
         submitLabel={mutation.isPending ? 'Resetting…' : 'Reset password'}
+        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        translateFields={false}
       />
       <p className="mt-4 text-sm">
         <Link href="/login" className="text-[var(--primary)] hover:underline">
