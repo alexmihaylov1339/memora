@@ -1,1 +1,8 @@
-export { isUndefined, isString, isNumber, hasTrimmedText } from './type-guards';
+export {
+  isUndefined,
+  isString,
+  isNumber,
+  isStringArray,
+  isNonNegativeInteger,
+  hasTrimmedText,
+} from './type-guards';
