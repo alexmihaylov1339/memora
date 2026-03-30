@@ -1,6 +1,6 @@
-type ChunkCreatePlaceholderProps = {
+interface ChunkCreatePlaceholderProps {
   deckId: string;
-};
+}
 
 export default function ChunkCreatePlaceholder({ deckId }: ChunkCreatePlaceholderProps) {
   return (

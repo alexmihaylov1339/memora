@@ -1,28 +1,28 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 
-type CardPayload = {
+interface CardPayload {
   deckId: string;
   kind: string;
   fields: Record<string, unknown>;
-};
+}
 
-type UpdateCardPayload = {
+interface UpdateCardPayload {
   id: string;
   kind?: string;
   fields?: Record<string, unknown>;
-};
+}
 
-type CardIdPayload = {
+interface CardIdPayload {
   id: string;
-};
+}
 
-export type CardRecord = {
+export interface CardRecord {
   id: string;
   deckId: string;
   kind: string;
   fields: Record<string, unknown>;
   createdAt: string;
-};
+}
 
 export const CARD_KIND_OPTIONS = ['basic', 'cloze', 'mcq'] as const;
 

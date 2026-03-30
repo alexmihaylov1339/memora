@@ -2,21 +2,21 @@ import { useService, type UseServiceOptions } from '@shared/hooks';
 import { cardService } from '../services';
 import type { CardRecord } from '../services/cardService';
 
-type CreateCardParams = {
+interface CreateCardParams {
   deckId: string;
   kind: string;
   fields: Record<string, unknown>;
-};
+}
 
-type UpdateCardParams = {
+interface UpdateCardParams {
   id: string;
   kind?: string;
   fields?: Record<string, unknown>;
-};
+}
 
-type CardIdParams = {
+interface CardIdParams {
   id: string;
-};
+}
 
 export function useCreateCardMutation(options?: UseServiceOptions<CardRecord>) {
   return useService<CreateCardParams, CardRecord>(cardService.create, options);

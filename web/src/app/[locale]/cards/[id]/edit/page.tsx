@@ -59,14 +59,14 @@ export default function EditCardPage() {
   );
 }
 
-type EditCardFormProps = {
+interface EditCardFormProps {
   card: CardRecord;
   onUpdate: (payload: { id: string; kind: string; fields: Record<string, unknown> }) => void;
   onDelete: () => void;
   updateError?: string;
   deleteError?: string;
   isDeleting: boolean;
-};
+}
 
 function EditCardForm({
   card,

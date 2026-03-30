@@ -3,9 +3,9 @@ import { Translate } from '@shared/components';
 import type { Deck } from '@features/decks';
 import { TRANSLATION_KEYS } from '@/i18n';
 
-type DecksListProps = {
+interface DecksListProps {
   decks: Deck[];
-};
+}
 
 export default function DecksList({ decks }: DecksListProps) {
   return (

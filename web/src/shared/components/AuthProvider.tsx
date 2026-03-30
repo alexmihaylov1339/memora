@@ -7,11 +7,11 @@ import { useRouter } from '@/i18n/navigation';
 import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
 import { PageLoader } from '@/shared/components/PageLoader';
 
-type AuthContextType = {
+interface AuthContextType {
   isAuthenticated: boolean;
   isReady: boolean;
   setAuthenticated: (auth: boolean) => void;
-};
+}
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,

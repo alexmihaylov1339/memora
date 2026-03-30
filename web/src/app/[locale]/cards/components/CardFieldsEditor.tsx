@@ -1,13 +1,13 @@
 import { CARD_KIND_OPTIONS } from '@features/decks/services/cardService';
 
-type CardFieldsEditorProps = {
+interface CardFieldsEditorProps {
   kind: (typeof CARD_KIND_OPTIONS)[number];
   onKindChange: (kind: (typeof CARD_KIND_OPTIONS)[number]) => void;
   front: string;
   onFrontChange: (value: string) => void;
   back: string;
   onBackChange: (value: string) => void;
-};
+}
 
 export default function CardFieldsEditor({
   kind,

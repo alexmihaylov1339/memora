@@ -15,6 +15,7 @@
 11. Avoid ad-hoc inline type/value checks (`=== undefined`, `typeof x === 'string'`, etc.); use shared helper/type-guard functions.
 12. Form `FieldConfig[]` definitions must be placed in dedicated feature hooks/constants files, not created inline in page/component bodies.
 13. Do not hardcode API endpoints or app routes in components/hooks; use centralized constants/builders.
+14. Prefer `interface` for object-shape contracts (props, payloads, DTO-like models). Use `type` for unions, intersections, mapped/conditional types, and utility aliases.
 
 ## Decision Order
 

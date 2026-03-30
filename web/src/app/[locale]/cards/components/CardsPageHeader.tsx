@@ -1,9 +1,9 @@
 import { Link } from '@/i18n/navigation';
 import { APP_ROUTES } from '@shared/constants';
 
-type CardsPageHeaderProps = {
+interface CardsPageHeaderProps {
   title: string;
-};
+}
 
 export default function CardsPageHeader({ title }: CardsPageHeaderProps) {
   return (

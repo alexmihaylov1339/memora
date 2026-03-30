@@ -12,9 +12,9 @@ import {
   useResetPasswordMutation,
 } from '../hooks';
 
-type ResetPasswordFormProps = {
+interface ResetPasswordFormProps {
   token: string;
-};
+}
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const fields = useResetPasswordFormFields();

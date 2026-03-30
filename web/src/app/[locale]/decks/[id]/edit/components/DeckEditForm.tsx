@@ -3,7 +3,7 @@ import { Link } from '@/i18n/navigation';
 import { Button, FormBuilder } from '@shared/components';
 import { useDeckEditFormFields } from '@features/decks';
 
-type DeckEditFormProps = {
+interface DeckEditFormProps {
   id: string;
   name: string;
   description?: string;
@@ -12,7 +12,7 @@ type DeckEditFormProps = {
   isDeleting: boolean;
   updateError?: string;
   deleteError?: string;
-};
+}
 
 export default function DeckEditForm({
   id,
