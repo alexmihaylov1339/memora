@@ -46,6 +46,21 @@ export class ChunksService {
     return this.prisma.chunk.findUnique({ where: { id } });
   }
 
+  async findByDeck(deckId: string) {
+    const deck = await this.prisma.deck.findUnique({
+      where: { id: deckId },
+      select: { id: true },
+    });
+    if (!deck) {
+      return null;
+    }
+
+    return this.prisma.chunk.findMany({
+      where: { deckId },
+      orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+    });
+  }
+
   async update(
     id: string,
     data: {

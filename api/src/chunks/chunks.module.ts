@@ -8,5 +8,6 @@ import { ChunksService } from './chunks.service';
   imports: [AuthModule, PrismaModule],
   controllers: [ChunksController],
   providers: [ChunksService],
+  exports: [ChunksService],
 })
 export class ChunksModule {}
