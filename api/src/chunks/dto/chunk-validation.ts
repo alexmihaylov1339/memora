@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   hasTrimmedText,
+  hasTrimmedTextArray,
   isNonNegativeInteger,
-  isStringArray,
   isUndefined,
-} from '../../common/utils/type-guards';
+} from '../../common/utils';
 import type { CreateChunkDto } from './create-chunk.dto';
 import type { UpdateChunkDto } from './update-chunk.dto';
 
@@ -25,8 +25,10 @@ export function validateCreateChunkInput(body: CreateChunkDto) {
     throw new BadRequestException('title is required');
   }
 
-  if (!isUndefined(body.cardIds) && !isStringArray(body.cardIds)) {
-    throw new BadRequestException('cardIds must be an array of strings');
+  if (!isUndefined(body.cardIds) && !hasTrimmedTextArray(body.cardIds)) {
+    throw new BadRequestException(
+      'cardIds must be an array of non-empty strings',
+    );
   }
 
   if (!isUndefined(body.position) && !isNonNegativeInteger(body.position)) {
@@ -48,8 +50,10 @@ export function validateUpdateChunkInput(body: UpdateChunkDto) {
     throw new BadRequestException('title cannot be empty');
   }
 
-  if (!isUndefined(body.cardIds) && !isStringArray(body.cardIds)) {
-    throw new BadRequestException('cardIds must be an array of strings');
+  if (!isUndefined(body.cardIds) && !hasTrimmedTextArray(body.cardIds)) {
+    throw new BadRequestException(
+      'cardIds must be an array of non-empty strings',
+    );
   }
 
   if (!isUndefined(body.position) && !isNonNegativeInteger(body.position)) {
