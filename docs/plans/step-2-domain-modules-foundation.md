@@ -1,6 +1,6 @@
 # Memora: Step 2 Plan - Domain Modules Foundation
 
-**Status:** Proposed  
+**Status:** Ready  
 **Date:** 2026-03-29  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 2
 
@@ -261,6 +261,11 @@ Mitigation:
 - Validation/error style is consistent with Step 1.
 - Tests/build pass for touched module scope.
 - No scheduling/queue business logic implemented yet.
+
+## Implementation Status
+
+- T1–T6: Completed (modules wired, CRUD/stub endpoints in place, validation/helpers added, e2e smoke tests expanded; full suite blocked by external DB/unprivileged port).
+- T7–T8: Near complete (shared helpers and constants introduced; just cross-module cleanup left before Step 3).
 
 ---
 
