@@ -30,15 +30,32 @@ enum Grade {
 
 /** A deck of cards */
 model Deck {
-  id        String  @id @default(cuid())
-  name      String
+  id          String  @id @default(cuid())
+  name        String
   description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cards       Card[]
+  chunks      Chunk[]
+
+  @@index([createdAt])
+}
+
+/** A chunk groups ordered cards inside a deck */
+model Chunk {
+  id        String   @id @default(cuid())
+  deckId    String
+  title     String
+  cardIds   String[] @default([])
+  position  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  cards     Card[]
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt])
+  @@index([deckId])
+  @@index([deckId, position])
 }
 
 /** A card can be of different kinds; payload stored in JSON for flexibility */
