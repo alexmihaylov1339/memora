@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "sqlite"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /** Application user (JWT auth) */
@@ -43,31 +44,47 @@ model Deck {
 
 /** A chunk groups ordered cards inside a deck */
 model Chunk {
-  id        String   @id @default(cuid())
-  deckId    String
-  title     String
-  cardIds   String[] @default([])
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  deckId     String
+  title      String
+  position   Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
-  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deck       Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  chunkCards ChunkCard[]
 
   @@index([deckId])
   @@index([deckId, position])
 }
 
+/** Ordered card membership for a chunk */
+model ChunkCard {
+  chunkId       String
+  cardId        String
+  sequenceIndex Int
+  offsetDays    Int?
+
+  chunk         Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  card          Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@id([chunkId, cardId])
+  @@unique([chunkId, sequenceIndex])
+  @@index([cardId])
+}
+
 /** A card can be of different kinds; payload stored in JSON for flexibility */
 model Card {
-  id        String   @id @default(cuid())
-  deckId    String
-  kind      String   // 'basic' | 'cloze' | 'mcq' (we'll enforce in app layer)
-  fields    Json     // payload per kind
-  createdAt DateTime @default(now())
+  id         String      @id @default(cuid())
+  deckId     String
+  kind       String      // 'basic' | 'cloze' | 'mcq' (we'll enforce in app layer)
+  fields     Json        // payload per kind
+  createdAt  DateTime    @default(now())
 
-  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
-  state     ReviewState?
-  logs      ReviewLog[]
+  deck       Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  chunkCards ChunkCard[]
+  state      ReviewState?
+  logs       ReviewLog[]
 
   @@index([deckId])
   @@index([createdAt])

@@ -140,20 +140,83 @@ describe('AppController (e2e)', () => {
         );
       });
 
-    await request(server)
+    const createChunkRes = await request(server)
       .post('/v1/chunks')
       .set(authHeader)
-      .send({ deckId, title: 'German word chunk' })
-      .expect(501)
+      .send({ deckId, title: 'German word chunk', cardIds: [cardId] })
+      .expect(201)
       .expect((res) => {
         expect(res.body).toEqual(
           expect.objectContaining({
-            module: 'chunks',
-            status: 'not_implemented',
-            operation: 'create',
+            id: expect.any(String),
+            deckId,
+            title: 'German word chunk',
+            cardIds: [cardId],
+            position: 0,
           }),
         );
       });
+
+    const chunkBody = asRecord(parseJson(createChunkRes.text));
+    const chunkId = getStringField(chunkBody, 'id');
+
+    await request(server)
+      .get(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: chunkId,
+            deckId,
+            title: 'German word chunk',
+            cardIds: [cardId],
+          }),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${deckId}/chunks`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId,
+              title: 'German word chunk',
+              cardIds: [cardId],
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .put(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .send({ title: 'Updated German word chunk', cardIds: [], position: 1 })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: chunkId,
+            title: 'Updated German word chunk',
+            cardIds: [],
+            position: 1,
+          }),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(204);
+
+    await request(server)
+      .get(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(404);
 
     await request(server)
       .get('/v1/reviews/queue')

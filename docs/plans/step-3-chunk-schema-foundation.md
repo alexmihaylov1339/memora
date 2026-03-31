@@ -1,7 +1,7 @@
 # Memora: Step 3 Plan - Chunk Schema Foundation
 
-**Status:** Proposed  
-**Date:** 2026-03-30  
+**Status:** Implemented with follow-up notes  
+**Date:** 2026-03-31  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 3
 
 ---
@@ -21,12 +21,18 @@ Introduce the Prisma schema and data plumbing for chunk grouping so future sched
 
 ---
 
-## Current state checkpoint (after Step 2)
+## Implementation snapshot
 
-- Cards, chunks, and reviews modules exist with placeholder contracts.
-- Backend validation + shared helpers are in place.
-- Frontend routing for cards/chunks is ready; chunk persistence is stubbed (501).
-- Chunk schema does not yet exist in Prisma.
+Completed in repo:
+- Prisma chunk persistence now uses `Chunk` + `ChunkCard` ordering records so it works with the current SQLite dev setup and keeps deterministic card order.
+- Backend chunk CRUD is live: `POST /chunks`, `GET /chunks/:id`, `PUT /chunks/:id`, `DELETE /chunks/:id`.
+- Deck-scoped listing is live: `GET /decks/:deckId/chunks`.
+- Chunk validation/unit tests exist and the e2e smoke test now exercises real chunk persistence instead of a `501` stub.
+
+Still worth noting:
+- Review/scheduling endpoints remain intentionally stubbed for Step 4/5.
+- Frontend chunk authoring is still placeholder UI; Step 3 only requires API readiness.
+- Owner-only deck scoping is still not enforced because decks do not yet carry a user ownership field anywhere in the current data model.
 
 ---
 
@@ -39,7 +45,7 @@ Introduce the Prisma schema and data plumbing for chunk grouping so future sched
 
 ## Add to Step 3 (recommended)
 
-- Add real Prisma models for chunks (deckId, title, card references, metadata).
+- Add real Prisma models for chunks (deckId, title, ordered card references, metadata).
 - Keep SRS/review data out of scope; just support chunk ordering/data.
 - Provide backend services/controllers for chunk CRUD + listing.
 - Cover chunk layer with migration tests/smoke checks.
@@ -83,19 +89,19 @@ Out of scope:
 ### T1 - Prisma chunk schema & migration
 
 Tasks:
-- Extend Prisma schema with `Chunk` model (deckId FK, title, cardIds array, ordering metadata).
+- Extend Prisma schema with `Chunk` + `ChunkCard` models (deckId FK, ordered card references, ordering metadata).
 - Generate/export new migration.
 - Update `PrismaService` typings if needed.
 
 Acceptance:
-- `npx prisma migrate dev` compiles; migration added to repo.
+- `npx prisma migrate dev`/`prisma validate` compiles; migration added to repo.
 
 ### T2 - Chunk CRUD contracts
 
 Tasks:
 - Extend chunk DTOs to match new schema.
 - Implement `POST /chunks`, `GET /chunks/:id`, `PUT /chunks/:id`, `DELETE /chunks/:id`.
-- Enforce deck scoping (only owner can modify).
+- Enforce deck-level access checks that are possible with the current data model.
 
 Acceptance:
 - Chunk endpoints persist data using Prisma; controllers return real rows.
@@ -103,7 +109,7 @@ Acceptance:
 ### T3 - Validation & helpers
 
 Tasks:
-- Add new chunk validators (deck/card non-null, ordering enums).
+- Add new chunk validators (deck/card non-null, ordering fields).
 - Reuse shared helpers for repeated checks.
 - Emit consistent errors (`400`/`404`/`401`).
 
@@ -154,12 +160,22 @@ Mitigation:
 
 ---
 
+## Verification snapshot
+
+Verified locally on 2026-03-31:
+- `cd api && npm test -- --runInBand chunk-validation.spec.ts chunks.service.spec.ts`
+- `cd api && npm run prisma:validate`
+
+Not covered in this step:
+- End-to-end owner scoping across users, because deck ownership is not modeled yet.
+- Final chunk authoring UI, deferred to Step 6.
+
 ## Definition of done
 
 - Prisma chunk model + migration exists.
 - Chunk controllers/services support real CRUD with DTO validation.
-- Module tests and migration checks pass.
-- Frontend can consume chunk list endpoint without hitting stubs.
+- Module tests and Prisma validation pass.
+- Frontend can consume chunk list endpoint without backend stubs once the authoring UI is wired.
 
 ---
 

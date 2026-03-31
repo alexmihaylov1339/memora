@@ -5,10 +5,14 @@ type ChunkRecord = {
   id: string;
   deckId: string;
   title: string;
-  cardIds: string[];
   position: number;
   createdAt: Date;
   updatedAt: Date;
+  chunkCards: Array<{
+    cardId: string;
+    sequenceIndex: number;
+    offsetDays: number | null;
+  }>;
 };
 
 function createPrismaMock() {
@@ -70,10 +74,10 @@ describe('ChunksService', () => {
         id: 'chunk-1',
         deckId: 'deck-1',
         title: 'Chunk 1',
-        cardIds: [],
         position: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
+        chunkCards: [],
       };
 
       prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
@@ -84,14 +88,29 @@ describe('ChunksService', () => {
           deckId: 'deck-1',
           title: 'Chunk 1',
         }),
-      ).resolves.toEqual(createdChunk);
+      ).resolves.toEqual({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Chunk 1',
+        cardIds: [],
+        position: 0,
+        createdAt: createdChunk.createdAt,
+        updatedAt: createdChunk.updatedAt,
+      });
 
       expect(prisma.chunk.create).toHaveBeenCalledWith({
         data: {
           deckId: 'deck-1',
           title: 'Chunk 1',
-          cardIds: [],
           position: 0,
+          chunkCards: {
+            create: [],
+          },
+        },
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
         },
       });
     });
@@ -110,21 +129,42 @@ describe('ChunksService', () => {
           id: 'chunk-1',
           deckId: 'deck-1',
           title: 'Chunk 1',
-          cardIds: ['card-1'],
           position: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              offsetDays: null,
+            },
+          ],
         },
       ];
 
       prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
       prisma.chunk.findMany.mockResolvedValue(chunks);
 
-      await expect(service.findByDeck('deck-1')).resolves.toEqual(chunks);
+      await expect(service.findByDeck('deck-1')).resolves.toEqual([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'Chunk 1',
+          cardIds: ['card-1'],
+          position: 0,
+          createdAt: chunks[0].createdAt,
+          updatedAt: chunks[0].updatedAt,
+        },
+      ]);
 
       expect(prisma.chunk.findMany).toHaveBeenCalledWith({
         where: { deckId: 'deck-1' },
         orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
+        },
       });
     });
   });
