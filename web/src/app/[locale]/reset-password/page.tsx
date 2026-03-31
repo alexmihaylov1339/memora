@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 
 import { GuestOnlyRoute } from '@/shared/components/AuthProvider';
+import { APP_ROUTES } from '@/shared/constants';
 
 import { ResetPasswordForm } from '@features/auth/reset-password/components';
 
@@ -21,7 +22,7 @@ function ResetPasswordContent() {
         <p className="text-sm text-[var(--secondary)]">
           Invalid or missing reset link. Please{' '}
           <Link
-            href="/forgot-password"
+            href={APP_ROUTES.forgotPassword}
             className="text-[var(--primary)] underline"
           >
             request a new one

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import AuthFormBuilder from '@/shared/components/auth-form/AuthFormBuilder';
+import { FormBuilder } from '@shared/components';
 
 import { useRegisterFormFields, useRegisterMutation } from '../hooks';
 
@@ -45,10 +45,12 @@ export default function RegisterForm() {
           {error}
         </p>
       )}
-      <AuthFormBuilder
+      <FormBuilder<Record<string, string>>
         fields={fields}
         onSubmit={handleSubmit}
         submitLabel={mutation.isPending ? 'Creating account…' : 'Register'}
+        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        translateFields={false}
       />
     </fieldset>
   );

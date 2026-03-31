@@ -2,7 +2,8 @@
 
 import { Link } from '@/i18n/navigation';
 
-import AuthFormBuilder from '@/shared/components/auth-form/AuthFormBuilder';
+import { FormBuilder } from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
 
 import { useLoginFormFields, useLoginMutation } from '../hooks';
 
@@ -33,14 +34,16 @@ export default function LoginForm() {
           {error}
         </p>
       )}
-      <AuthFormBuilder
+      <FormBuilder<Record<string, string>>
         fields={fields}
         onSubmit={handleSubmit}
         submitLabel={mutation.isPending ? 'Signing in…' : 'Sign in'}
+        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        translateFields={false}
       />
       <p className="mt-4 text-sm">
         <Link
-          href="/forgot-password"
+          href={APP_ROUTES.forgotPassword}
           className="text-[var(--primary)] hover:underline"
         >
           Forgot password?

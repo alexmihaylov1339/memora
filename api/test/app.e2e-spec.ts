@@ -102,6 +102,79 @@ describe('AppController (e2e)', () => {
     accessToken = getStringField(loginBody, 'accessToken');
   });
 
+  it('cards/chunks/reviews module smoke endpoints', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `E2E Module Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    const createCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId,
+        kind: 'basic',
+        fields: { front: 'Hallo', back: 'Hello' },
+      })
+      .expect(201);
+    const createCardBody = asRecord(parseJson(createCardRes.text));
+    const cardId = getStringField(createCardBody, 'id');
+
+    await request(server)
+      .get(`/v1/cards/${cardId}`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: cardId,
+            deckId,
+            kind: 'basic',
+          }),
+        );
+      });
+
+    await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({ deckId, title: 'German word chunk' })
+      .expect(501)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            module: 'chunks',
+            status: 'not_implemented',
+            operation: 'create',
+          }),
+        );
+      });
+
+    await request(server)
+      .get('/v1/reviews/queue')
+      .set(authHeader)
+      .expect(501)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            module: 'reviews',
+            status: 'not_implemented',
+            operation: 'queue',
+          }),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/decks/${deckId}`)
+      .set(authHeader)
+      .expect(204);
+  });
+
   it('deck create -> list -> detail -> update -> delete happy path', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };

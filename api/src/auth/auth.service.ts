@@ -14,12 +14,35 @@ const SALT_ROUNDS = 10;
 const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-type RegisterInput = { email: string; password: string; name?: string };
-type LoginInput = { email: string; password: string };
-type DevLoginInput = { email: string; name?: string };
-type ForgotPasswordInput = { email: string };
-type ResetPasswordInput = { token: string; password: string };
-type UpdateAccountInput = { name?: string; email?: string };
+interface RegisterInput {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+interface LoginInput {
+  email: string;
+  password: string;
+}
+
+interface DevLoginInput {
+  email: string;
+  name?: string;
+}
+
+interface ForgotPasswordInput {
+  email: string;
+}
+
+interface ResetPasswordInput {
+  token: string;
+  password: string;
+}
+
+interface UpdateAccountInput {
+  name?: string;
+  email?: string;
+}
 
 function publicUser(u: { id: string; email: string; name: string | null }) {
   return { id: u.id, email: u.email, name: u.name ?? undefined };

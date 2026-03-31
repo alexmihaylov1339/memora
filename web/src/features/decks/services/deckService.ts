@@ -26,7 +26,7 @@ export const deckService = {
    * const decks = useServiceQuery(DECKS_QUERY_KEYS.all, deckService.getAll);
    * ```
    */
-  async getAll(): Promise<Deck[]> {
+  getAll() {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
@@ -40,7 +40,7 @@ export const deckService = {
    * const deck = useServiceQuery(DECKS_QUERY_KEYS.detail(id), deckService.getById, { id });
    * ```
    */
-  async getById(params: DeckIdParams): Promise<GetDeckByIdResponse> {
+  getById(params: DeckIdParams) {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
@@ -57,7 +57,7 @@ export const deckService = {
    * await createDeck.fetch({ name: 'My Deck', description: 'Description' });
    * ```
    */
-  async create(params: CreateDeckDto): Promise<CreateDeckResponse> {
+  create(params: CreateDeckDto) {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.POST)
       .setHeaders(getAuthHeaders())
@@ -73,7 +73,7 @@ export const deckService = {
    * await updateDeck.fetch({ id: '123', name: 'Updated Name' });
    * ```
    */
-  async update(params: DeckIdParams & UpdateDeckDto): Promise<UpdateDeckResponse> {
+  update(params: DeckIdParams & UpdateDeckDto) {
     const { id, ...data } = params;
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
@@ -90,7 +90,7 @@ export const deckService = {
    * await deleteDeck.fetch({ id: '123' });
    * ```
    */
-  async delete(params: DeckIdParams): Promise<void> {
+  delete(params: DeckIdParams) {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
       .setHeaders(getAuthHeaders())

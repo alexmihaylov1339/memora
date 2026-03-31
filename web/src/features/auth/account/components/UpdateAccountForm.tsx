@@ -2,30 +2,16 @@
 
 import { useMemo } from 'react';
 
-import AuthFormBuilder, {
-  type AuthFormField,
-} from '@/shared/components/auth-form/AuthFormBuilder';
+import { FormBuilder } from '@shared/components';
 
-import { useGetCurrentUser, useUpdateAccountMutation } from '../hooks';
-
-const ACCOUNT_FORM_FIELDS: AuthFormField[] = [
-  {
-    name: 'name',
-    label: 'Display name',
-    type: 'text',
-    placeholder: 'Your name',
-  },
-  {
-    name: 'email',
-    label: 'Email',
-    type: 'email',
-    placeholder: 'you@example.com',
-    required: true,
-  },
-];
+import {
+  useGetCurrentUser,
+  useUpdateAccountFormFields,
+  useUpdateAccountMutation,
+} from '../hooks';
 
 export default function UpdateAccountForm() {
-  const fields = useMemo(() => ACCOUNT_FORM_FIELDS, []);
+  const fields = useUpdateAccountFormFields();
   const { data: user, isLoading, isError, error } = useGetCurrentUser();
   const mutation = useUpdateAccountMutation();
 
@@ -75,11 +61,13 @@ export default function UpdateAccountForm() {
           {submitError}
         </p>
       )}
-      <AuthFormBuilder
+      <FormBuilder<Record<string, string>>
         fields={fields}
         initialValues={initialValues}
         onSubmit={handleSubmit}
         submitLabel={mutation.isPending ? 'Updating…' : 'Update account'}
+        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        translateFields={false}
       />
     </fieldset>
   );

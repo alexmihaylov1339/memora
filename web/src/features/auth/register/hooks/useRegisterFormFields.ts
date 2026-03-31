@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import type { AuthFormField } from '@/shared/components/auth-form';
+import type { FieldConfig } from '@/shared/components';
 
-export function useRegisterFormFields(): AuthFormField[] {
-  return useMemo<AuthFormField[]>(
+export function useRegisterFormFields(): FieldConfig[] {
+  return useMemo<FieldConfig[]>(
     () => [
       {
         name: 'email',

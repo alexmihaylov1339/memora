@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '../Button';
 import { ErrorMessage } from '../ErrorMessage';
 import { Field } from './fields';
+import { isNumber, isString, isUndefined } from '@shared/utils';
 
 import type { FormBuilderProps } from './types';
 
@@ -13,6 +14,9 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   fields,
   onSubmit,
   submitLabel = 'Submit',
+  submitButtonClassName,
+  initialValues,
+  translateFields = true,
   errorMessage,
   resetOnSubmit = true,
 }: FormBuilderProps<TFormValues>) {
@@ -38,7 +42,7 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
         values[field.name] = !isNaN(numValue as number) ? numValue : undefined;
       } else {
         // Text, email, password, textarea, select, etc.
-        if (value && typeof value === 'string') {
+        if (value && isString(value)) {
           values[field.name] = value;
         } else if (field.required) {
           throw new Error(`${field.label || field.name} is required`);
@@ -59,11 +63,24 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   return (
     <form onSubmit={handleSubmit}>
       {fields.map((field) => {
-        // Translate label and placeholder (they are always translation keys)
+        const initialValue = initialValues?.[field.name];
         const translatedField = {
           ...field,
-          label: field.label ? t(field.label) : field.label,
-          ...('placeholder' in field && field.placeholder ? { placeholder: t(field.placeholder) } : {}),
+          label: translateFields && field.label ? t(field.label) : field.label,
+          ...('placeholder' in field && field.placeholder
+            ? { placeholder: translateFields ? t(field.placeholder) : field.placeholder }
+            : {}),
+          ...(field.type === 'checkbox'
+            ? { defaultChecked: Boolean(initialValue) }
+            : {}),
+          ...(field.type !== 'checkbox' && !isUndefined(initialValue)
+            ? {
+                defaultValue:
+                  isString(initialValue) || isNumber(initialValue)
+                    ? initialValue
+                    : '',
+              }
+            : {}),
         };
         return <Field key={field.name} config={translatedField} disabled={isPending} />;
       })}
@@ -71,10 +88,9 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
       {/* errorMessage comes from BE - do NOT translate */}
       {errorMessage && <ErrorMessage message={errorMessage} />}
 
-      <Button type="submit" isLoading={isPending}>
+      <Button type="submit" isLoading={isPending} className={submitButtonClassName}>
         {submitLabel}
       </Button>
     </form>
   );
 }
-

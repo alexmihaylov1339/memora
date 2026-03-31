@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
+import { ChunksService } from '../chunks/chunks.service';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
 import type { UpdateDeckDto } from './dto/update-deck.dto';
@@ -34,7 +35,10 @@ import {
 @Controller('decks')
 @UseGuards(AuthGuard)
 export class DecksController {
-  constructor(private decks: DecksService) {}
+  constructor(
+    private decks: DecksService,
+    private chunks: ChunksService,
+  ) {}
 
   @Get()
   list() {
@@ -46,6 +50,18 @@ export class DecksController {
     validateCreateDeckInput(body);
 
     return this.decks.create(body.name.trim(), body.description?.trim());
+  }
+
+  @Get(':id/chunks')
+  async listChunks(@Param() params: DeckIdParamDto) {
+    const id = validateDeckId(params.id);
+
+    const chunks = await this.chunks.findByDeck(id);
+    if (!chunks) {
+      throw new NotFoundException('deck not found');
+    }
+
+    return chunks;
   }
 
   @Get(':id')

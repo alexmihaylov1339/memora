@@ -5,14 +5,22 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import type { Request } from 'express';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwt: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
-    const header = req.headers['authorization'] as string | undefined;
+    const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const header = req.headers.authorization;
 
     if (!header?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing Bearer token');
