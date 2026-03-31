@@ -1,0 +1,7 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "scripts": {
+    "start:dev": "echo 'Starting database service. Ensure PostgreSQL is installed and running, and DATABASE_URL is set in api/.env'"
+  }
+}
