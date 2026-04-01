@@ -7,7 +7,8 @@ CREATE TABLE "Chunk" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Chunk_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Chunk_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "Chunk_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -33,6 +34,3 @@ CREATE UNIQUE INDEX "ChunkCard_chunkId_sequenceIndex_key" ON "ChunkCard"("chunkI
 
 -- CreateIndex
 CREATE INDEX "ChunkCard_cardId_idx" ON "ChunkCard"("cardId");
-
--- AddForeignKey
-ALTER TABLE "Chunk" ADD CONSTRAINT "Chunk_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;
