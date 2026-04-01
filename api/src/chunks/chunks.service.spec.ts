@@ -195,4 +195,158 @@ describe('ChunksService', () => {
       });
     });
   });
+
+  describe('findOne', () => {
+    it('returns null when the chunk does not exist', async () => {
+      prisma.chunk.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOne('chunk-1')).resolves.toBeNull();
+    });
+
+    it('returns a serialized chunk when the chunk exists', async () => {
+      const chunk: ChunkRecord = {
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Chunk 1',
+        position: 2,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        chunkCards: [
+          {
+            cardId: 'card-2',
+            sequenceIndex: 0,
+            offsetDays: null,
+          },
+          {
+            cardId: 'card-3',
+            sequenceIndex: 1,
+            offsetDays: null,
+          },
+        ],
+      };
+
+      prisma.chunk.findUnique.mockResolvedValue(chunk);
+
+      await expect(service.findOne('chunk-1')).resolves.toEqual({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Chunk 1',
+        cardIds: ['card-2', 'card-3'],
+        position: 2,
+        createdAt: chunk.createdAt,
+        updatedAt: chunk.updatedAt,
+      });
+
+      expect(prisma.chunk.findUnique).toHaveBeenCalledWith({
+        where: { id: 'chunk-1' },
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
+        },
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('returns null when the chunk does not exist', async () => {
+      prisma.chunk.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.update('chunk-1', {
+          title: 'Updated Chunk',
+        }),
+      ).resolves.toBeNull();
+    });
+
+    it('returns null when updated card references are invalid', async () => {
+      prisma.chunk.findUnique.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+      });
+      prisma.card.findMany.mockResolvedValue([{ id: 'card-1', deckId: 'deck-2' }]);
+
+      await expect(
+        service.update('chunk-1', {
+          cardIds: ['card-1'],
+        }),
+      ).resolves.toBeNull();
+    });
+
+    it('updates and serializes a chunk', async () => {
+      const updatedChunk: ChunkRecord = {
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Updated Chunk',
+        position: 3,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        chunkCards: [
+          {
+            cardId: 'card-3',
+            sequenceIndex: 0,
+            offsetDays: null,
+          },
+        ],
+      };
+
+      prisma.chunk.findUnique.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+      });
+      prisma.card.findMany.mockResolvedValue([{ id: 'card-3', deckId: 'deck-1' }]);
+      prisma.chunk.update.mockResolvedValue(updatedChunk);
+
+      await expect(
+        service.update('chunk-1', {
+          title: 'Updated Chunk',
+          cardIds: ['card-3'],
+          position: 3,
+        }),
+      ).resolves.toEqual({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Updated Chunk',
+        cardIds: ['card-3'],
+        position: 3,
+        createdAt: updatedChunk.createdAt,
+        updatedAt: updatedChunk.updatedAt,
+      });
+
+      expect(prisma.chunk.update).toHaveBeenCalledWith({
+        where: { id: 'chunk-1' },
+        data: {
+          title: 'Updated Chunk',
+          position: 3,
+          chunkCards: {
+            deleteMany: {},
+            create: [{ cardId: 'card-3', sequenceIndex: 0 }],
+          },
+        },
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
+        },
+      });
+    });
+  });
+
+  describe('remove', () => {
+    it('returns false when the chunk does not exist', async () => {
+      prisma.chunk.findUnique.mockResolvedValue(null);
+
+      await expect(service.remove('chunk-1')).resolves.toBe(false);
+    });
+
+    it('deletes an existing chunk', async () => {
+      prisma.chunk.findUnique.mockResolvedValue({ id: 'chunk-1' });
+
+      await expect(service.remove('chunk-1')).resolves.toBe(true);
+
+      expect(prisma.chunk.delete).toHaveBeenCalledWith({
+        where: { id: 'chunk-1' },
+      });
+    });
+  });
 });

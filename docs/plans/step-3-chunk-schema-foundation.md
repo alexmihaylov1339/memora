@@ -161,12 +161,22 @@ Verification:
 
 ### T5 - Tests & migration verification
 
+Status:
+- Done
+
 Tasks:
 - Add module tests exercising chunk creation + listing.
 - Add migration smoke test (or lint step) verifying Prisma schema.
 
 Acceptance:
 - `npm run test` covers chunk module; migration runs locally.
+
+Verification:
+- `api/src/chunks/chunks.service.spec.ts` now covers create, list, get-by-id, update, and delete paths
+- `api/package.json` now exposes `npm run prisma:smoke`
+- `cd api && npm test -- --runInBand chunk-validation.spec.ts chunks.service.spec.ts`
+- `cd api && npm run prisma:smoke`
+- `cd api && npm run build`
 
 ---
 
