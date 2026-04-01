@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import {
   validateChunkId,
   validateCreateChunkInput,
+  validateListChunksQuery,
   validateUpdateChunkInput,
 } from './chunk-validation';
 
@@ -119,6 +120,48 @@ describe('chunk-validation', () => {
         validateUpdateChunkInput({
           position: 1.5,
         }),
+      ).toThrow(BadRequestException);
+    });
+  });
+
+  describe('validateListChunksQuery', () => {
+    it('returns defaults for an empty query', () => {
+      expect(validateListChunksQuery({})).toEqual({
+        limit: 50,
+        offset: 0,
+        direction: 'asc',
+      });
+    });
+
+    it('accepts valid pagination and direction values', () => {
+      expect(
+        validateListChunksQuery({
+          limit: 10,
+          offset: 5,
+          direction: 'desc',
+        }),
+      ).toEqual({
+        limit: 10,
+        offset: 5,
+        direction: 'desc',
+      });
+    });
+
+    it('throws when limit is out of range', () => {
+      expect(() => validateListChunksQuery({ limit: 0 })).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('throws when offset is negative', () => {
+      expect(() => validateListChunksQuery({ offset: -1 })).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('throws when direction is invalid', () => {
+      expect(() =>
+        validateListChunksQuery({ direction: 'sideways' as 'asc' }),
       ).toThrow(BadRequestException);
     });
   });

@@ -160,6 +160,33 @@ describe('ChunksService', () => {
       expect(prisma.chunk.findMany).toHaveBeenCalledWith({
         where: { deckId: 'deck-1' },
         orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+        skip: 0,
+        take: 50,
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
+        },
+      });
+    });
+
+    it('supports pagination and descending ordering', async () => {
+      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.chunk.findMany.mockResolvedValue([]);
+
+      await expect(
+        service.findByDeckWithOptions('deck-1', {
+          limit: 10,
+          offset: 5,
+          direction: 'desc',
+        }),
+      ).resolves.toEqual([]);
+
+      expect(prisma.chunk.findMany).toHaveBeenCalledWith({
+        where: { deckId: 'deck-1' },
+        orderBy: [{ position: 'desc' }, { createdAt: 'desc' }],
+        skip: 5,
+        take: 10,
         include: {
           chunkCards: {
             orderBy: { sequenceIndex: 'asc' },

@@ -143,12 +143,21 @@ Verification:
 
 ### T4 - Chunk list + pagination helpers
 
+Status:
+- Done
+
 Tasks:
 - Add `GET /decks/:deckId/chunks` or similar listing endpoint.
 - Support ordering (e.g. position index) and metadata fields.
 
 Acceptance:
 - Frontend can request chunk list with stable shape.
+
+Verification:
+- `GET /decks/:deckId/chunks` now accepts `limit`, `offset`, and `direction`
+- `api/src/chunks/chunks.service.ts` supports stable ordering plus pagination helpers
+- `cd api && npm test -- --runInBand chunk-validation.spec.ts chunks.service.spec.ts`
+- `cd api && npm run build`
 
 ### T5 - Tests & migration verification
 

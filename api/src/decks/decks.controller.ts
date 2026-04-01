@@ -9,14 +9,17 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 import { ChunksService } from '../chunks/chunks.service';
+import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
 import type { UpdateDeckDto } from './dto/update-deck.dto';
+import { validateListChunksQuery } from '../chunks/dto/chunk-validation';
 import {
   validateCreateDeckInput,
   validateDeckId,
@@ -53,10 +56,20 @@ export class DecksController {
   }
 
   @Get(':id/chunks')
-  async listChunks(@Param() params: DeckIdParamDto) {
+  async listChunks(
+    @Param() params: DeckIdParamDto,
+    @Query() query: ListChunksQueryDto,
+  ) {
     const id = validateDeckId(params.id);
+    const normalizedQuery = validateListChunksQuery({
+      limit:
+        query.limit !== undefined ? Number(query.limit) : undefined,
+      offset:
+        query.offset !== undefined ? Number(query.offset) : undefined,
+      direction: query.direction,
+    });
 
-    const chunks = await this.chunks.findByDeck(id);
+    const chunks = await this.chunks.findByDeckWithOptions(id, normalizedQuery);
     if (!chunks) {
       throw new NotFoundException('deck not found');
     }

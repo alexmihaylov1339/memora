@@ -99,6 +99,21 @@ export class ChunksService {
   }
 
   async findByDeck(deckId: string) {
+    return this.findByDeckWithOptions(deckId, {
+      limit: 50,
+      offset: 0,
+      direction: 'asc',
+    });
+  }
+
+  async findByDeckWithOptions(
+    deckId: string,
+    options: {
+      limit: number;
+      offset: number;
+      direction: 'asc' | 'desc';
+    },
+  ) {
     const deck = await this.prisma.deck.findUnique({
       where: { id: deckId },
       select: { id: true },
@@ -109,7 +124,12 @@ export class ChunksService {
 
     const chunks = await this.prisma.chunk.findMany({
       where: { deckId },
-      orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+      orderBy: [
+        { position: options.direction },
+        { createdAt: options.direction },
+      ],
+      skip: options.offset,
+      take: options.limit,
       include: {
         chunkCards: {
           orderBy: { sequenceIndex: 'asc' },
@@ -129,6 +149,7 @@ export class ChunksService {
     },
   ) {
     const existing = await this.prisma.chunk.findUnique({ where: { id } });
+    
     if (!existing) {
       return null;
     }

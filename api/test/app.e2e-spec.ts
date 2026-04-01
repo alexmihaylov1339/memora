@@ -193,6 +193,22 @@ describe('AppController (e2e)', () => {
       });
 
     await request(server)
+      .get(`/v1/decks/${deckId}/chunks?limit=1&offset=0&direction=desc`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveLength(1);
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
       .put(`/v1/chunks/${chunkId}`)
       .set(authHeader)
       .send({ title: 'Updated German word chunk', cardIds: [], position: 1 })
