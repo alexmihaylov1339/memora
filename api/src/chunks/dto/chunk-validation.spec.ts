@@ -56,6 +56,16 @@ describe('chunk-validation', () => {
       ).toThrow(BadRequestException);
     });
 
+    it('throws when cardIds contain duplicates', () => {
+      expect(() =>
+        validateCreateChunkInput({
+          deckId: 'deck-1',
+          title: 'Chunk title',
+          cardIds: ['card-1', 'card-1'],
+        }),
+      ).toThrow(BadRequestException);
+    });
+
     it('throws when position is negative', () => {
       expect(() =>
         validateCreateChunkInput({
@@ -92,6 +102,14 @@ describe('chunk-validation', () => {
       expect(() =>
         validateUpdateChunkInput({
           cardIds: ['card-1', ''],
+        }),
+      ).toThrow(BadRequestException);
+    });
+
+    it('throws when cardIds contain duplicates', () => {
+      expect(() =>
+        validateUpdateChunkInput({
+          cardIds: ['card-1', 'card-1'],
         }),
       ).toThrow(BadRequestException);
     });

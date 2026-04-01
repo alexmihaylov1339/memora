@@ -88,6 +88,9 @@ Out of scope:
 
 ### T1 - Prisma chunk schema & migration
 
+Status:
+- Done
+
 Tasks:
 - Extend Prisma schema with `Chunk` + `ChunkCard` models (deckId FK, ordered card references, ordering metadata).
 - Generate/export new migration.
@@ -96,7 +99,15 @@ Tasks:
 Acceptance:
 - `npx prisma migrate dev`/`prisma validate` compiles; migration added to repo.
 
+Verification:
+- `cd api && npm run prisma:validate`
+- `cd api && npx prisma migrate status`
+- `cd api && npx prisma generate`
+
 ### T2 - Chunk CRUD contracts
+
+Status:
+- Done
 
 Tasks:
 - Extend chunk DTOs to match new schema.
@@ -106,7 +117,15 @@ Tasks:
 Acceptance:
 - Chunk endpoints persist data using Prisma; controllers return real rows.
 
+Verification:
+- `api/src/chunks/chunks.controller.ts` exposes real CRUD endpoints
+- `api/src/chunks/chunks.service.ts` persists/fetches real Prisma rows
+- `cd api && npm test -- --runInBand chunk-validation.spec.ts chunks.service.spec.ts`
+
 ### T3 - Validation & helpers
+
+Status:
+- Done
 
 Tasks:
 - Add new chunk validators (deck/card non-null, ordering fields).
@@ -115,6 +134,12 @@ Tasks:
 
 Acceptance:
 - Validators cover chunk input; tests cover failure cases.
+
+Verification:
+- `api/src/common/utils/type-guards.ts` now exposes a reusable unique trimmed string-array helper
+- `api/src/chunks/dto/chunk-validation.ts` rejects duplicate `cardIds` with consistent `400` errors
+- `cd api && npm test -- --runInBand chunk-validation.spec.ts chunks.service.spec.ts`
+- `cd api && npm run build`
 
 ### T4 - Chunk list + pagination helpers
 

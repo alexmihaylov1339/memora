@@ -18,6 +18,13 @@ export function hasTrimmedTextArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => hasTrimmedText(item));
 }
 
+export function hasUniqueTrimmedTextArray(value: unknown): value is string[] {
+  return (
+    hasTrimmedTextArray(value) &&
+    new Set(value.map((item) => item.trim())).size === value.length
+  );
+}
+
 export function isNonNegativeInteger(value: unknown): value is number {
   return isNumber(value) && Number.isInteger(value) && value >= 0;
 }

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   hasTrimmedText,
-  hasTrimmedTextArray,
+  hasUniqueTrimmedTextArray,
   isNonNegativeInteger,
   isUndefined,
 } from '../../common/utils';
@@ -25,9 +25,9 @@ export function validateCreateChunkInput(body: CreateChunkDto) {
     throw new BadRequestException('title is required');
   }
 
-  if (!isUndefined(body.cardIds) && !hasTrimmedTextArray(body.cardIds)) {
+  if (!isUndefined(body.cardIds) && !hasUniqueTrimmedTextArray(body.cardIds)) {
     throw new BadRequestException(
-      'cardIds must be an array of non-empty strings',
+      'cardIds must be an array of unique non-empty strings',
     );
   }
 
@@ -50,9 +50,9 @@ export function validateUpdateChunkInput(body: UpdateChunkDto) {
     throw new BadRequestException('title cannot be empty');
   }
 
-  if (!isUndefined(body.cardIds) && !hasTrimmedTextArray(body.cardIds)) {
+  if (!isUndefined(body.cardIds) && !hasUniqueTrimmedTextArray(body.cardIds)) {
     throw new BadRequestException(
-      'cardIds must be an array of non-empty strings',
+      'cardIds must be an array of unique non-empty strings',
     );
   }
 
