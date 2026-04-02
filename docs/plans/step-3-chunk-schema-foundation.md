@@ -69,7 +69,7 @@ In scope:
 
 Out of scope:
 - Scheduling/review queue logic (Step 4/5).
-- Chunk UI polishing (Step 6).
+- Chunk UI polishing (Step 7).
 
 ---
 
@@ -212,7 +212,7 @@ Verified locally on 2026-03-31:
 
 Not covered in this step:
 - End-to-end owner scoping across users, because deck ownership is not modeled yet.
-- Final chunk authoring UI, deferred to Step 6.
+- Final chunk authoring UI, deferred to Step 7.
 
 ## Definition of done
 

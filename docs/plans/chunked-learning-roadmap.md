@@ -119,7 +119,27 @@
 
 ---
 
-## Step 6: Add chunk authoring + review UI
+## Step 6: Align backend with architecture patterns
+
+**Objective:** Consolidate the backend around the agreed coding patterns before the frontend depends heavily on review contracts.
+
+**Deliverables**
+- Refine controller/service boundaries to keep controllers thin and services authoritative.
+- Normalize backend error semantics (`400/401/403/404/409`) where current endpoints are too coarse.
+- Standardize service return shapes and serialization where Prisma rows still leak directly.
+- Tighten transaction usage and persistence orchestration in multi-step flows.
+- Bring schema, migration, and bootstrap SQL discipline fully in line with the backend patterns guide.
+
+**Why now**
+- By this point, chunk schema, scheduling, and review API behavior are defined enough to refactor safely.
+- Doing this before the UI step reduces churn and gives Step 7 a cleaner backend to build on.
+
+**Exit criteria**
+- The backend follows [backend-patterns.md](/home/alexandar/Projects/memora/docs/architecture/backend-patterns.md) closely enough that Step 7 can build on stable, predictable service and API contracts.
+
+---
+
+## Step 7: Add chunk authoring + review UI
 
 **Objective:** Expose the feature to users with minimum UX needed.
 
@@ -138,7 +158,7 @@
 
 ---
 
-## Step 7: Prepare extensible card/exercise architecture
+## Step 8: Prepare extensible card/exercise architecture
 
 **Objective:** Avoid hardcoding “basic flashcard only” in core flows.
 
@@ -155,7 +175,7 @@
 
 ---
 
-## Step 8: Quality, observability, and rollout safety
+## Step 9: Quality, observability, and rollout safety
 
 **Objective:** De-risk production behavior over time.
 
@@ -180,6 +200,7 @@
 6. Step 6
 7. Step 7
 8. Step 8
+9. Step 9
 
 ---
 

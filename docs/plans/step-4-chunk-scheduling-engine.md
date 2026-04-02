@@ -106,7 +106,7 @@ Example:
 Explanation:
 - We are intentionally hardcoding the default interval sequence in Step 4 so we can validate the review engine first.
 - We do not want deck settings, admin forms, or user customization to complicate scheduling logic yet.
-- The schedule source should still be isolated in one helper/config location so Step 6 or a later settings step can swap it to deck-specific values.
+- The schedule source should still be isolated in one helper/config location so Step 7 or a later settings step can swap it to deck-specific values.
 
 ### R3 - Chunk mastery requires a long consecutive success streak
 
@@ -157,8 +157,8 @@ In scope:
 - Unit/integration coverage for scheduling rules.
 
 Out of scope:
-- Review UI polish (Step 6).
-- Fancy analytics/observability (Step 8).
+- Review UI polish (Step 7).
+- Fancy analytics/observability (Step 9).
 - Multiple-user review ownership redesign.
 - Final advanced SRS tuning rules beyond MVP progression.
 
@@ -351,10 +351,10 @@ Tasks:
 
 Explanation:
 - Date logic and progression logic often look correct until edge cases appear.
-- This task is where we protect against regressions before Step 5 and Step 6 build more features on top.
+- This task is where we protect against regressions before Step 5 and Step 7 build more features on top.
 
 Acceptance:
-- Scheduling behavior is test-covered enough to support Step 5/6 safely.
+- Scheduling behavior is test-covered enough to support Step 5/7 safely.
 
 ---
 
@@ -364,7 +364,7 @@ These notes are here so both AI and humans can implement consistently.
 
 ### `GET /reviews/queue`
 
-Should return enough context for the future UI without forcing Step 6 today.
+Should return enough context for the future UI without forcing Step 7 today.
 
 Recommended response shape:
 - array or single next item containing:
@@ -414,7 +414,7 @@ Risk:
 - Future UI needs more context than the API returns.
 
 Mitigation:
-- Include chunk metadata in queue responses now, even if Step 6 is later.
+- Include chunk metadata in queue responses now, even if Step 7 is later.
 
 ---
 
