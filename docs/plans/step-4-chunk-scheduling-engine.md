@@ -317,6 +317,9 @@ Verification:
 
 ### T4 - Grade submission progression rules
 
+Status:
+- Done
+
 Tasks:
 - Implement grade handling for chunk progression:
   - `again` resets chunk progress so the next chunk review event shows the first card
@@ -331,6 +334,16 @@ Explanation:
 
 Acceptance:
 - Grading a card updates progression and due dates consistently.
+
+Verification:
+- `api/src/reviews/reviews.service.ts` now applies chunk grades through `applyGradeToCard(...)`
+- Only the currently actionable due card can be graded for a chunk; invalid/out-of-order grading returns no progression update
+- `again` resets chunk progress to `0` and reschedules from the first default interval
+- `hard/good/easy` advance the consecutive-success count and schedule using the configured interval sequence
+- The graded card now gets a `ReviewState` upsert and an immutable `ReviewLog` entry for each applied grade
+- `api/src/reviews/reviews.service.spec.ts` covers successful advancement, reset-on-again, and invalid grading attempts
+- `cd api && npm test -- --runInBand reviews.service.spec.ts chunk-scheduling.spec.ts`
+- `cd api && npm run build`
 
 ### T5 - Review API contract upgrade from stubs
 

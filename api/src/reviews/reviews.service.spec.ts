@@ -1,15 +1,25 @@
 import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
+import type { GradeChunkReviewResult } from './reviews.service';
 import { ReviewsService } from './reviews.service';
 
 function createPrismaMock() {
   return {
     chunk: {
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
     },
     chunkReviewState: {
       upsert: jest.fn(),
+      update: jest.fn(),
+    },
+    reviewState: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
+    reviewLog: {
+      create: jest.fn(),
     },
   };
 }
@@ -379,6 +389,338 @@ describe('ReviewsService', () => {
           chunkId: 'chunk-2',
         }),
       ]);
+    });
+  });
+
+  describe('applyGradeToCard', () => {
+    it('advances chunk progress and logs a successful review', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findFirst.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        reviewState: {
+          id: 'state-1',
+          chunkId: 'chunk-1',
+          due: new Date('2026-04-02T08:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [
+          {
+            cardId: 'card-1',
+            sequenceIndex: 0,
+            card: {
+              id: 'card-1',
+              kind: 'basic',
+              fields: { front: 'spielen 1', back: 'play 1' },
+              createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            },
+          },
+          {
+            cardId: 'card-2',
+            sequenceIndex: 1,
+            card: {
+              id: 'card-2',
+              kind: 'basic',
+              fields: { front: 'spielen 2', back: 'play 2' },
+              createdAt: new Date('2026-04-01T11:00:00.000Z'),
+            },
+          },
+        ],
+      });
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'chunk-1',
+        due: new Date('2026-04-02T08:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+      prisma.reviewState.findUnique.mockResolvedValue({
+        id: 'card-state-1',
+        cardId: 'card-1',
+        ease: 2.5,
+        interval: 0,
+        due: new Date('2026-04-02T08:00:00.000Z'),
+        reps: 0,
+        lapses: 0,
+        lastGrade: null,
+      });
+
+      const successfulResult = await service.applyGradeToCard(
+        'card-1',
+        'good',
+        now,
+      );
+
+      expect(successfulResult).not.toBeNull();
+      expect(successfulResult).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'good',
+          wasSuccessful: true,
+          advanced: true,
+          reset: false,
+          previousConsecutiveSuccessCount: 0,
+          consecutiveSuccessCount: 1,
+          intervalHours: 8,
+          due: new Date('2026-04-02T17:00:00.000Z'),
+        }),
+      );
+      expect(
+        (successfulResult as GradeChunkReviewResult).nextActionableItem,
+      ).toEqual(
+        expect.objectContaining({
+          cardId: 'card-2',
+          positionInChunk: 1,
+          consecutiveSuccessCount: 1,
+        }),
+      );
+
+      expect(prisma.chunkReviewState.update).toHaveBeenCalledWith({
+        where: { chunkId: 'chunk-1' },
+        data: {
+          due: new Date('2026-04-02T17:00:00.000Z'),
+          consecutiveSuccessCount: 1,
+          lastGrade: 'good',
+        },
+      });
+      expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
+        where: { cardId: 'card-1' },
+        update: {
+          due: new Date('2026-04-02T17:00:00.000Z'),
+          interval: 8,
+          reps: 1,
+          lapses: 0,
+          lastGrade: 'good',
+        },
+        create: {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 8,
+          due: new Date('2026-04-02T17:00:00.000Z'),
+          reps: 1,
+          lapses: 0,
+          lastGrade: 'good',
+        },
+      });
+      expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
+      const successfulLogCall = prisma.reviewLog.create.mock.calls[0]?.[0] as {
+        data: {
+          cardId: string;
+          grade: Grade;
+          oldInterval: number;
+          newInterval: number;
+          oldEase: number;
+          newEase: number;
+          mode: string;
+          wasCorrect: boolean | null;
+        };
+      };
+      expect(successfulLogCall.data).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'good',
+          oldInterval: 0,
+          newInterval: 8,
+          oldEase: 2.5,
+          newEase: 2.5,
+          mode: 'basic',
+          wasCorrect: true,
+        }),
+      );
+    });
+
+    it('resets chunk progress on again and schedules from the first interval', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findFirst.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        reviewState: {
+          id: 'state-1',
+          chunkId: 'chunk-1',
+          due: new Date('2026-04-02T08:00:00.000Z'),
+          consecutiveSuccessCount: 3,
+          lastGrade: 'good',
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [
+          {
+            cardId: 'card-1',
+            sequenceIndex: 0,
+            card: {
+              id: 'card-1',
+              kind: 'basic',
+              fields: { front: 'spielen 1', back: 'play 1' },
+              createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            },
+          },
+          {
+            cardId: 'card-2',
+            sequenceIndex: 1,
+            card: {
+              id: 'card-2',
+              kind: 'basic',
+              fields: { front: 'spielen 2', back: 'play 2' },
+              createdAt: new Date('2026-04-01T11:00:00.000Z'),
+            },
+          },
+          {
+            cardId: 'card-3',
+            sequenceIndex: 2,
+            card: {
+              id: 'card-3',
+              kind: 'basic',
+              fields: { front: 'spielen 3', back: 'play 3' },
+              createdAt: new Date('2026-04-01T12:00:00.000Z'),
+            },
+          },
+          {
+            cardId: 'card-4',
+            sequenceIndex: 3,
+            card: {
+              id: 'card-4',
+              kind: 'basic',
+              fields: { front: 'spielen 4', back: 'play 4' },
+              createdAt: new Date('2026-04-01T13:00:00.000Z'),
+            },
+          },
+        ],
+      });
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'chunk-1',
+        due: new Date('2026-04-02T08:00:00.000Z'),
+        consecutiveSuccessCount: 3,
+        lastGrade: 'good',
+        createdAt: now,
+        updatedAt: now,
+      });
+      prisma.reviewState.findUnique.mockResolvedValue(null);
+
+      const resetResult = await service.applyGradeToCard(
+        'card-4',
+        'again',
+        now,
+      );
+
+      expect(resetResult).not.toBeNull();
+      expect(resetResult).toEqual(
+        expect.objectContaining({
+          wasSuccessful: false,
+          advanced: false,
+          reset: true,
+          previousConsecutiveSuccessCount: 3,
+          consecutiveSuccessCount: 0,
+          intervalHours: 4,
+          due: new Date('2026-04-02T13:00:00.000Z'),
+        }),
+      );
+      expect(
+        (resetResult as GradeChunkReviewResult).nextActionableItem,
+      ).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          positionInChunk: 0,
+          consecutiveSuccessCount: 0,
+        }),
+      );
+
+      expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
+        where: { cardId: 'card-4' },
+        update: {
+          due: new Date('2026-04-02T13:00:00.000Z'),
+          interval: 4,
+          reps: 0,
+          lapses: 1,
+          lastGrade: 'again',
+        },
+        create: {
+          cardId: 'card-4',
+          ease: 2.5,
+          interval: 4,
+          due: new Date('2026-04-02T13:00:00.000Z'),
+          reps: 0,
+          lapses: 1,
+          lastGrade: 'again',
+        },
+      });
+      expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
+      const resetLogCall = prisma.reviewLog.create.mock.calls[0]?.[0] as {
+        data: {
+          cardId: string;
+          grade: Grade;
+          newInterval: number;
+          wasCorrect: boolean | null;
+        };
+      };
+      expect(resetLogCall.data).toEqual(
+        expect.objectContaining({
+          cardId: 'card-4',
+          grade: 'again',
+          newInterval: 4,
+          wasCorrect: false,
+        }),
+      );
+    });
+
+    it('returns null when the graded card is not the current due chunk card', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findFirst.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        reviewState: {
+          id: 'state-1',
+          chunkId: 'chunk-1',
+          due: new Date('2026-04-03T08:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [
+          {
+            cardId: 'card-1',
+            sequenceIndex: 0,
+            card: {
+              id: 'card-1',
+              kind: 'basic',
+              fields: { front: 'spielen 1', back: 'play 1' },
+              createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            },
+          },
+        ],
+      });
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'chunk-1',
+        due: new Date('2026-04-03T08:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await expect(
+        service.applyGradeToCard('card-1', 'good', now),
+      ).resolves.toBeNull();
+
+      expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
+      expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
     });
   });
 });

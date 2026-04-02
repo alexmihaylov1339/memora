@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 import type { Grade, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
+  computeNextDueAt,
   DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
   getCurrentChunkCardIndex,
+  getChunkReviewIntervalHours,
+  getNextConsecutiveSuccessCount,
   hasChunkMastery,
 } from './chunk-scheduling';
 import type { GradeReviewDto } from './dto/grade-review.dto';
@@ -70,8 +73,24 @@ export type ReviewQueueItem = {
   consecutiveSuccessCount: number;
 };
 
+export type GradeChunkReviewResult = {
+  cardId: string;
+  grade: Grade;
+  wasSuccessful: boolean;
+  advanced: boolean;
+  reset: boolean;
+  previousConsecutiveSuccessCount: number;
+  consecutiveSuccessCount: number;
+  due: Date;
+  intervalHours: number;
+  chunk: ChunkProgressSnapshot;
+  nextActionableItem: ReviewQueueItem | null;
+};
+
 @Injectable()
 export class ReviewsService {
+  private static readonly DEFAULT_EASE = 2.5;
+
   constructor(private readonly prisma: PrismaService) {}
 
   private async findChunkWithCards(
@@ -138,6 +157,48 @@ export class ReviewsService {
         },
       },
     })) as ChunkWithCards[];
+  }
+
+  private async findChunkByCardId(cardId: string): Promise<ChunkWithCards | null> {
+    return (await this.prisma.chunk.findFirst({
+      where: {
+        chunkCards: {
+          some: { cardId },
+        },
+      },
+      select: {
+        id: true,
+        deckId: true,
+        title: true,
+        position: true,
+        reviewState: {
+          select: {
+            id: true,
+            chunkId: true,
+            due: true,
+            consecutiveSuccessCount: true,
+            lastGrade: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        chunkCards: {
+          orderBy: { sequenceIndex: 'asc' },
+          select: {
+            cardId: true,
+            sequenceIndex: true,
+            card: {
+              select: {
+                id: true,
+                kind: true,
+                fields: true,
+                createdAt: true,
+              },
+            },
+          },
+        },
+      },
+    })) as ChunkWithCards | null;
   }
 
   private async ensureChunkReviewState(
@@ -267,6 +328,143 @@ export class ReviewsService {
     });
 
     return items;
+  }
+
+  async applyGradeToCard(
+    cardId: string,
+    grade: Grade,
+    now = new Date(),
+  ): Promise<GradeChunkReviewResult | null> {
+    const chunk = await this.findChunkByCardId(cardId);
+
+    if (!chunk) {
+      return null;
+    }
+
+    const state = await this.ensureChunkReviewState(chunk.id, now);
+    const snapshot = this.deriveChunkReviewState(chunk, now, state);
+
+    if (!snapshot.isDue || snapshot.currentCard?.cardId !== cardId) {
+      return null;
+    }
+
+    const currentChunkCard =
+      snapshot.currentCard === null
+        ? null
+        : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
+
+    if (!currentChunkCard?.card) {
+      return null;
+    }
+
+    const wasSuccessful = grade !== 'again';
+    const nextConsecutiveSuccessCount = getNextConsecutiveSuccessCount(
+      snapshot.consecutiveSuccessCount,
+      wasSuccessful,
+    );
+    const intervalHours =
+      grade === 'again'
+        ? getChunkReviewIntervalHours(0)
+        : getChunkReviewIntervalHours(nextConsecutiveSuccessCount);
+    const nextDue = computeNextDueAt(now, intervalHours);
+
+    const existingCardState = await this.prisma.reviewState.findUnique({
+      where: { cardId },
+    });
+
+    await this.prisma.chunkReviewState.update({
+      where: { chunkId: chunk.id },
+      data: {
+        due: nextDue,
+        consecutiveSuccessCount: nextConsecutiveSuccessCount,
+        lastGrade: grade,
+      },
+    });
+
+    await this.prisma.reviewState.upsert({
+      where: { cardId },
+      update: {
+        due: nextDue,
+        interval: intervalHours,
+        reps: wasSuccessful
+          ? existingCardState
+            ? existingCardState.reps + 1
+            : 1
+          : existingCardState?.reps ?? 0,
+        lapses: wasSuccessful
+          ? existingCardState?.lapses ?? 0
+          : (existingCardState?.lapses ?? 0) + 1,
+        lastGrade: grade,
+      },
+      create: {
+        cardId,
+        ease: ReviewsService.DEFAULT_EASE,
+        interval: intervalHours,
+        due: nextDue,
+        reps: wasSuccessful ? 1 : 0,
+        lapses: wasSuccessful ? 0 : 1,
+        lastGrade: grade,
+      },
+    });
+
+    await this.prisma.reviewLog.create({
+      data: {
+        cardId,
+        reviewedAt: now,
+        grade,
+        oldInterval: existingCardState?.interval ?? 0,
+        newInterval: intervalHours,
+        oldEase: existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
+        newEase: existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
+        mode: currentChunkCard.card.kind,
+        wasCorrect: wasSuccessful,
+      },
+    });
+
+    const nextSnapshot = this.deriveChunkReviewState(chunk, now, {
+      ...state,
+      due: nextDue,
+      consecutiveSuccessCount: nextConsecutiveSuccessCount,
+      lastGrade: grade,
+      updatedAt: now,
+    });
+
+    const nextChunkCard =
+      nextSnapshot.currentCard === null
+        ? null
+        : chunk.chunkCards[nextSnapshot.currentCard.sequenceIndex];
+    const nextActionableItem =
+      nextSnapshot.hasMastery ||
+      nextSnapshot.currentCard === null ||
+      !nextChunkCard?.card
+        ? null
+        : {
+            cardId: nextChunkCard.card.id,
+            deckId: chunk.deckId,
+            chunkId: chunk.id,
+            chunkTitle: chunk.title,
+            chunkPosition: chunk.position,
+            positionInChunk: nextSnapshot.currentCard.sequenceIndex,
+            due: nextSnapshot.due,
+            kind: nextChunkCard.card.kind,
+            fields: nextChunkCard.card.fields,
+            cardCreatedAt: nextChunkCard.card.createdAt,
+            consecutiveSuccessCount: nextSnapshot.consecutiveSuccessCount,
+          };
+
+    return {
+      cardId,
+      grade,
+      wasSuccessful,
+      advanced: wasSuccessful,
+      reset: !wasSuccessful,
+      previousConsecutiveSuccessCount: snapshot.consecutiveSuccessCount,
+      consecutiveSuccessCount: nextConsecutiveSuccessCount,
+      due: nextDue,
+      intervalHours,
+      chunk: nextSnapshot,
+      nextActionableItem,
+    };
   }
 
   getQueueStub() {

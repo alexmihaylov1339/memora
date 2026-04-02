@@ -94,7 +94,7 @@ export function getChunkReviewIntervalHours(
 
 export function computeNextDueAt(
   baseTime: Date,
-  intervalHours = DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS[0],
+  intervalHours: number = DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS[0],
 ): Date {
   if (!(baseTime instanceof Date) || Number.isNaN(baseTime.getTime())) {
     throw new Error('baseTime must be a valid Date');
