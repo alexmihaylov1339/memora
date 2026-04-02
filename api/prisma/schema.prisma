@@ -53,9 +53,25 @@ model Chunk {
 
   deck       Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
   chunkCards ChunkCard[]
+  reviewState ChunkReviewState?
 
   @@index([deckId])
   @@index([deckId, position])
+}
+
+/** Current chunk-review progression state (single-user MVP) */
+model ChunkReviewState {
+  id                       String   @id @default(cuid())
+  chunkId                  String   @unique
+  due                      DateTime
+  consecutiveSuccessCount  Int      @default(0)
+  lastGrade                Grade?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  chunk                    Chunk    @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([due])
 }
 
 /** Ordered card membership for a chunk */

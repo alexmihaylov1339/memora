@@ -52,6 +52,19 @@ CREATE TABLE "ChunkCard" (
 );
 
 -- CreateTable
+CREATE TABLE "ChunkReviewState" (
+    "id" TEXT NOT NULL,
+    "chunkId" TEXT NOT NULL,
+    "due" TIMESTAMP(3) NOT NULL,
+    "consecutiveSuccessCount" INTEGER NOT NULL DEFAULT 0,
+    "lastGrade" "Grade",
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ChunkReviewState_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Card" (
     "id" TEXT NOT NULL,
     "deckId" TEXT NOT NULL,
@@ -112,6 +125,12 @@ CREATE UNIQUE INDEX "ChunkCard_chunkId_sequenceIndex_key" ON "ChunkCard"("chunkI
 CREATE INDEX "ChunkCard_cardId_idx" ON "ChunkCard"("cardId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ChunkReviewState_chunkId_key" ON "ChunkReviewState"("chunkId");
+
+-- CreateIndex
+CREATE INDEX "ChunkReviewState_due_idx" ON "ChunkReviewState"("due");
+
+-- CreateIndex
 CREATE INDEX "Card_deckId_idx" ON "Card"("deckId");
 
 -- CreateIndex
@@ -134,6 +153,9 @@ ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_chunkId_fkey" FOREIGN KEY ("ch
 
 -- AddForeignKey
 ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ChunkReviewState" ADD CONSTRAINT "ChunkReviewState_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "Chunk"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Card" ADD CONSTRAINT "Card_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;

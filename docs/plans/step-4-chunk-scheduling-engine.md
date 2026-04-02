@@ -256,6 +256,9 @@ Verification:
 
 ### T2 - Review progression state wiring
 
+Status:
+- Done
+
 Tasks:
 - Decide the minimum persisted state needed for chunk progression.
 - Reuse `ReviewState` when possible before adding new Prisma models.
@@ -272,9 +275,18 @@ Explanation:
 - Step 4 should avoid schema churn unless it is truly necessary.
 - If the current Prisma models can represent “current card”, “completed card”, and “next due card”, prefer using them.
 - That keeps this step focused on behavior instead of another migration cycle.
+- In practice, the chunk reset-and-wrap rule needs chunk-level persistence, so this step now adds a focused `ChunkReviewState` model instead of overloading card-level `ReviewState`.
 
 Acceptance:
 - Backend can determine next reviewable card in a chunk from persisted data.
+
+Verification:
+- `api/prisma/schema.prisma` now includes `ChunkReviewState` with chunk-level due/progress persistence
+- `api/src/reviews/reviews.service.ts` now resolves chunk progress snapshots from persisted state plus ordered chunk cards
+- `api/src/reviews/reviews.service.spec.ts` covers default state creation, card selection, wrap-around, and mastery derivation
+- `cd api && npm test -- --runInBand reviews.service.spec.ts chunk-scheduling.spec.ts`
+- `cd api && npm run prisma:validate`
+- `cd api && npm run build`
 
 ### T3 - Queue eligibility logic
 
