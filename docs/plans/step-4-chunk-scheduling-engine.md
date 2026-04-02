@@ -290,6 +290,9 @@ Verification:
 
 ### T3 - Queue eligibility logic
 
+Status:
+- Done
+
 Tasks:
 - Implement logic so only the next eligible chunk card appears in the queue.
 - Skip all other cards in the same chunk until that chunk becomes due again.
@@ -302,6 +305,15 @@ Explanation:
 
 Acceptance:
 - Queue logic returns only the correct next chunk card for each chunk.
+
+Verification:
+- `api/src/reviews/reviews.service.ts` now exposes queue-eligibility logic through `getEligibleQueueItems(...)`
+- Queue logic returns at most one actionable card per chunk and derives it from persisted chunk progress plus ordered `ChunkCard` membership
+- Future-due, mastered, and empty chunks are skipped
+- Items are sorted deterministically by `due`, then card `createdAt`, then `cardId`
+- `api/src/reviews/reviews.service.spec.ts` covers due filtering, one-card-per-chunk behavior, missing-state defaults, and deterministic ordering
+- `cd api && npm test -- --runInBand reviews.service.spec.ts chunk-scheduling.spec.ts`
+- `cd api && npm run build`
 
 ### T4 - Grade submission progression rules
 

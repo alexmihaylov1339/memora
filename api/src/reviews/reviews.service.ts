@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import type { GradeReviewDto } from './dto/grade-review.dto';
-import type { Grade } from '@prisma/client';
+import type { Grade, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
   getCurrentChunkCardIndex,
   hasChunkMastery,
 } from './chunk-scheduling';
+import type { GradeReviewDto } from './dto/grade-review.dto';
 
 type ChunkWithCards = {
   id: string;
@@ -16,7 +16,14 @@ type ChunkWithCards = {
   chunkCards: Array<{
     cardId: string;
     sequenceIndex: number;
+    card?: {
+      id: string;
+      kind: string;
+      fields: Prisma.JsonValue;
+      createdAt: Date;
+    };
   }>;
+  reviewState?: PersistedChunkReviewState | null;
 };
 
 type PersistedChunkReviewState = {
@@ -49,6 +56,20 @@ export type ChunkProgressSnapshot = {
   stateUpdatedAt: Date;
 };
 
+export type ReviewQueueItem = {
+  cardId: string;
+  deckId: string;
+  chunkId: string;
+  chunkTitle: string;
+  chunkPosition: number;
+  positionInChunk: number;
+  due: Date;
+  kind: string;
+  fields: Prisma.JsonValue;
+  cardCreatedAt: Date;
+  consecutiveSuccessCount: number;
+};
+
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -68,10 +89,55 @@ export class ReviewsService {
           select: {
             cardId: true,
             sequenceIndex: true,
+            card: {
+              select: {
+                id: true,
+                kind: true,
+                fields: true,
+                createdAt: true,
+              },
+            },
           },
         },
       },
     })) as ChunkWithCards | null;
+  }
+
+  private async findChunksWithReviewState(): Promise<ChunkWithCards[]> {
+    return (await this.prisma.chunk.findMany({
+      select: {
+        id: true,
+        deckId: true,
+        title: true,
+        position: true,
+        reviewState: {
+          select: {
+            id: true,
+            chunkId: true,
+            due: true,
+            consecutiveSuccessCount: true,
+            lastGrade: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        chunkCards: {
+          orderBy: { sequenceIndex: 'asc' },
+          select: {
+            cardId: true,
+            sequenceIndex: true,
+            card: {
+              select: {
+                id: true,
+                kind: true,
+                fields: true,
+                createdAt: true,
+              },
+            },
+          },
+        },
+      },
+    })) as ChunkWithCards[];
   }
 
   private async ensureChunkReviewState(
@@ -89,17 +155,20 @@ export class ReviewsService {
     })) as PersistedChunkReviewState;
   }
 
-  async getChunkProgress(
-    chunkId: string,
-    now = new Date(),
-  ): Promise<ChunkProgressSnapshot | null> {
-    const chunk = await this.findChunkWithCards(chunkId);
-
-    if (!chunk) {
-      return null;
-    }
-
-    const state = await this.ensureChunkReviewState(chunkId, now);
+  private deriveChunkReviewState(
+    chunk: ChunkWithCards,
+    now: Date,
+    persistedState?: PersistedChunkReviewState | null,
+  ): ChunkProgressSnapshot {
+    const state = persistedState ?? chunk.reviewState ?? {
+      id: `ephemeral-${chunk.id}`,
+      chunkId: chunk.id,
+      due: now,
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+      createdAt: now,
+      updatedAt: now,
+    };
     const totalCards = chunk.chunkCards.length;
     const currentCardIndex =
       totalCards > 0
@@ -130,6 +199,74 @@ export class ReviewsService {
       stateCreatedAt: state.createdAt,
       stateUpdatedAt: state.updatedAt,
     };
+  }
+
+  async getChunkProgress(
+    chunkId: string,
+    now = new Date(),
+  ): Promise<ChunkProgressSnapshot | null> {
+    const chunk = await this.findChunkWithCards(chunkId);
+
+    if (!chunk) {
+      return null;
+    }
+
+    const state = await this.ensureChunkReviewState(chunkId, now);
+    return this.deriveChunkReviewState(chunk, now, state);
+  }
+
+  async getEligibleQueueItems(now = new Date()): Promise<ReviewQueueItem[]> {
+    const chunks = await this.findChunksWithReviewState();
+
+    const items = chunks
+      .map((chunk) => {
+        const snapshot = this.deriveChunkReviewState(chunk, now);
+        const currentCard =
+          snapshot.currentCard === null
+            ? null
+            : chunk.chunkCards[snapshot.currentCard.sequenceIndex]?.card;
+
+        if (
+          !snapshot.isDue ||
+          snapshot.hasMastery ||
+          snapshot.currentCard === null ||
+          !currentCard
+        ) {
+          return null;
+        }
+
+        return {
+          cardId: currentCard.id,
+          deckId: chunk.deckId,
+          chunkId: chunk.id,
+          chunkTitle: chunk.title,
+          chunkPosition: chunk.position,
+          positionInChunk: snapshot.currentCard.sequenceIndex,
+          due: snapshot.due,
+          kind: currentCard.kind,
+          fields: currentCard.fields,
+          cardCreatedAt: currentCard.createdAt,
+          consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
+        } satisfies ReviewQueueItem;
+      })
+      .filter((item): item is ReviewQueueItem => item !== null);
+
+    items.sort((left, right) => {
+      const dueDiff = left.due.getTime() - right.due.getTime();
+      if (dueDiff !== 0) {
+        return dueDiff;
+      }
+
+      const createdAtDiff =
+        left.cardCreatedAt.getTime() - right.cardCreatedAt.getTime();
+      if (createdAtDiff !== 0) {
+        return createdAtDiff;
+      }
+
+      return left.cardId.localeCompare(right.cardId);
+    });
+
+    return items;
   }
 
   getQueueStub() {
