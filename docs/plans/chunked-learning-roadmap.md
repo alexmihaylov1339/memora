@@ -2,7 +2,7 @@
 
 **Status:** Proposed  
 **Date:** 2026-03-28  
-**Goal:** Introduce connected-card chunks (sequential exposure over spaced intervals) and keep architecture ready for future exercise/card types.
+**Goal:** Introduce connected-card chunks (sequential exposure over repeated chunk review sessions) and keep architecture ready for future exercise/card types.
 
 ---
 
@@ -10,7 +10,9 @@
 
 - A learner adds one target word and multiple sentence exposures (example: 5 cards).
 - These cards belong to one chunk and are reviewed in sequence, not all at once.
-- Example spacing for the 5 cards: day `1, 2, 3, 5, 8`.
+- In each chunk review session, the learner should see exactly one next sentence/card.
+- After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
+- Chunk mastery should require a longer consecutive success streak, with a hardcoded default schedule of about 20 intervals, and mistakes should reset chunk progress to the beginning.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
 
 ---
@@ -70,7 +72,7 @@
 **Deliverables**
 - Prisma additions:
   - `Chunk` entity (belongs to deck, optional title/target word, metadata)
-  - `ChunkCard` join entity (chunkId, cardId, `sequenceIndex`, optional `offsetDays`)
+  - `ChunkCard` join entity (chunkId, cardId, `sequenceIndex`)
   - optional per-user chunk progress model if needed by review flow
 - Migration + updated SQL bootstrap files.
 
@@ -84,23 +86,19 @@
 
 ## Step 4: Implement chunk scheduling engine (MVP)
 
-**Objective:** Make chunk reviews run in sequence with spaced offsets.
+**Objective:** Make chunk reviews run in sequence, one card at a time, across repeated chunk review sessions.
 
 **Deliverables**
 - Scheduling policy for chunk sequence (MVP):
-  - offsets `[1,2,3,5,8]` for 5-card sequence
-  - only next card in chunk becomes reviewable
+  - only one next card in a chunk becomes reviewable at a time
+  - chunk card order cycles back to the first card after the last
+  - chunk mastery requires a hardcoded consecutive success streak backed by a default interval sequence of about 20 review steps
+  - a failed review resets chunk progress to the beginning
 - Review state update rules on grade submission.
 - Deterministic time handling (UTC + consistent due-date calculation).
 
-**Key decision to lock**
-- Anchor strategy:
-  - Option A: due date per card relative to chunk start
-  - Option B: due date relative to completion of previous card  
-  (choose one before implementation)
-
 **Exit criteria**
-- End-to-end chunk progression works according to the selected anchor strategy.
+- End-to-end chunk progression works with one-card-at-a-time chunk reviews, reset-on-failure behavior, and loop-back after the last card.
 
 ---
 
