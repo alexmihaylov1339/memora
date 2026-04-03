@@ -194,6 +194,9 @@ Verification:
 
 ### T2 - Lock review grade response and request validation
 
+Status:
+- Done
+
 Tasks:
 - Confirm `grade` accepts only:
   - `again`
@@ -213,6 +216,15 @@ Explanation:
 
 Acceptance:
 - `POST /reviews/:cardId/grade` has an explicit, validated request/response contract.
+
+Verification:
+- `api/src/reviews/dto/grade-review.dto.ts` keeps the request contract aligned to the Prisma grade enum
+- `api/src/reviews/dto/review-validation.ts` validates only `again | hard | good | easy` and returns `400` for invalid values
+- `api/src/reviews/dto/grade-review-response.dto.ts` now defines the public grade response shape explicitly
+- `api/src/reviews/reviews.controller.ts` now serializes grade results through a dedicated response mapper instead of returning raw service objects
+- nested `nextActionableItem` now follows the same locked public queue contract and does not expose internal-only fields like `cardCreatedAt`
+- `api/src/reviews/reviews.controller.spec.ts` asserts the deliberate grade response shape
+- `api/test/app.e2e-spec.ts` now checks the locked grade payload fields in the review flow
 
 ---
 

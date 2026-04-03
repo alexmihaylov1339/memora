@@ -11,6 +11,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { ReviewsService } from './reviews.service';
 import type { GradeReviewDto } from './dto/grade-review.dto';
+import { serializeGradeReviewResponse } from './dto/grade-review-response.dto';
 import { serializeReviewQueueResponse } from './dto/review-queue-response.dto';
 import type { ReviewCardIdParamDto } from './dto/review-card-id-param.dto';
 import {
@@ -38,6 +39,8 @@ export class ReviewsController {
   ) {
     const cardId = validateReviewCardId(params.cardId);
     const grade = validateGradeReviewInput(body);
-    return this.reviews.gradeReview(cardId, grade);
+    const result = await this.reviews.gradeReview(cardId, grade);
+
+    return serializeGradeReviewResponse(result);
   }
 }

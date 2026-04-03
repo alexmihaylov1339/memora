@@ -92,19 +92,111 @@ describe('ReviewsController', () => {
         stateCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
         stateUpdatedAt: new Date('2026-04-03T10:00:00.000Z'),
       },
-      nextActionableItem: null,
+      nextActionableItem: {
+        cardId: 'card-2',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'spielen',
+        chunkPosition: 0,
+        positionInChunk: 1,
+        due: new Date('2026-04-03T18:00:00.000Z'),
+        kind: 'basic',
+        fields: { front: 'spielen 2', back: 'play 2' },
+        cardCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
+        consecutiveSuccessCount: 1,
+      },
     });
 
     await expect(
       controller.grade({ cardId: ' card-1 ' }, { grade: 'good' }),
+    ).resolves.toEqual({
+      cardId: 'card-1',
+      grade: 'good',
+      wasSuccessful: true,
+      advanced: true,
+      reset: false,
+      previousConsecutiveSuccessCount: 0,
+      consecutiveSuccessCount: 1,
+      due: new Date('2026-04-03T18:00:00.000Z'),
+      intervalHours: 8,
+      chunk: {
+        chunkId: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        due: new Date('2026-04-03T18:00:00.000Z'),
+        isDue: false,
+        consecutiveSuccessCount: 1,
+        requiredConsecutiveSuccesses: 20,
+        hasMastery: false,
+        totalCards: 2,
+        currentCard: {
+          cardId: 'card-2',
+          sequenceIndex: 1,
+        },
+        lastGrade: 'good',
+        stateCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
+        stateUpdatedAt: new Date('2026-04-03T10:00:00.000Z'),
+      },
+      nextActionableItem: {
+        cardId: 'card-2',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'spielen',
+        chunkPosition: 0,
+        positionInChunk: 1,
+        due: new Date('2026-04-03T18:00:00.000Z'),
+        kind: 'basic',
+        fields: { front: 'spielen 2', back: 'play 2' },
+        consecutiveSuccessCount: 1,
+      },
+    });
+
+    expect(reviewsService.gradeReview).toHaveBeenCalledWith('card-1', 'good');
+  });
+
+  it('returns null nextActionableItem when no next review item exists', async () => {
+    reviewsService.gradeReview.mockResolvedValue({
+      cardId: 'card-1',
+      grade: 'again',
+      wasSuccessful: false,
+      advanced: false,
+      reset: true,
+      previousConsecutiveSuccessCount: 1,
+      consecutiveSuccessCount: 0,
+      due: new Date('2026-04-03T14:00:00.000Z'),
+      intervalHours: 4,
+      chunk: {
+        chunkId: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        due: new Date('2026-04-03T14:00:00.000Z'),
+        isDue: false,
+        consecutiveSuccessCount: 0,
+        requiredConsecutiveSuccesses: 20,
+        hasMastery: false,
+        totalCards: 2,
+        currentCard: {
+          cardId: 'card-1',
+          sequenceIndex: 0,
+        },
+        lastGrade: 'again',
+        stateCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
+        stateUpdatedAt: new Date('2026-04-03T10:00:00.000Z'),
+      },
+      nextActionableItem: null,
+    });
+
+    await expect(
+      controller.grade({ cardId: 'card-1' }, { grade: 'again' }),
     ).resolves.toEqual(
       expect.objectContaining({
         cardId: 'card-1',
-        grade: 'good',
+        grade: 'again',
+        nextActionableItem: null,
       }),
     );
-
-    expect(reviewsService.gradeReview).toHaveBeenCalledWith('card-1', 'good');
   });
 
   it('rejects invalid grades before calling the service', async () => {
