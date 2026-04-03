@@ -1,6 +1,6 @@
 # Memora: Step 4 Plan - Chunk Scheduling Engine MVP
 
-**Status:** Proposed  
+**Status:** Ready  
 **Date:** 2026-04-01  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 4
 
@@ -377,6 +377,9 @@ Verification:
 
 ### T6 - Tests and edge-case verification
 
+Status:
+- Done
+
 Tasks:
 - Add scheduler unit tests for:
   - first chunk card selection
@@ -394,6 +397,15 @@ Explanation:
 
 Acceptance:
 - Scheduling behavior is test-covered enough to support Step 5/7 safely.
+
+Verification:
+- `api/src/reviews/chunk-scheduling.spec.ts` covers first-card selection, next-card progression, wrap-around behavior, mastery threshold, deterministic interval lookup, and UTC-safe due-date math
+- `api/src/reviews/reviews.service.spec.ts` covers queue ordering, due filtering, reset-on-`again`, successful advancement, and invalid/out-of-order grading
+- `api/src/reviews/reviews.controller.spec.ts` covers queue contract and grade endpoint behavior
+- `api/test/app.e2e-spec.ts` now contains the queue -> grade -> next due card -> reset flow scenario
+- `cd api && npx jest src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts src/reviews/chunk-scheduling.spec.ts --runInBand`
+- `cd api && npx tsc --noEmit --pretty false`
+- `cd api && npx eslint 'src/reviews/**/*.ts' 'test/app.e2e-spec.ts'`
 
 ---
 
@@ -484,8 +496,7 @@ Automated:
 
 ## Implementation Status
 
-- T1-T5: Completed
-- T6: Partially completed (scheduler/unit coverage is in place; e2e queue + grade flow still needs a full local run against the real DB-backed app)
+- T1-T6: Completed
 
 ---
 

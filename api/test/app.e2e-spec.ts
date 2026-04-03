@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { PrismaService } from './../prisma/prisma.service';
 
 function parseJson(text: string): unknown {
   return JSON.parse(text) as unknown;
@@ -26,8 +27,21 @@ function getStringField(
   return value;
 }
 
+function getArrayField(
+  source: Record<string, unknown>,
+  field: string,
+): unknown[] {
+  const value = source[field];
+  if (!Array.isArray(value)) {
+    throw new Error(`Expected "${field}" to be an array`);
+  }
+
+  return value;
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication;
+  let prisma: PrismaService;
   const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   const credentials = {
     email: `memora-e2e-${uniqueSuffix}@example.com`,
@@ -45,6 +59,7 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('v1');
     await app.init();
+    prisma = app.get(PrismaService);
   });
 
   afterAll(async () => {
@@ -326,5 +341,176 @@ describe('AppController (e2e)', () => {
       .get(`/v1/decks/${createdDeckId}`)
       .set(authHeader)
       .expect(404);
+  });
+
+  it('reviews queue -> grade -> next due card -> reset flow', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `E2E Review Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    const createFirstCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId,
+        kind: 'basic',
+        fields: { front: 'spielen 1', back: 'play 1' },
+      })
+      .expect(201);
+    const firstCardBody = asRecord(parseJson(createFirstCardRes.text));
+    const firstCardId = getStringField(firstCardBody, 'id');
+
+    const createSecondCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId,
+        kind: 'basic',
+        fields: { front: 'spielen 2', back: 'play 2' },
+      })
+      .expect(201);
+    const secondCardBody = asRecord(parseJson(createSecondCardRes.text));
+    const secondCardId = getStringField(secondCardBody, 'id');
+
+    const createChunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        deckId,
+        title: 'spielen chunk',
+        cardIds: [firstCardId, secondCardId],
+      })
+      .expect(201);
+    const chunkBody = asRecord(parseJson(createChunkRes.text));
+    const chunkId = getStringField(chunkBody, 'id');
+
+    const initialQueueRes = await request(server)
+      .get('/v1/reviews/queue')
+      .set(authHeader)
+      .expect(200);
+    const initialQueueBody = asRecord(parseJson(initialQueueRes.text));
+    const initialQueueItems = getArrayField(initialQueueBody, 'items');
+
+    expect(initialQueueItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cardId: firstCardId,
+          chunkId,
+          positionInChunk: 0,
+        }),
+      ]),
+    );
+
+    const firstGradeRes = await request(server)
+      .post(`/v1/reviews/${firstCardId}/grade`)
+      .set(authHeader)
+      .send({ grade: 'good' })
+      .expect(200);
+    const firstGradeBody = asRecord(parseJson(firstGradeRes.text));
+    expect(firstGradeBody).toEqual(
+      expect.objectContaining({
+        cardId: firstCardId,
+        grade: 'good',
+        advanced: true,
+        reset: false,
+        consecutiveSuccessCount: 1,
+        nextActionableItem: expect.objectContaining({
+          cardId: secondCardId,
+          chunkId,
+          positionInChunk: 1,
+        }),
+      }),
+    );
+
+    await request(server)
+      .get('/v1/reviews/queue')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual({ items: [] });
+      });
+
+    await prisma.chunkReviewState.update({
+      where: { chunkId },
+      data: {
+        due: new Date(Date.now() - 60_000),
+      },
+    });
+
+    await request(server)
+      .get('/v1/reviews/queue')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                cardId: secondCardId,
+                chunkId,
+                positionInChunk: 1,
+              }),
+            ]),
+          }),
+        );
+      });
+
+    const resetGradeRes = await request(server)
+      .post(`/v1/reviews/${secondCardId}/grade`)
+      .set(authHeader)
+      .send({ grade: 'again' })
+      .expect(200);
+    const resetGradeBody = asRecord(parseJson(resetGradeRes.text));
+    expect(resetGradeBody).toEqual(
+      expect.objectContaining({
+        cardId: secondCardId,
+        grade: 'again',
+        advanced: false,
+        reset: true,
+        consecutiveSuccessCount: 0,
+        nextActionableItem: expect.objectContaining({
+          cardId: firstCardId,
+          chunkId,
+          positionInChunk: 0,
+        }),
+      }),
+    );
+
+    await prisma.chunkReviewState.update({
+      where: { chunkId },
+      data: {
+        due: new Date(Date.now() - 60_000),
+      },
+    });
+
+    await request(server)
+      .get('/v1/reviews/queue')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                cardId: firstCardId,
+                chunkId,
+                positionInChunk: 0,
+              }),
+            ]),
+          }),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/decks/${deckId}`)
+      .set(authHeader)
+      .expect(204);
   });
 });
