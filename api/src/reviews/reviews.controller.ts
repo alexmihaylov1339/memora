@@ -11,6 +11,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { ReviewsService } from './reviews.service';
 import type { GradeReviewDto } from './dto/grade-review.dto';
+import { serializeReviewQueueResponse } from './dto/review-queue-response.dto';
 import type { ReviewCardIdParamDto } from './dto/review-card-id-param.dto';
 import {
   validateGradeReviewInput,
@@ -26,7 +27,7 @@ export class ReviewsController {
   async queue() {
     const items = await this.reviews.getEligibleQueueItems();
 
-    return { items };
+    return serializeReviewQueueResponse(items);
   }
 
   @Post(':cardId/grade')

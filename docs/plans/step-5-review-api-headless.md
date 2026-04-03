@@ -163,6 +163,9 @@ Recommended stable response shape:
 
 ### T1 - Lock review queue response contract
 
+Status:
+- Done
+
 Tasks:
 - Confirm the final queue response shape for the web app.
 - Ensure the queue response returns enough metadata to render:
@@ -178,6 +181,14 @@ Explanation:
 
 Acceptance:
 - `GET /reviews/queue` has a deliberate, documented, stable response shape.
+
+Verification:
+- `api/src/reviews/dto/review-queue-response.dto.ts` now defines the public queue response shape explicitly
+- `api/src/reviews/reviews.controller.ts` now serializes queue items through a dedicated response mapper instead of returning raw service objects
+- queue responses keep the wrapped shape `{ items: [...] }`
+- internal sorting-only data like `cardCreatedAt` stays in the service layer and is not exposed publicly
+- `api/src/reviews/reviews.controller.spec.ts` now asserts the deliberate queue shape
+- `api/test/app.e2e-spec.ts` now checks the queue payload for the locked public fields
 
 ---
 

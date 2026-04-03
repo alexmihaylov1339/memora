@@ -46,10 +46,18 @@ describe('ReviewsController', () => {
 
     await expect(controller.queue()).resolves.toEqual({
       items: [
-        expect.objectContaining({
+        {
           cardId: 'card-1',
+          deckId: 'deck-1',
           chunkId: 'chunk-1',
-        }),
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          due: new Date('2026-04-03T10:00:00.000Z'),
+          kind: 'basic',
+          fields: { front: 'spielen 1', back: 'play 1' },
+          consecutiveSuccessCount: 0,
+        },
       ],
     });
   });

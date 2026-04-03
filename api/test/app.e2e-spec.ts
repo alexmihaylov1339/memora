@@ -256,7 +256,20 @@ describe('AppController (e2e)', () => {
       .expect((res) => {
         expect(res.body).toEqual(
           expect.objectContaining({
-            items: expect.any(Array),
+            items: expect.arrayContaining([
+              expect.objectContaining({
+                cardId,
+                deckId,
+                chunkId: expect.any(String),
+                chunkTitle: expect.any(String),
+                chunkPosition: expect.any(Number),
+                positionInChunk: expect.any(Number),
+                due: expect.any(String),
+                kind: 'basic',
+                fields: expect.any(Object),
+                consecutiveSuccessCount: expect.any(Number),
+              }),
+            ]),
           }),
         );
       });
