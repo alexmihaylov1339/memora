@@ -13,6 +13,7 @@ import {
   getNextConsecutiveSuccessCount,
   hasChunkMastery,
 } from './chunk-scheduling';
+import { REVIEW_ERROR_MESSAGES } from './review-errors';
 
 type ChunkWithCards = {
   id: string;
@@ -499,9 +500,9 @@ export class ReviewsService {
     const chunk = await this.findChunkByCardId(cardId);
 
     if (!chunk) {
-      throw new NotFoundException('Chunk review card not found');
+      throw new NotFoundException(REVIEW_ERROR_MESSAGES.cardNotFound);
     }
 
-    throw new BadRequestException('Card is not currently reviewable');
+    throw new BadRequestException(REVIEW_ERROR_MESSAGES.cardNotReviewable);
   }
 }

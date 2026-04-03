@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../prisma/prisma.service';
+import { REVIEW_ERROR_MESSAGES } from './../src/reviews/review-errors';
 
 function parseJson(text: string): unknown {
   return JSON.parse(text) as unknown;
@@ -270,6 +271,21 @@ describe('AppController (e2e)', () => {
                 consecutiveSuccessCount: expect.any(Number),
               }),
             ]),
+          }),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/reviews/${cardId}/grade`)
+      .set(authHeader)
+      .send({ grade: 'invalid-grade' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: REVIEW_ERROR_MESSAGES.invalidGrade,
+            error: 'Bad Request',
           }),
         );
       });
@@ -567,6 +583,21 @@ describe('AppController (e2e)', () => {
                 positionInChunk: 0,
               }),
             ]),
+          }),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/reviews/${firstCardId}/grade`)
+      .set(authHeader)
+      .send({ grade: 'good' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: REVIEW_ERROR_MESSAGES.cardNotReviewable,
+            error: 'Bad Request',
           }),
         );
       });

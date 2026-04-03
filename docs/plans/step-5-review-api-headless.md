@@ -230,6 +230,9 @@ Verification:
 
 ### T3 - Normalize review error semantics
 
+Status:
+- Done
+
 Tasks:
 - Confirm error behavior for:
   - invalid `cardId`
@@ -249,6 +252,15 @@ Explanation:
 
 Acceptance:
 - Review endpoints have consistent status codes and readable errors.
+
+Verification:
+- `api/src/reviews/review-errors.ts` now centralizes review error messages so validation and service layers use the same semantics
+- invalid `cardId` now returns a consistent `400` with `cardId is required`
+- invalid `grade` now returns a consistent `400` with the locked enum-grade message
+- missing card/chunk review association returns a consistent `404`
+- non-reviewable or out-of-order grading returns a consistent `400`
+- `api/src/reviews/reviews.controller.spec.ts` covers invalid card id, invalid grade, not-found, and not-actionable cases
+- `api/test/app.e2e-spec.ts` asserts `400` error responses for invalid grade and non-reviewable grading attempts
 
 ---
 

@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
+import { REVIEW_ERROR_MESSAGES } from './review-errors';
 import { ReviewsController } from './reviews.controller';
 import type {
   GradeChunkReviewResult,
@@ -205,7 +206,15 @@ describe('ReviewsController', () => {
         { cardId: 'card-1' },
         { grade: 'invalid-grade' as Grade },
       ),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(REVIEW_ERROR_MESSAGES.invalidGrade);
+
+    expect(reviewsService.gradeReview).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid card ids before calling the service', async () => {
+    await expect(
+      controller.grade({ cardId: '   ' }, { grade: 'good' }),
+    ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardIdRequired);
 
     expect(reviewsService.gradeReview).not.toHaveBeenCalled();
   });
@@ -213,18 +222,18 @@ describe('ReviewsController', () => {
   it('preserves not found and not actionable review errors', async () => {
     reviewsService.gradeReview
       .mockRejectedValueOnce(
-        new NotFoundException('Chunk review card not found'),
+        new NotFoundException(REVIEW_ERROR_MESSAGES.cardNotFound),
       )
       .mockRejectedValueOnce(
-        new BadRequestException('Card is not currently reviewable'),
+        new BadRequestException(REVIEW_ERROR_MESSAGES.cardNotReviewable),
       );
 
     await expect(
       controller.grade({ cardId: 'card-missing' }, { grade: 'good' }),
-    ).rejects.toThrow(NotFoundException);
+    ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotFound);
 
     await expect(
       controller.grade({ cardId: 'card-1' }, { grade: 'good' }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotReviewable);
   });
 });
