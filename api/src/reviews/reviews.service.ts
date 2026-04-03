@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Grade, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -9,7 +13,6 @@ import {
   getNextConsecutiveSuccessCount,
   hasChunkMastery,
 } from './chunk-scheduling';
-import type { GradeReviewDto } from './dto/grade-review.dto';
 
 type ChunkWithCards = {
   id: string;
@@ -87,6 +90,18 @@ export type GradeChunkReviewResult = {
   nextActionableItem: ReviewQueueItem | null;
 };
 
+export type GradeReviewAttempt =
+  | {
+      status: 'graded';
+      result: GradeChunkReviewResult;
+    }
+  | {
+      status: 'not_found';
+    }
+  | {
+      status: 'not_actionable';
+    };
+
 @Injectable()
 export class ReviewsService {
   private static readonly DEFAULT_EASE = 2.5;
@@ -159,7 +174,9 @@ export class ReviewsService {
     })) as ChunkWithCards[];
   }
 
-  private async findChunkByCardId(cardId: string): Promise<ChunkWithCards | null> {
+  private async findChunkByCardId(
+    cardId: string,
+  ): Promise<ChunkWithCards | null> {
     return (await this.prisma.chunk.findFirst({
       where: {
         chunkCards: {
@@ -221,15 +238,16 @@ export class ReviewsService {
     now: Date,
     persistedState?: PersistedChunkReviewState | null,
   ): ChunkProgressSnapshot {
-    const state = persistedState ?? chunk.reviewState ?? {
-      id: `ephemeral-${chunk.id}`,
-      chunkId: chunk.id,
-      due: now,
-      consecutiveSuccessCount: 0,
-      lastGrade: null,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const state = persistedState ??
+      chunk.reviewState ?? {
+        id: `ephemeral-${chunk.id}`,
+        chunkId: chunk.id,
+        due: now,
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      };
     const totalCards = chunk.chunkCards.length;
     const currentCardIndex =
       totalCards > 0
@@ -390,9 +408,9 @@ export class ReviewsService {
           ? existingCardState
             ? existingCardState.reps + 1
             : 1
-          : existingCardState?.reps ?? 0,
+          : (existingCardState?.reps ?? 0),
         lapses: wasSuccessful
-          ? existingCardState?.lapses ?? 0
+          ? (existingCardState?.lapses ?? 0)
           : (existingCardState?.lapses ?? 0) + 1,
         lastGrade: grade,
       },
@@ -467,28 +485,23 @@ export class ReviewsService {
     };
   }
 
-  getQueueStub() {
-    return {
-      module: 'reviews' as const,
-      status: 'not_implemented' as const,
-      operation: 'queue' as const,
-      message: 'Review queue logic will be implemented in Step 4 and Step 5.',
-      payload: {
-        items: [],
-      },
-    };
-  }
+  async gradeReview(
+    cardId: string,
+    grade: Grade,
+    now = new Date(),
+  ): Promise<GradeChunkReviewResult> {
+    const result = await this.applyGradeToCard(cardId, grade, now);
 
-  gradeStub(cardId: string, input: GradeReviewDto) {
-    return {
-      module: 'reviews' as const,
-      status: 'not_implemented' as const,
-      operation: 'grade' as const,
-      message: 'Review grading logic will be implemented in Step 4 and Step 5.',
-      payload: {
-        cardId,
-        grade: input.grade,
-      },
-    };
+    if (result) {
+      return result;
+    }
+
+    const chunk = await this.findChunkByCardId(cardId);
+
+    if (!chunk) {
+      throw new NotFoundException('Chunk review card not found');
+    }
+
+    throw new BadRequestException('Card is not currently reviewable');
   }
 }

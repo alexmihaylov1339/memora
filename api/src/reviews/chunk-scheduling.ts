@@ -44,7 +44,7 @@ export function getNextConsecutiveSuccessCount(
 
 export function hasChunkMastery(
   consecutiveSuccessCount: number,
-  requiredConsecutiveSuccesses = DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
+  requiredConsecutiveSuccesses: number = DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
 ): boolean {
   if (
     !Number.isInteger(consecutiveSuccessCount) ||

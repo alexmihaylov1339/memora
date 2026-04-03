@@ -1,0 +1,130 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { Grade } from '@prisma/client';
+import { ReviewsController } from './reviews.controller';
+import type {
+  GradeChunkReviewResult,
+  ReviewQueueItem,
+} from './reviews.service';
+
+interface ReviewsServiceMock {
+  getEligibleQueueItems: jest.Mock<Promise<ReviewQueueItem[]>>;
+  gradeReview: jest.Mock<Promise<GradeChunkReviewResult>, [string, Grade]>;
+}
+
+function createReviewsServiceMock(): ReviewsServiceMock {
+  return {
+    getEligibleQueueItems: jest.fn<Promise<ReviewQueueItem[]>, []>(),
+    gradeReview: jest.fn<Promise<GradeChunkReviewResult>, [string, Grade]>(),
+  };
+}
+
+describe('ReviewsController', () => {
+  let controller: ReviewsController;
+  let reviewsService: ReviewsServiceMock;
+
+  beforeEach(() => {
+    reviewsService = createReviewsServiceMock();
+    controller = new ReviewsController(reviewsService as never);
+  });
+
+  it('returns real scheduler-backed queue items', async () => {
+    reviewsService.getEligibleQueueItems.mockResolvedValue([
+      {
+        cardId: 'card-1',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'spielen',
+        chunkPosition: 0,
+        positionInChunk: 0,
+        due: new Date('2026-04-03T10:00:00.000Z'),
+        kind: 'basic',
+        fields: { front: 'spielen 1', back: 'play 1' },
+        cardCreatedAt: new Date('2026-04-02T10:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+      },
+    ]);
+
+    await expect(controller.queue()).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          cardId: 'card-1',
+          chunkId: 'chunk-1',
+        }),
+      ],
+    });
+  });
+
+  it('passes a validated enum grade to the review service', async () => {
+    reviewsService.gradeReview.mockResolvedValue({
+      cardId: 'card-1',
+      grade: 'good',
+      wasSuccessful: true,
+      advanced: true,
+      reset: false,
+      previousConsecutiveSuccessCount: 0,
+      consecutiveSuccessCount: 1,
+      due: new Date('2026-04-03T18:00:00.000Z'),
+      intervalHours: 8,
+      chunk: {
+        chunkId: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        due: new Date('2026-04-03T18:00:00.000Z'),
+        isDue: false,
+        consecutiveSuccessCount: 1,
+        requiredConsecutiveSuccesses: 20,
+        hasMastery: false,
+        totalCards: 2,
+        currentCard: {
+          cardId: 'card-2',
+          sequenceIndex: 1,
+        },
+        lastGrade: 'good',
+        stateCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
+        stateUpdatedAt: new Date('2026-04-03T10:00:00.000Z'),
+      },
+      nextActionableItem: null,
+    });
+
+    await expect(
+      controller.grade({ cardId: ' card-1 ' }, { grade: 'good' }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        cardId: 'card-1',
+        grade: 'good',
+      }),
+    );
+
+    expect(reviewsService.gradeReview).toHaveBeenCalledWith('card-1', 'good');
+  });
+
+  it('rejects invalid grades before calling the service', async () => {
+    await expect(
+      controller.grade(
+        { cardId: 'card-1' },
+        { grade: 'invalid-grade' as Grade },
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(reviewsService.gradeReview).not.toHaveBeenCalled();
+  });
+
+  it('preserves not found and not actionable review errors', async () => {
+    reviewsService.gradeReview
+      .mockRejectedValueOnce(
+        new NotFoundException('Chunk review card not found'),
+      )
+      .mockRejectedValueOnce(
+        new BadRequestException('Card is not currently reviewable'),
+      );
+
+    await expect(
+      controller.grade({ cardId: 'card-missing' }, { grade: 'good' }),
+    ).rejects.toThrow(NotFoundException);
+
+    await expect(
+      controller.grade({ cardId: 'card-1' }, { grade: 'good' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+});

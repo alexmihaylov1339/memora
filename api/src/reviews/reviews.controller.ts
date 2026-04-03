@@ -23,16 +23,20 @@ export class ReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Get('queue')
-  @HttpCode(HttpStatus.NOT_IMPLEMENTED)
-  queue() {
-    return this.reviews.getQueueStub();
+  async queue() {
+    const items = await this.reviews.getEligibleQueueItems();
+
+    return { items };
   }
 
   @Post(':cardId/grade')
-  @HttpCode(HttpStatus.NOT_IMPLEMENTED)
-  grade(@Param() params: ReviewCardIdParamDto, @Body() body: GradeReviewDto) {
+  @HttpCode(HttpStatus.OK)
+  async grade(
+    @Param() params: ReviewCardIdParamDto,
+    @Body() body: GradeReviewDto,
+  ) {
     const cardId = validateReviewCardId(params.cardId);
-    validateGradeReviewInput(body);
-    return this.reviews.gradeStub(cardId, body);
+    const grade = validateGradeReviewInput(body);
+    return this.reviews.gradeReview(cardId, grade);
   }
 }

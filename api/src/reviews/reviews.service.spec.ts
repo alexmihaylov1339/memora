@@ -511,7 +511,23 @@ describe('ReviewsService', () => {
         },
       });
       expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
-      const successfulLogCall = prisma.reviewLog.create.mock.calls[0]?.[0] as {
+      const [successfulLogCall] = prisma.reviewLog.create.mock.calls as Array<
+        [
+          {
+            data: {
+              cardId: string;
+              grade: Grade;
+              oldInterval: number;
+              newInterval: number;
+              oldEase: number;
+              newEase: number;
+              mode: string;
+              wasCorrect: boolean | null;
+            };
+          },
+        ]
+      >;
+      const successfulLogPayload = successfulLogCall?.[0] as {
         data: {
           cardId: string;
           grade: Grade;
@@ -523,7 +539,7 @@ describe('ReviewsService', () => {
           wasCorrect: boolean | null;
         };
       };
-      expect(successfulLogCall.data).toEqual(
+      expect(successfulLogPayload.data).toEqual(
         expect.objectContaining({
           cardId: 'card-1',
           grade: 'good',
@@ -656,7 +672,19 @@ describe('ReviewsService', () => {
         },
       });
       expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
-      const resetLogCall = prisma.reviewLog.create.mock.calls[0]?.[0] as {
+      const [resetLogCall] = prisma.reviewLog.create.mock.calls as Array<
+        [
+          {
+            data: {
+              cardId: string;
+              grade: Grade;
+              newInterval: number;
+              wasCorrect: boolean | null;
+            };
+          },
+        ]
+      >;
+      const resetLogPayload = resetLogCall?.[0] as {
         data: {
           cardId: string;
           grade: Grade;
@@ -664,7 +692,7 @@ describe('ReviewsService', () => {
           wasCorrect: boolean | null;
         };
       };
-      expect(resetLogCall.data).toEqual(
+      expect(resetLogPayload.data).toEqual(
         expect.objectContaining({
           cardId: 'card-4',
           grade: 'again',

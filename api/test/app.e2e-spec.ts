@@ -237,13 +237,11 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get('/v1/reviews/queue')
       .set(authHeader)
-      .expect(501)
+      .expect(200)
       .expect((res) => {
         expect(res.body).toEqual(
           expect.objectContaining({
-            module: 'reviews',
-            status: 'not_implemented',
-            operation: 'queue',
+            items: expect.any(Array),
           }),
         );
       });

@@ -347,6 +347,9 @@ Verification:
 
 ### T5 - Review API contract upgrade from stubs
 
+Status:
+- Done
+
 Tasks:
 - Replace `501` stubs in:
   - `GET /reviews/queue`
@@ -360,6 +363,17 @@ Explanation:
 
 Acceptance:
 - Review endpoints return real scheduler-backed data.
+
+Verification:
+- `api/src/reviews/reviews.controller.ts` now returns real queue and grade responses instead of `501` stubs
+- `GET /reviews/queue` now returns `{ items: ReviewQueueItem[] }` from the scheduling service
+- `POST /reviews/:cardId/grade` now validates enum grades (`again | hard | good | easy`) and returns real progression results
+- invalid/non-actionable grading now returns explicit `400` or `404` behavior through the review service
+- `api/src/reviews/reviews.controller.spec.ts` covers queue, validated grade submission, and propagated `400/404` paths
+- `api/test/app.e2e-spec.ts` is updated to expect the real queue contract instead of `501`
+- `cd api && npx jest src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts src/reviews/chunk-scheduling.spec.ts --runInBand`
+- `cd api && npx eslint 'src/reviews/**/*.ts' 'test/app.e2e-spec.ts'`
+- `cd api && npx tsc --noEmit --pretty false`
 
 ### T6 - Tests and edge-case verification
 
@@ -467,6 +481,11 @@ Automated:
 - Review endpoints are no longer `501`.
 - Scheduler behavior is covered by unit/integration tests.
 - Step 5 can build on stable review contracts instead of stubs.
+
+## Implementation Status
+
+- T1-T5: Completed
+- T6: Partially completed (scheduler/unit coverage is in place; e2e queue + grade flow still needs a full local run against the real DB-backed app)
 
 ---
 
