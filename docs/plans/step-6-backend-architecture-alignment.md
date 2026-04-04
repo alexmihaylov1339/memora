@@ -548,7 +548,7 @@ Verification:
 ### T7 - Strengthen tests around architecture-sensitive paths
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Add or update tests where Step 6 changes semantics, transactions, or response mapping.
@@ -576,6 +576,16 @@ Acceptance:
 
 Verification:
 - Relevant unit/controller/e2e suites pass after the refactor.
+
+Verification:
+- `api/src/auth/auth.controller.spec.ts` now covers controller-boundary validation and normalization for the modernized auth DTO flow
+- `api/src/chunks/chunks.controller.spec.ts` now covers chunk controller response serialization plus explicit `400`/`404` mapping from service result contracts
+- existing chunk/review service and controller tests continue to cover the refactored write orchestration and locked review contracts
+- `api/test/app.e2e-spec.ts` continues to protect the main API flow and the new semantics assertions added earlier in Step 6
+- `cd api && npx jest src/auth/auth.controller.spec.ts src/chunks/chunks.controller.spec.ts src/chunks/chunks.service.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts --runInBand` passes
+- `cd api && npx eslint 'src/auth/**/*.ts' 'src/chunks/**/*.ts'` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 
