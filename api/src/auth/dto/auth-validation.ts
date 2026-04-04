@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { hasTrimmedText, isUndefined } from '../../common/utils';
+import { AUTH_ERROR_MESSAGES } from '../auth-errors';
 import type { DevLoginDto } from './dev-login.dto';
 import type { ForgotPasswordDto } from './forgot-password.dto';
 import type { LoginDto } from './login.dto';
@@ -9,11 +10,11 @@ import type { UpdateAccountDto } from './update-account.dto';
 
 export function validateRegisterInput(body: RegisterDto): RegisterDto {
   if (!body || !hasTrimmedText(body.email)) {
-    throw new BadRequestException('Email is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
   }
 
   if (!hasTrimmedText(body.password)) {
-    throw new BadRequestException('Password is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordRequired);
   }
 
   return {
@@ -25,11 +26,11 @@ export function validateRegisterInput(body: RegisterDto): RegisterDto {
 
 export function validateLoginInput(body: LoginDto): LoginDto {
   if (!body || !hasTrimmedText(body.email)) {
-    throw new BadRequestException('Email is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
   }
 
   if (!hasTrimmedText(body.password)) {
-    throw new BadRequestException('Password is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordRequired);
   }
 
   return {
@@ -40,7 +41,7 @@ export function validateLoginInput(body: LoginDto): LoginDto {
 
 export function validateDevLoginInput(body: DevLoginDto): DevLoginDto {
   if (!body || !hasTrimmedText(body.email)) {
-    throw new BadRequestException('Email is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
   }
 
   return {
@@ -53,7 +54,7 @@ export function validateForgotPasswordInput(
   body: ForgotPasswordDto,
 ): ForgotPasswordDto {
   if (!body || !hasTrimmedText(body.email)) {
-    throw new BadRequestException('Email is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
   }
 
   return {
@@ -65,11 +66,11 @@ export function validateResetPasswordInput(
   body: ResetPasswordDto,
 ): ResetPasswordDto {
   if (!body || !hasTrimmedText(body.token)) {
-    throw new BadRequestException('Token is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.tokenRequired);
   }
 
   if (!hasTrimmedText(body.password)) {
-    throw new BadRequestException('Password is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordRequired);
   }
 
   return {
@@ -82,11 +83,13 @@ export function validateUpdateAccountInput(
   body: UpdateAccountDto,
 ): UpdateAccountDto {
   if (!body || (isUndefined(body.name) && isUndefined(body.email))) {
-    throw new BadRequestException('at least one field is required');
+    throw new BadRequestException(
+      AUTH_ERROR_MESSAGES.updateAccountRequiresField,
+    );
   }
 
   if (!isUndefined(body.email) && !hasTrimmedText(body.email)) {
-    throw new BadRequestException('Email is required');
+    throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
   }
 
   return {

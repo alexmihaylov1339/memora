@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
+import { AUTH_ERROR_MESSAGES } from './auth-errors';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -23,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const header = req.headers.authorization;
 
     if (!header?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing Bearer token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.missingBearerToken);
     }
 
     const token = header.slice('Bearer '.length).trim();
@@ -37,7 +38,7 @@ export class AuthGuard implements CanActivate {
       req.user = { id: payload.sub, email: payload.email };
       return true;
     } catch {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.invalidToken);
     }
   }
 }

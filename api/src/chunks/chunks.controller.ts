@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { ChunksService } from './chunks.service';
+import { CHUNK_ERROR_MESSAGES } from './chunk-errors';
 import type { ChunkIdParamDto } from './dto/chunk-id-param.dto';
 import type { CreateChunkDto } from './dto/create-chunk.dto';
 import type { UpdateChunkDto } from './dto/update-chunk.dto';
@@ -41,12 +42,12 @@ export class ChunksController {
     });
 
     if (result.status === 'deck_not_found') {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(CHUNK_ERROR_MESSAGES.deckNotFound);
     }
 
     if (result.status === 'invalid_cards') {
       throw new BadRequestException(
-        'cardIds must reference existing cards in the same deck',
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
       );
     }
 
@@ -59,7 +60,7 @@ export class ChunksController {
 
     const chunk = await this.chunks.findOne(id);
     if (!chunk) {
-      throw new NotFoundException('chunk not found');
+      throw new NotFoundException(CHUNK_ERROR_MESSAGES.chunkNotFound);
     }
 
     return serializeChunkResponse(chunk);
@@ -77,12 +78,12 @@ export class ChunksController {
     });
 
     if (result.status === 'not_found') {
-      throw new NotFoundException('chunk not found');
+      throw new NotFoundException(CHUNK_ERROR_MESSAGES.chunkNotFound);
     }
 
     if (result.status === 'invalid_cards') {
       throw new BadRequestException(
-        'cardIds must reference existing cards in the same deck',
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
       );
     }
 
@@ -96,7 +97,7 @@ export class ChunksController {
 
     const removed = await this.chunks.remove(id);
     if (!removed) {
-      throw new NotFoundException('chunk not found');
+      throw new NotFoundException(CHUNK_ERROR_MESSAGES.chunkNotFound);
     }
   }
 }

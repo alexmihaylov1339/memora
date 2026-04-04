@@ -16,6 +16,7 @@ import { CardsService } from './cards.service';
 import type { CreateCardDto } from './dto/create-card.dto';
 import type { CardIdParamDto } from './dto/card-id-param.dto';
 import type { UpdateCardDto } from './dto/update-card.dto';
+import { CARD_ERROR_MESSAGES } from './card-errors';
 import {
   validateCardId,
   validateCreateCardInput,
@@ -40,7 +41,7 @@ export class CardsController {
     });
 
     if (!card) {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(CARD_ERROR_MESSAGES.deckNotFound);
     }
 
     return serializeCardResponse(card);
@@ -52,7 +53,7 @@ export class CardsController {
 
     const card = await this.cards.findOne(id);
     if (!card) {
-      throw new NotFoundException('card not found');
+      throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }
 
     return serializeCardResponse(card);
@@ -68,7 +69,7 @@ export class CardsController {
       fields: body.fields as Prisma.JsonObject | undefined,
     });
     if (!card) {
-      throw new NotFoundException('card not found');
+      throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }
 
     return serializeCardResponse(card);
@@ -81,7 +82,7 @@ export class CardsController {
 
     const removed = await this.cards.remove(id);
     if (!removed) {
-      throw new NotFoundException('card not found');
+      throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }
   }
 }

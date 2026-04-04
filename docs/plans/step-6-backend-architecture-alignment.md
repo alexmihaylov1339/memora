@@ -412,7 +412,7 @@ Verification:
 ### T4 - Normalize backend error semantics and messages
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Re-check HTTP status code usage across modules.
@@ -445,6 +445,16 @@ Acceptance:
 Verification:
 - Tests cover changed error paths.
 - No endpoint returns raw Prisma/internal errors to API consumers.
+
+Verification:
+- `api/src/auth/auth-errors.ts`, `api/src/cards/card-errors.ts`, `api/src/chunks/chunk-errors.ts`, and `api/src/decks/deck-errors.ts` now centralize stable feature-local error messages
+- auth validation helpers, auth guard, auth service, and card/chunk/deck validation/controller layers now reuse those feature-local semantics instead of scattering ad-hoc strings
+- login/dev-login missing-input defensive checks now use `400`-style bad-input semantics instead of `401` semantics
+- chunk invalid card membership remains an intentional `400` with a stable message, while missing deck/chunk resources remain `404`
+- `api/test/app.e2e-spec.ts` now covers auth login validation and invalid chunk card membership with explicit API-level error assertions
+- `cd api && npx eslint 'src/auth/**/*.ts' 'src/cards/**/*.ts' 'src/chunks/**/*.ts' 'src/decks/**/*.ts' 'test/app.e2e-spec.ts'` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 

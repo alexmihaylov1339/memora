@@ -3,6 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { AUTH_ERROR_MESSAGES } from './../src/auth/auth-errors';
+import { CHUNK_ERROR_MESSAGES } from './../src/chunks/chunk-errors';
 import { PrismaService } from './../prisma/prisma.service';
 import { REVIEW_ERROR_MESSAGES } from './../src/reviews/review-errors';
 
@@ -134,6 +136,58 @@ describe('AppController (e2e)', () => {
     );
 
     accessToken = getStringField(loginBody, 'accessToken');
+  });
+
+  it('auth and chunk endpoints return stable validation semantics', async () => {
+    const server = app.getHttpServer();
+
+    await request(server)
+      .post('/v1/auth/login')
+      .send({ email: '   ', password: 'secret123' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: AUTH_ERROR_MESSAGES.emailRequired,
+            error: 'Bad Request',
+          }),
+        );
+      });
+
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `E2E Validation Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        deckId,
+        title: 'Invalid chunk',
+        cardIds: ['card-missing'],
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
+            error: 'Bad Request',
+          }),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/decks/${deckId}`)
+      .set(authHeader)
+      .expect(204);
   });
 
   it('cards/chunks/reviews module smoke endpoints', async () => {

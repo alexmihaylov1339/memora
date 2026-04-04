@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 import { ChunksService } from '../chunks/chunks.service';
+import { DECK_ERROR_MESSAGES } from './deck-errors';
 import { serializeChunkResponseList } from '../chunks/dto/chunk-response.dto';
 import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
 import type { CreateDeckDto } from './dto/create-deck.dto';
@@ -77,7 +78,7 @@ export class DecksController {
 
     const chunks = await this.chunks.findByDeckWithOptions(id, normalizedQuery);
     if (!chunks) {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
 
     return serializeChunkResponseList(chunks);
@@ -89,7 +90,7 @@ export class DecksController {
 
     const deck = await this.decks.findOne(id);
     if (!deck) {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
 
     return serializeDeckDetail(deck);
@@ -105,7 +106,7 @@ export class DecksController {
       description: body.description?.trim(),
     });
     if (!deck) {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
 
     return serializeDeckDetail(deck);
@@ -118,7 +119,7 @@ export class DecksController {
 
     const removed = await this.decks.remove(id);
     if (!removed) {
-      throw new NotFoundException('deck not found');
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
   }
 }

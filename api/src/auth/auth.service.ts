@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { EmailService } from '../email/email.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AUTH_ERROR_MESSAGES } from './auth-errors';
 
 const SALT_ROUNDS = 10;
 const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
@@ -58,14 +59,15 @@ export class AuthService {
 
   async register(input: RegisterInput) {
     const email = input.email?.trim().toLowerCase();
-    if (!email) throw new BadRequestException('Email is required');
+    if (!email)
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
     if (!input.password || input.password.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters');
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordMinLength);
     }
 
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException(AUTH_ERROR_MESSAGES.userAlreadyExists);
     }
 
     const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
@@ -85,21 +87,25 @@ export class AuthService {
 
   async login(input: LoginInput) {
     const email = input.email?.trim().toLowerCase();
-    if (!email) throw new UnauthorizedException('Email is required');
-    if (!input.password)
-      throw new UnauthorizedException('Password is required');
+    if (!email)
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+    if (!input.password) {
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordRequired);
+    }
 
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) throw new UnauthorizedException('Invalid email or password');
+    if (!user) {
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.invalidCredentials);
+    }
 
     if (!user.passwordHash) {
-      throw new UnauthorizedException(
-        'Account was created without password. Please use the forgot password flow.',
-      );
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.passwordlessAccount);
     }
 
     const valid = await bcrypt.compare(input.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Invalid email or password');
+    if (!valid) {
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.invalidCredentials);
+    }
 
     const payload = { sub: user.id, email: user.email };
     const accessToken = await this.jwt.signAsync(payload);
@@ -109,7 +115,8 @@ export class AuthService {
 
   async devLogin(input: DevLoginInput) {
     const email = input.email?.trim().toLowerCase();
-    if (!email) throw new UnauthorizedException('Email is required');
+    if (!email)
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
 
     let user = await this.prisma.user.findUnique({ where: { email } });
 
@@ -135,13 +142,13 @@ export class AuthService {
 
   async forgotPassword(input: ForgotPasswordInput) {
     const email = input.email?.trim().toLowerCase();
-    if (!email) throw new BadRequestException('Email is required');
+    if (!email)
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
 
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       return {
-        message:
-          'If an account exists with this email, you will receive a reset link.',
+        message: AUTH_ERROR_MESSAGES.forgotPasswordMessage,
       };
     }
 
@@ -166,22 +173,21 @@ export class AuthService {
 
     if (process.env.NODE_ENV !== 'production' && !sent) {
       return {
-        message:
-          'If an account exists with this email, you will receive a reset link.',
+        message: AUTH_ERROR_MESSAGES.forgotPasswordMessage,
         resetToken: token,
       };
     }
     return {
-      message:
-        'If an account exists with this email, you will receive a reset link.',
+      message: AUTH_ERROR_MESSAGES.forgotPasswordMessage,
     };
   }
 
   async resetPassword(input: ResetPasswordInput) {
-    if (!input.token?.trim())
-      throw new BadRequestException('Token is required');
+    if (!input.token?.trim()) {
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.tokenRequired);
+    }
     if (!input.password || input.password.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters');
+      throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordMinLength);
     }
 
     const user = await this.prisma.user.findFirst({
@@ -193,7 +199,7 @@ export class AuthService {
       user.passwordResetExpiresAt < new Date()
     ) {
       throw new UnauthorizedException(
-        'Invalid or expired reset link. Please request a new one.',
+        AUTH_ERROR_MESSAGES.invalidOrExpiredResetLink,
       );
     }
 
@@ -212,22 +218,26 @@ export class AuthService {
 
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user)
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.userNotFound);
     return publicUser(user);
   }
 
   async updateAccount(userId: string, input: UpdateAccountInput) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user)
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.userNotFound);
 
     const data: { name?: string | null; email?: string } = {};
 
     if (input.email !== undefined) {
       const email = input.email.trim().toLowerCase();
-      if (!email) throw new BadRequestException('Email is required');
+      if (!email) {
+        throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+      }
       const existing = await this.prisma.user.findUnique({ where: { email } });
       if (existing && existing.id !== userId) {
-        throw new ConflictException('User with this email already exists');
+        throw new ConflictException(AUTH_ERROR_MESSAGES.userAlreadyExists);
       }
       data.email = email;
     }

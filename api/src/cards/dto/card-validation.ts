@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { CARD_ERROR_MESSAGES } from '../card-errors';
 import type { CreateCardDto } from './create-card.dto';
 import type { UpdateCardDto } from './update-card.dto';
 
@@ -8,7 +9,7 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
 
 export function validateCardId(id: string): string {
   if (!id?.trim()) {
-    throw new BadRequestException('id is required');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.idRequired);
   }
 
   return id.trim();
@@ -16,28 +17,28 @@ export function validateCardId(id: string): string {
 
 export function validateCreateCardInput(body: CreateCardDto) {
   if (!body?.deckId?.trim()) {
-    throw new BadRequestException('deckId is required');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.deckIdRequired);
   }
 
   if (!body?.kind?.trim()) {
-    throw new BadRequestException('kind is required');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.kindRequired);
   }
 
   if (!isObjectRecord(body.fields)) {
-    throw new BadRequestException('fields must be a non-null object');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
   }
 }
 
 export function validateUpdateCardInput(body: UpdateCardDto) {
   if (!body || (body.kind === undefined && body.fields === undefined)) {
-    throw new BadRequestException('at least one field is required');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.atLeastOneFieldRequired);
   }
 
   if (body.kind !== undefined && !body.kind.trim()) {
-    throw new BadRequestException('kind cannot be empty');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.kindCannotBeEmpty);
   }
 
   if (body.fields !== undefined && !isObjectRecord(body.fields)) {
-    throw new BadRequestException('fields must be a non-null object');
+    throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
   }
 }

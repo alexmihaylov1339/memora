@@ -5,13 +5,14 @@ import {
   isNonNegativeInteger,
   isUndefined,
 } from '../../common/utils';
+import { CHUNK_ERROR_MESSAGES } from '../chunk-errors';
 import type { CreateChunkDto } from './create-chunk.dto';
 import type { ListChunksQueryDto } from './list-chunks-query.dto';
 import type { UpdateChunkDto } from './update-chunk.dto';
 
 export function validateChunkId(id: string): string {
   if (!hasTrimmedText(id)) {
-    throw new BadRequestException('id is required');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.idRequired);
   }
 
   return id.trim();
@@ -19,21 +20,23 @@ export function validateChunkId(id: string): string {
 
 export function validateCreateChunkInput(body: CreateChunkDto) {
   if (!body || !hasTrimmedText(body.deckId)) {
-    throw new BadRequestException('deckId is required');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.deckIdRequired);
   }
 
   if (!hasTrimmedText(body.title)) {
-    throw new BadRequestException('title is required');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.titleRequired);
   }
 
   if (!isUndefined(body.cardIds) && !hasUniqueTrimmedTextArray(body.cardIds)) {
     throw new BadRequestException(
-      'cardIds must be an array of unique non-empty strings',
+      CHUNK_ERROR_MESSAGES.cardIdsMustBeUniqueStrings,
     );
   }
 
   if (!isUndefined(body.position) && !isNonNegativeInteger(body.position)) {
-    throw new BadRequestException('position must be a non-negative integer');
+    throw new BadRequestException(
+      CHUNK_ERROR_MESSAGES.positionMustBeNonNegative,
+    );
   }
 }
 
@@ -44,21 +47,23 @@ export function validateUpdateChunkInput(body: UpdateChunkDto) {
       isUndefined(body.cardIds) &&
       isUndefined(body.position))
   ) {
-    throw new BadRequestException('at least one field is required');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.atLeastOneFieldRequired);
   }
 
   if (!isUndefined(body.title) && !hasTrimmedText(body.title)) {
-    throw new BadRequestException('title cannot be empty');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.titleCannotBeEmpty);
   }
 
   if (!isUndefined(body.cardIds) && !hasUniqueTrimmedTextArray(body.cardIds)) {
     throw new BadRequestException(
-      'cardIds must be an array of unique non-empty strings',
+      CHUNK_ERROR_MESSAGES.cardIdsMustBeUniqueStrings,
     );
   }
 
   if (!isUndefined(body.position) && !isNonNegativeInteger(body.position)) {
-    throw new BadRequestException('position must be a non-negative integer');
+    throw new BadRequestException(
+      CHUNK_ERROR_MESSAGES.positionMustBeNonNegative,
+    );
   }
 }
 
@@ -70,15 +75,15 @@ export function validateListChunksQuery(
   const direction = query.direction ?? 'asc';
 
   if (!isNonNegativeInteger(limit) || limit < 1 || limit > 100) {
-    throw new BadRequestException('limit must be an integer between 1 and 100');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.limitMustBeInRange);
   }
 
   if (!isNonNegativeInteger(offset)) {
-    throw new BadRequestException('offset must be a non-negative integer');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.offsetMustBeNonNegative);
   }
 
   if (direction !== 'asc' && direction !== 'desc') {
-    throw new BadRequestException('direction must be asc or desc');
+    throw new BadRequestException(CHUNK_ERROR_MESSAGES.directionMustBeValid);
   }
 
   return { limit, offset, direction };
