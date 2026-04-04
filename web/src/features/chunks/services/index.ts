@@ -1,0 +1,1 @@
+export { chunkService } from './chunkService';

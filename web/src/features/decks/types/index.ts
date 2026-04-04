@@ -30,6 +30,18 @@ export interface DeckIdParams {
   id: string;
 }
 
+export interface CardRecord {
+  id: string;
+  deckId: string;
+  kind: string;
+  fields: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface DeckCardsParams {
+  deckId: string;
+}
+
 export type CreateDeckResponse = DeckRecord;
 export type UpdateDeckResponse = DeckDetail;
 export type GetDeckByIdResponse = DeckDetail;

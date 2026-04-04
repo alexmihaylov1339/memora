@@ -10,9 +10,9 @@ import {
   useDeleteCardMutation,
   useEditCardFormFields,
   useUpdateCardMutation,
+  type CardRecord,
 } from '@features/decks';
 import { CARD_KIND_OPTIONS } from '@features/decks/services/cardService';
-import type { CardRecord } from '@features/decks/services/cardService';
 import { CardsPageHeader } from '../../components';
 import { isString, resolveSingleParam } from '@/shared/utils';
 

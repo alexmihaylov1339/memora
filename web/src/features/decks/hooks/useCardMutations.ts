@@ -1,6 +1,6 @@
 import { useService, type UseServiceOptions } from '@shared/hooks';
 import { cardService } from '../services';
-import type { CardRecord } from '../services/cardService';
+import type { CardRecord } from '../types';
 
 interface CreateCardParams {
   deckId: string;

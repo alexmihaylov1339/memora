@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 import { ChunksService } from '../chunks/chunks.service';
+import { serializeCardResponseList } from '../cards/dto/card-response.dto';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
 import { serializeChunkResponseList } from '../chunks/dto/chunk-response.dto';
 import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
@@ -82,6 +83,18 @@ export class DecksController {
     }
 
     return serializeChunkResponseList(chunks);
+  }
+
+  @Get(':id/cards')
+  async listCards(@Param() params: DeckIdParamDto) {
+    const id = validateDeckId(params.id);
+
+    const cards = await this.decks.findCards(id);
+    if (!cards) {
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
+    }
+
+    return serializeCardResponseList(cards);
   }
 
   @Get(':id')

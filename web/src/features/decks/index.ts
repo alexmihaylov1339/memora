@@ -9,6 +9,7 @@ export {
   useUpdateDeckMutation,
   useDeleteDeckMutation,
   useCardDetailQuery,
+  useDeckCardsQuery,
   useCreateCardMutation,
   useUpdateCardMutation,
   useDeleteCardMutation,
@@ -24,7 +25,9 @@ export {
 export type {
   CreateDeckDto,
   CreateDeckResponse,
+  CardRecord,
   Deck,
+  DeckCardsParams,
   DeckDetail,
   DeckIdParams,
   DeckListItem,

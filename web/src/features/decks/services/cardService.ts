@@ -1,4 +1,6 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
+import { DECK_ENDPOINTS } from '../constants';
+import type { CardRecord, DeckCardsParams } from '../types';
 
 interface CardPayload {
   deckId: string;
@@ -16,14 +18,6 @@ interface CardIdPayload {
   id: string;
 }
 
-export interface CardRecord {
-  id: string;
-  deckId: string;
-  kind: string;
-  fields: Record<string, unknown>;
-  createdAt: string;
-}
-
 export const CARD_KIND_OPTIONS = ['basic', 'cloze', 'mcq'] as const;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
@@ -36,6 +30,7 @@ const CARD_ENDPOINTS = {
 
 export const cardService = {
   create(params: CardPayload) {
+
     return api
       .prepareRequest(CARD_ENDPOINTS.BASE, HTTP_METHODS.POST)
       .setHeaders(getAuthHeaders())
@@ -50,8 +45,16 @@ export const cardService = {
       .execRequest<CardRecord>();
   },
 
+  listByDeck(params: DeckCardsParams) {
+    return api
+      .prepareRequest(DECK_ENDPOINTS.CARDS(params.deckId), HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<CardRecord[]>();
+  },
+
   update(params: UpdateCardPayload) {
     const { id, ...data } = params;
+
     return api
       .prepareRequest(CARD_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
       .setHeaders(getAuthHeaders())

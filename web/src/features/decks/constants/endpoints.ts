@@ -4,6 +4,6 @@
 export const DECK_ENDPOINTS = {
   BASE: '/v1/decks',
   DETAIL: (id: string) => `/v1/decks/${id}`,
+  CARDS: (id: string) => `/v1/decks/${id}/cards`,
 } as const;
-
 

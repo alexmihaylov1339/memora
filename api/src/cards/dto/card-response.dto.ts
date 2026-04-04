@@ -18,3 +18,9 @@ export function serializeCardResponse(card: CardRecord): CardResponseDto {
     createdAt: card.createdAt.toISOString(),
   };
 }
+
+export function serializeCardResponseList(
+  cards: CardRecord[],
+): CardResponseDto[] {
+  return cards.map(serializeCardResponse);
+}

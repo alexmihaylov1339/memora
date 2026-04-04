@@ -338,7 +338,7 @@ Verification:
 ### T2 - Add the missing data layer for deck workspace and chunk authoring
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Add minimal backend support for deck-scoped card listing.
@@ -382,6 +382,19 @@ Acceptance:
 Verification:
 - Backend tests and e2e confirm the new listing endpoint works.
 - Web typecheck passes with the new service/hook layer in place.
+- Implemented backend support contract:
+  - `GET /v1/decks/:id/cards` now returns frontend-safe card records using the existing card response serializer
+  - missing decks return the existing stable deck `404` semantics
+- Implemented frontend data layer:
+  - `features/chunks` now provides typed chunk services, query hooks, and mutation hooks
+  - `features/reviews` now provides typed review queue and grade services plus hooks
+  - `features/decks` now includes deck-scoped card listing support via `cardService.listByDeck(...)` and `useDeckCardsQuery(...)`
+- Verification completed:
+  - `cd api && npx tsc --noEmit --pretty false` passes
+  - `cd api && npx jest --runInBand` passes
+  - `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
+  - `cd web && npx tsc --noEmit` passes
+  - `cd web && npx eslint 'src/features/decks/constants/endpoints.ts' 'src/features/decks/hooks/index.ts' 'src/features/decks/hooks/useCardMutations.ts' 'src/features/decks/hooks/useCardQueries.ts' 'src/features/decks/index.ts' 'src/features/decks/services/cardService.ts' 'src/features/decks/types/index.ts' 'src/features/chunks/**/*.ts' 'src/features/reviews/**/*.ts' 'src/features/index.ts' 'src/app/[locale]/cards/[id]/edit/page.tsx'` passes
 
 ---
 

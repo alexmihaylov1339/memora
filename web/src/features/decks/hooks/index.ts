@@ -7,7 +7,7 @@ export {
   useUpdateDeckMutation,
   useDeleteDeckMutation,
 } from './useDeckMutations';
-export { useCardDetailQuery } from './useCardQueries';
+export { useCardDetailQuery, useDeckCardsQuery } from './useCardQueries';
 export {
   useCreateCardMutation,
   useUpdateCardMutation,
@@ -15,4 +15,3 @@ export {
 } from './useCardMutations';
 export { useDeckEditFormFields } from './useDeckFormFields';
 export { useCreateCardFormFields, useEditCardFormFields } from './useCardFormFields';
-

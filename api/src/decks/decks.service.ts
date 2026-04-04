@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { CardRecord } from '../cards/cards.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface DeckListItem {
@@ -106,5 +107,21 @@ export class DecksService {
 
     await this.prisma.deck.delete({ where: { id } });
     return true;
+  }
+
+  async findCards(id: string): Promise<CardRecord[] | null> {
+    const deck = await this.prisma.deck.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!deck) {
+      return null;
+    }
+
+    return (await this.prisma.card.findMany({
+      where: { deckId: id },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    })) as CardRecord[];
   }
 }

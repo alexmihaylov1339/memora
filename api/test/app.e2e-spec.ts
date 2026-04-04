@@ -5,6 +5,7 @@ import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { AUTH_ERROR_MESSAGES } from './../src/auth/auth-errors';
 import { CHUNK_ERROR_MESSAGES } from './../src/chunks/chunk-errors';
+import { DECK_ERROR_MESSAGES } from './../src/decks/deck-errors';
 import { PrismaService } from './../prisma/prisma.service';
 import { REVIEW_ERROR_MESSAGES } from './../src/reviews/review-errors';
 
@@ -228,6 +229,26 @@ describe('AppController (e2e)', () => {
         );
       });
 
+    await request(server)
+      .get(`/v1/decks/${deckId}/cards`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: cardId,
+              deckId,
+              kind: 'basic',
+              fields: {
+                front: 'Hallo',
+                back: 'Hello',
+              },
+            }),
+          ]),
+        );
+      });
+
     const createChunkRes = await request(server)
       .post('/v1/chunks')
       .set(authHeader)
@@ -316,6 +337,20 @@ describe('AppController (e2e)', () => {
       .delete(`/v1/chunks/${chunkId}`)
       .set(authHeader)
       .expect(204);
+
+    await request(server)
+      .get('/v1/decks/deck-missing/cards')
+      .set(authHeader)
+      .expect(404)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 404,
+            message: DECK_ERROR_MESSAGES.deckNotFound,
+            error: 'Not Found',
+          }),
+        );
+      });
 
     await request(server)
       .get(`/v1/chunks/${chunkId}`)
