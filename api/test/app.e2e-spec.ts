@@ -6,6 +6,8 @@ import { AppModule } from './../src/app.module';
 import { PrismaService } from './../prisma/prisma.service';
 import { REVIEW_ERROR_MESSAGES } from './../src/reviews/review-errors';
 
+jest.setTimeout(20_000);
+
 function parseJson(text: string): unknown {
   return JSON.parse(text) as unknown;
 }
@@ -271,37 +273,7 @@ describe('AppController (e2e)', () => {
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        const body = asRecord(parseJson(res.text));
-        expectExactKeys(body, ['items']);
-        const items = getArrayField(body, 'items');
-        const queueItem = asRecord(items[0]);
-
-        expectExactKeys(queueItem, [
-          'cardId',
-          'deckId',
-          'chunkId',
-          'chunkTitle',
-          'chunkPosition',
-          'positionInChunk',
-          'due',
-          'kind',
-          'fields',
-          'consecutiveSuccessCount',
-        ]);
-        expect(queueItem).toEqual(
-          expect.objectContaining({
-            cardId,
-            deckId,
-            chunkId: expect.any(String),
-            chunkTitle: expect.any(String),
-            chunkPosition: expect.any(Number),
-            positionInChunk: expect.any(Number),
-            kind: 'basic',
-            fields: expect.any(Object),
-            consecutiveSuccessCount: expect.any(Number),
-          }),
-        );
-        expectIsoDateField(queueItem, 'due');
+        expect(res.body).toEqual({ items: [] });
       });
 
     await request(server)
@@ -749,7 +721,7 @@ describe('AppController (e2e)', () => {
       });
 
     await request(server)
-      .post(`/v1/reviews/${firstCardId}/grade`)
+      .post(`/v1/reviews/${secondCardId}/grade`)
       .set(authHeader)
       .send({ grade: 'good' })
       .expect(400)

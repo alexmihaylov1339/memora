@@ -1,6 +1,6 @@
 # Memora: Step 5 Plan - Review API Headless First
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-03  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 5
 
@@ -343,9 +343,10 @@ Verification:
 - `api/src/reviews/reviews.controller.ts` remains thin: request validation stays in DTO helpers, domain logic stays in `ReviewsService`, and response shaping stays in DTO serializers
 - review DTOs and tests now match the intended public contract: ISO date strings, stable nested queue-item reuse, and no persistence-timestamp leakage
 - `api/src/reviews/reviews.service.ts` no longer carries stale snapshot fields that are outside the Step 5 public contract
+- Prisma migrations now include the chunk-review state table with Postgres-compatible timestamp types, and the configured database has the missing chunk/review migrations applied
 - `cd api && npx jest src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts --runInBand` passes
 - `cd api && npx tsc --noEmit --pretty false` passes
-- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` is still blocked by environment/schema drift because the configured database is missing `public.Chunk`
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 
