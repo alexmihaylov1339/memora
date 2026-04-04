@@ -9,34 +9,48 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import type { DevLoginDto } from './dto/dev-login.dto';
+import type { ForgotPasswordDto } from './dto/forgot-password.dto';
+import type { LoginDto } from './dto/login.dto';
+import type { RegisterDto } from './dto/register.dto';
+import type { ResetPasswordDto } from './dto/reset-password.dto';
+import type { UpdateAccountDto } from './dto/update-account.dto';
+import {
+  validateDevLoginInput,
+  validateForgotPasswordInput,
+  validateLoginInput,
+  validateRegisterInput,
+  validateResetPasswordInput,
+  validateUpdateAccountInput,
+} from './dto/auth-validation';
 
 @Controller()
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('auth/register')
-  register(@Body() body: { email: string; password: string; name?: string }) {
-    return this.auth.register(body);
+  register(@Body() body: RegisterDto) {
+    return this.auth.register(validateRegisterInput(body));
   }
 
   @Post('auth/login')
-  login(@Body() body: { email: string; password: string }) {
-    return this.auth.login(body);
+  login(@Body() body: LoginDto) {
+    return this.auth.login(validateLoginInput(body));
   }
 
   @Post('auth/dev-login')
-  devLogin(@Body() body: { email: string; name?: string }) {
-    return this.auth.devLogin(body);
+  devLogin(@Body() body: DevLoginDto) {
+    return this.auth.devLogin(validateDevLoginInput(body));
   }
 
   @Post('auth/forgot-password')
-  forgotPassword(@Body() body: { email: string }) {
-    return this.auth.forgotPassword(body);
+  forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.auth.forgotPassword(validateForgotPasswordInput(body));
   }
 
   @Post('auth/reset-password')
-  resetPassword(@Body() body: { token: string; password: string }) {
-    return this.auth.resetPassword(body);
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.auth.resetPassword(validateResetPasswordInput(body));
   }
 
   @UseGuards(AuthGuard)
@@ -50,9 +64,12 @@ export class AuthController {
   @Patch('me')
   async updateAccount(
     @Req() req: { user: { id: string } },
-    @Body() body: { name?: string; email?: string },
+    @Body() body: UpdateAccountDto,
   ) {
-    const user = await this.auth.updateAccount(req.user.id, body);
+    const user = await this.auth.updateAccount(
+      req.user.id,
+      validateUpdateAccountInput(body),
+    );
     return { user };
   }
 }

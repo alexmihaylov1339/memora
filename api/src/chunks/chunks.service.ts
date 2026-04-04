@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-type ChunkRecord = {
+interface ChunkRecord {
   id: string;
   deckId: string;
   title: string;
@@ -13,13 +13,46 @@ type ChunkRecord = {
     sequenceIndex: number;
     offsetDays: number | null;
   }>;
-};
+}
+
+interface CreateChunkInput {
+  deckId: string;
+  title: string;
+  cardIds?: string[];
+  position?: number;
+}
+
+interface UpdateChunkInput {
+  title?: string;
+  cardIds?: string[];
+  position?: number;
+}
+
+export interface ChunkResponse {
+  id: string;
+  deckId: string;
+  title: string;
+  cardIds: string[];
+  position: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type CreateChunkResult =
+  | { status: 'created'; chunk: ChunkResponse }
+  | { status: 'deck_not_found' }
+  | { status: 'invalid_cards' };
+
+export type UpdateChunkResult =
+  | { status: 'updated'; chunk: ChunkResponse }
+  | { status: 'not_found' }
+  | { status: 'invalid_cards' };
 
 @Injectable()
 export class ChunksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  private serializeChunk(chunk: ChunkRecord) {
+  private serializeChunk(chunk: ChunkRecord): ChunkResponse {
     return {
       id: chunk.id,
       deckId: chunk.deckId,
@@ -31,17 +64,12 @@ export class ChunksService {
     };
   }
 
-  async create(data: {
-    deckId: string;
-    title: string;
-    cardIds?: string[];
-    position?: number;
-  }) {
+  async create(data: CreateChunkInput): Promise<CreateChunkResult> {
     const deck = await this.prisma.deck.findUnique({
       where: { id: data.deckId },
     });
     if (!deck) {
-      return null;
+      return { status: 'deck_not_found' };
     }
 
     if (data.cardIds && data.cardIds.length > 0) {
@@ -54,7 +82,7 @@ export class ChunksService {
         cards.length !== data.cardIds.length ||
         cards.some((card) => card.deckId !== data.deckId)
       ) {
-        return null;
+        return { status: 'invalid_cards' };
       }
     }
 
@@ -78,7 +106,10 @@ export class ChunksService {
       },
     });
 
-    return this.serializeChunk(chunk as ChunkRecord);
+    return {
+      status: 'created',
+      chunk: this.serializeChunk(chunk as ChunkRecord),
+    };
   }
 
   async findOne(id: string) {
@@ -140,18 +171,11 @@ export class ChunksService {
     return chunks.map((chunk) => this.serializeChunk(chunk as ChunkRecord));
   }
 
-  async update(
-    id: string,
-    data: {
-      title?: string;
-      cardIds?: string[];
-      position?: number;
-    },
-  ) {
+  async update(id: string, data: UpdateChunkInput): Promise<UpdateChunkResult> {
     const existing = await this.prisma.chunk.findUnique({ where: { id } });
-    
+
     if (!existing) {
-      return null;
+      return { status: 'not_found' };
     }
 
     if (data.cardIds && data.cardIds.length > 0) {
@@ -164,7 +188,7 @@ export class ChunksService {
         cards.length !== data.cardIds.length ||
         cards.some((card) => card.deckId !== existing.deckId)
       ) {
-        return null;
+        return { status: 'invalid_cards' };
       }
     }
 
@@ -192,7 +216,10 @@ export class ChunksService {
       },
     });
 
-    return this.serializeChunk(chunk as ChunkRecord);
+    return {
+      status: 'updated',
+      chunk: this.serializeChunk(chunk as ChunkRecord),
+    };
   }
 
   async remove(id: string) {

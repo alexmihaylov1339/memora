@@ -51,7 +51,7 @@ describe('ChunksService', () => {
           deckId: 'deck-1',
           title: 'Chunk 1',
         }),
-      ).resolves.toBeNull();
+      ).resolves.toEqual({ status: 'deck_not_found' });
     });
 
     it('returns null when referenced cards are missing or from another deck', async () => {
@@ -66,7 +66,7 @@ describe('ChunksService', () => {
           title: 'Chunk 1',
           cardIds: ['card-1', 'card-2'],
         }),
-      ).resolves.toBeNull();
+      ).resolves.toEqual({ status: 'invalid_cards' });
     });
 
     it('creates a chunk with defaults when input is valid', async () => {
@@ -89,13 +89,16 @@ describe('ChunksService', () => {
           title: 'Chunk 1',
         }),
       ).resolves.toEqual({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'Chunk 1',
-        cardIds: [],
-        position: 0,
-        createdAt: createdChunk.createdAt,
-        updatedAt: createdChunk.updatedAt,
+        status: 'created',
+        chunk: {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'Chunk 1',
+          cardIds: [],
+          position: 0,
+          createdAt: createdChunk.createdAt,
+          updatedAt: createdChunk.updatedAt,
+        },
       });
 
       expect(prisma.chunk.create).toHaveBeenCalledWith({
@@ -256,21 +259,23 @@ describe('ChunksService', () => {
         service.update('chunk-1', {
           title: 'Updated Chunk',
         }),
-      ).resolves.toBeNull();
+      ).resolves.toEqual({ status: 'not_found' });
     });
 
-    it('returns null when updated card references are invalid', async () => {
+    it('returns invalid_cards when updated card references are invalid', async () => {
       prisma.chunk.findUnique.mockResolvedValue({
         id: 'chunk-1',
         deckId: 'deck-1',
       });
-      prisma.card.findMany.mockResolvedValue([{ id: 'card-1', deckId: 'deck-2' }]);
+      prisma.card.findMany.mockResolvedValue([
+        { id: 'card-1', deckId: 'deck-2' },
+      ]);
 
       await expect(
         service.update('chunk-1', {
           cardIds: ['card-1'],
         }),
-      ).resolves.toBeNull();
+      ).resolves.toEqual({ status: 'invalid_cards' });
     });
 
     it('updates and serializes a chunk', async () => {
@@ -294,7 +299,9 @@ describe('ChunksService', () => {
         id: 'chunk-1',
         deckId: 'deck-1',
       });
-      prisma.card.findMany.mockResolvedValue([{ id: 'card-3', deckId: 'deck-1' }]);
+      prisma.card.findMany.mockResolvedValue([
+        { id: 'card-3', deckId: 'deck-1' },
+      ]);
       prisma.chunk.update.mockResolvedValue(updatedChunk);
 
       await expect(
@@ -304,13 +311,16 @@ describe('ChunksService', () => {
           position: 3,
         }),
       ).resolves.toEqual({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'Updated Chunk',
-        cardIds: ['card-3'],
-        position: 3,
-        createdAt: updatedChunk.createdAt,
-        updatedAt: updatedChunk.updatedAt,
+        status: 'updated',
+        chunk: {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'Updated Chunk',
+          cardIds: ['card-3'],
+          position: 3,
+          createdAt: updatedChunk.createdAt,
+          updatedAt: updatedChunk.updatedAt,
+        },
       });
 
       expect(prisma.chunk.update).toHaveBeenCalledWith({

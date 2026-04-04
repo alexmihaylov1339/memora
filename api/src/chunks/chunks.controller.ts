@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -25,24 +26,30 @@ import {
 @Controller('chunks')
 @UseGuards(AuthGuard)
 export class ChunksController {
-  constructor(private chunks: ChunksService) {}
+  constructor(private readonly chunks: ChunksService) {}
 
   @Post()
   async create(@Body() body: CreateChunkDto) {
     validateCreateChunkInput(body);
 
-    const chunk = await this.chunks.create({
+    const result = await this.chunks.create({
       deckId: body.deckId.trim(),
       title: body.title.trim(),
       cardIds: body.cardIds?.map((id) => id.trim()),
       position: body.position,
     });
 
-    if (!chunk) {
-      throw new NotFoundException('deck not found or card not found');
+    if (result.status === 'deck_not_found') {
+      throw new NotFoundException('deck not found');
     }
 
-    return chunk;
+    if (result.status === 'invalid_cards') {
+      throw new BadRequestException(
+        'cardIds must reference existing cards in the same deck',
+      );
+    }
+
+    return result.chunk;
   }
 
   @Get(':id')
@@ -62,17 +69,23 @@ export class ChunksController {
     const id = validateChunkId(params.id);
     validateUpdateChunkInput(body);
 
-    const chunk = await this.chunks.update(id, {
+    const result = await this.chunks.update(id, {
       title: body.title?.trim(),
       cardIds: body.cardIds?.map((cardId) => cardId.trim()),
       position: body.position,
     });
 
-    if (!chunk) {
-      throw new NotFoundException('chunk not found or card not found');
+    if (result.status === 'not_found') {
+      throw new NotFoundException('chunk not found');
     }
 
-    return chunk;
+    if (result.status === 'invalid_cards') {
+      throw new BadRequestException(
+        'cardIds must reference existing cards in the same deck',
+      );
+    }
+
+    return result.chunk;
   }
 
   @Delete(':id')

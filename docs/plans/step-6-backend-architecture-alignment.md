@@ -310,7 +310,7 @@ Explicitly deferred beyond Step 6:
 ### T2 - Standardize controller boundary patterns
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Make controller flow consistent across `auth`, `cards`, `chunks`, `decks`, and `reviews`.
@@ -345,6 +345,15 @@ Acceptance:
 Verification:
 - Controller code reads consistently across modules.
 - Controller-focused tests still pass and are updated where semantics change.
+
+Verification:
+- `api/src/auth/auth.controller.ts` now uses feature-local DTO files plus `auth-validation.ts` helpers instead of inline body object types
+- auth request normalization/required-field checks now happen at the module boundary before service logic runs
+- `api/src/chunks/chunks.service.ts` now returns explicit result contracts for create/update flows instead of ambiguous `null` values
+- `api/src/chunks/chunks.controller.ts` now maps explicit service outcomes to HTTP responses instead of inferring intent from a coarse `null`
+- `cd api && npx jest src/chunks/chunks.service.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts --runInBand` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 
