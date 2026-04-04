@@ -59,8 +59,6 @@ export type ChunkProgressSnapshot = {
     sequenceIndex: number;
   } | null;
   lastGrade: Grade | null;
-  stateCreatedAt: Date;
-  stateUpdatedAt: Date;
 };
 
 export type ReviewQueueItem = {
@@ -90,18 +88,6 @@ export type GradeChunkReviewResult = {
   chunk: ChunkProgressSnapshot;
   nextActionableItem: ReviewQueueItem | null;
 };
-
-export type GradeReviewAttempt =
-  | {
-      status: 'graded';
-      result: GradeChunkReviewResult;
-    }
-  | {
-      status: 'not_found';
-    }
-  | {
-      status: 'not_actionable';
-    };
 
 @Injectable()
 export class ReviewsService {
@@ -276,8 +262,6 @@ export class ReviewsService {
           }
         : null,
       lastGrade: state.lastGrade,
-      stateCreatedAt: state.createdAt,
-      stateUpdatedAt: state.updatedAt,
     };
   }
 

@@ -80,8 +80,6 @@ describe('ReviewsService', () => {
           sequenceIndex: 0,
         },
         lastGrade: null,
-        stateCreatedAt: now,
-        stateUpdatedAt: now,
       });
 
       expect(prisma.chunkReviewState.upsert).toHaveBeenCalledWith({

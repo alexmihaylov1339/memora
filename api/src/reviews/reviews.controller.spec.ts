@@ -90,8 +90,6 @@ describe('ReviewsController', () => {
           sequenceIndex: 1,
         },
         lastGrade: 'good',
-        stateCreatedAt: new Date('2026-04-03T10:00:00.000Z'),
-        stateUpdatedAt: new Date('2026-04-03T10:00:00.000Z'),
       },
       nextActionableItem: {
         cardId: 'card-2',

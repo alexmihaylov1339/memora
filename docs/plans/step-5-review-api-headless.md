@@ -324,6 +324,9 @@ Verification:
 
 ### T6 - Final review API readiness pass
 
+Status:
+- Done
+
 Tasks:
 - Re-check controller thinness and DTO usage.
 - Ensure the plan and the code match.
@@ -335,6 +338,14 @@ Explanation:
 
 Acceptance:
 - Review API is stable enough that the next step can focus on UI, not backend contract churn.
+
+Verification:
+- `api/src/reviews/reviews.controller.ts` remains thin: request validation stays in DTO helpers, domain logic stays in `ReviewsService`, and response shaping stays in DTO serializers
+- review DTOs and tests now match the intended public contract: ISO date strings, stable nested queue-item reuse, and no persistence-timestamp leakage
+- `api/src/reviews/reviews.service.ts` no longer carries stale snapshot fields that are outside the Step 5 public contract
+- `cd api && npx jest src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts --runInBand` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` is still blocked by environment/schema drift because the configured database is missing `public.Chunk`
 
 ---
 
