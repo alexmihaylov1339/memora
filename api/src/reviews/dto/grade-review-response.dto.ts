@@ -3,6 +3,7 @@ import type {
   ChunkProgressSnapshot,
   GradeChunkReviewResult,
 } from '../reviews.service';
+import { serializeDate } from './review-response-serialization';
 import {
   serializeReviewQueueItem,
   type ReviewQueueItemDto,
@@ -13,7 +14,7 @@ export interface ChunkProgressSnapshotDto {
   deckId: string;
   title: string;
   position: number;
-  due: Date;
+  due: string;
   isDue: boolean;
   consecutiveSuccessCount: number;
   requiredConsecutiveSuccesses: number;
@@ -24,8 +25,6 @@ export interface ChunkProgressSnapshotDto {
     sequenceIndex: number;
   } | null;
   lastGrade: Grade | null;
-  stateCreatedAt: Date;
-  stateUpdatedAt: Date;
 }
 
 export interface GradeReviewResponseDto {
@@ -36,7 +35,7 @@ export interface GradeReviewResponseDto {
   reset: boolean;
   previousConsecutiveSuccessCount: number;
   consecutiveSuccessCount: number;
-  due: Date;
+  due: string;
   intervalHours: number;
   chunk: ChunkProgressSnapshotDto;
   nextActionableItem: ReviewQueueItemDto | null;
@@ -50,7 +49,7 @@ export function serializeChunkProgressSnapshot(
     deckId: snapshot.deckId,
     title: snapshot.title,
     position: snapshot.position,
-    due: snapshot.due,
+    due: serializeDate(snapshot.due),
     isDue: snapshot.isDue,
     consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
     requiredConsecutiveSuccesses: snapshot.requiredConsecutiveSuccesses,
@@ -58,8 +57,6 @@ export function serializeChunkProgressSnapshot(
     totalCards: snapshot.totalCards,
     currentCard: snapshot.currentCard,
     lastGrade: snapshot.lastGrade,
-    stateCreatedAt: snapshot.stateCreatedAt,
-    stateUpdatedAt: snapshot.stateUpdatedAt,
   };
 }
 
@@ -74,7 +71,7 @@ export function serializeGradeReviewResponse(
     reset: result.reset,
     previousConsecutiveSuccessCount: result.previousConsecutiveSuccessCount,
     consecutiveSuccessCount: result.consecutiveSuccessCount,
-    due: result.due,
+    due: serializeDate(result.due),
     intervalHours: result.intervalHours,
     chunk: serializeChunkProgressSnapshot(result.chunk),
     nextActionableItem: result.nextActionableItem

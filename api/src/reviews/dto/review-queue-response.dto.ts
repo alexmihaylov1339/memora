@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import type { ReviewQueueItem } from '../reviews.service';
+import { serializeDate } from './review-response-serialization';
 
 export interface ReviewQueueItemDto {
   cardId: string;
@@ -8,7 +9,7 @@ export interface ReviewQueueItemDto {
   chunkTitle: string;
   chunkPosition: number;
   positionInChunk: number;
-  due: Date;
+  due: string;
   kind: string;
   fields: Prisma.JsonValue;
   consecutiveSuccessCount: number;
@@ -28,7 +29,7 @@ export function serializeReviewQueueItem(
     chunkTitle: item.chunkTitle,
     chunkPosition: item.chunkPosition,
     positionInChunk: item.positionInChunk,
-    due: item.due,
+    due: serializeDate(item.due),
     kind: item.kind,
     fields: item.fields,
     consecutiveSuccessCount: item.consecutiveSuccessCount,

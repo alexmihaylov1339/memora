@@ -470,8 +470,6 @@ describe('AppController (e2e)', () => {
             sequenceIndex: 1,
           }),
           lastGrade: 'good',
-          stateCreatedAt: expect.any(String),
-          stateUpdatedAt: expect.any(String),
         }),
         nextActionableItem: expect.objectContaining({
           cardId: secondCardId,

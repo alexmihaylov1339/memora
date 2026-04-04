@@ -266,6 +266,9 @@ Verification:
 
 ### T4 - Make response serialization frontend-safe
 
+Status:
+- Done
+
 Tasks:
 - Ensure review endpoint responses do not leak unstable persistence internals unnecessarily.
 - Confirm date fields and nested objects are consistent across queue and grade responses.
@@ -277,6 +280,13 @@ Explanation:
 
 Acceptance:
 - Queue and grade responses are shaped intentionally for API consumers, not just raw service objects.
+
+Verification:
+- `api/src/reviews/dto/review-response-serialization.ts` now centralizes review response date serialization
+- queue and grade DTOs now expose ISO date strings consistently instead of raw `Date` instances
+- grade response chunk metadata no longer leaks persistence-oriented state timestamps
+- nested `nextActionableItem` stays aligned with the same public queue-item serializer used by `GET /reviews/queue`
+- controller and e2e tests now assert the frontend-safe response shapes directly
 
 ---
 
