@@ -43,6 +43,11 @@ type PersistedChunkReviewState = {
   updatedAt: Date;
 };
 
+type ReviewPersistenceClient = Pick<
+  PrismaService,
+  'chunkReviewState' | 'reviewLog' | 'reviewState'
+>;
+
 export type ChunkProgressSnapshot = {
   chunkId: string;
   deckId: string;
@@ -94,6 +99,76 @@ export class ReviewsService {
   private static readonly DEFAULT_EASE = 2.5;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  private async persistGradeSideEffects(
+    client: ReviewPersistenceClient,
+    input: {
+      cardId: string;
+      chunkId: string;
+      now: Date;
+      nextDue: Date;
+      nextConsecutiveSuccessCount: number;
+      grade: Grade;
+      intervalHours: number;
+      wasSuccessful: boolean;
+      existingCardState: {
+        ease: number;
+        interval: number;
+        reps: number;
+        lapses: number;
+      } | null;
+      mode: string;
+    },
+  ): Promise<void> {
+    await client.chunkReviewState.update({
+      where: { chunkId: input.chunkId },
+      data: {
+        due: input.nextDue,
+        consecutiveSuccessCount: input.nextConsecutiveSuccessCount,
+        lastGrade: input.grade,
+      },
+    });
+
+    await client.reviewState.upsert({
+      where: { cardId: input.cardId },
+      update: {
+        due: input.nextDue,
+        interval: input.intervalHours,
+        reps: input.wasSuccessful
+          ? input.existingCardState
+            ? input.existingCardState.reps + 1
+            : 1
+          : (input.existingCardState?.reps ?? 0),
+        lapses: input.wasSuccessful
+          ? (input.existingCardState?.lapses ?? 0)
+          : (input.existingCardState?.lapses ?? 0) + 1,
+        lastGrade: input.grade,
+      },
+      create: {
+        cardId: input.cardId,
+        ease: ReviewsService.DEFAULT_EASE,
+        interval: input.intervalHours,
+        due: input.nextDue,
+        reps: input.wasSuccessful ? 1 : 0,
+        lapses: input.wasSuccessful ? 0 : 1,
+        lastGrade: input.grade,
+      },
+    });
+
+    await client.reviewLog.create({
+      data: {
+        cardId: input.cardId,
+        reviewedAt: input.now,
+        grade: input.grade,
+        oldInterval: input.existingCardState?.interval ?? 0,
+        newInterval: input.intervalHours,
+        oldEase: input.existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
+        newEase: input.existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
+        mode: input.mode,
+        wasCorrect: input.wasSuccessful,
+      },
+    });
+  }
 
   private async findChunkWithCards(
     chunkId: string,
@@ -360,6 +435,8 @@ export class ReviewsService {
       return null;
     }
 
+    const currentCardMode = currentChunkCard.card.kind;
+
     const wasSuccessful = grade !== 'again';
     const nextConsecutiveSuccessCount = getNextConsecutiveSuccessCount(
       snapshot.consecutiveSuccessCount,
@@ -375,53 +452,19 @@ export class ReviewsService {
       where: { cardId },
     });
 
-    await this.prisma.chunkReviewState.update({
-      where: { chunkId: chunk.id },
-      data: {
-        due: nextDue,
-        consecutiveSuccessCount: nextConsecutiveSuccessCount,
-        lastGrade: grade,
-      },
-    });
-
-    await this.prisma.reviewState.upsert({
-      where: { cardId },
-      update: {
-        due: nextDue,
-        interval: intervalHours,
-        reps: wasSuccessful
-          ? existingCardState
-            ? existingCardState.reps + 1
-            : 1
-          : (existingCardState?.reps ?? 0),
-        lapses: wasSuccessful
-          ? (existingCardState?.lapses ?? 0)
-          : (existingCardState?.lapses ?? 0) + 1,
-        lastGrade: grade,
-      },
-      create: {
+    await this.prisma.$transaction(async (tx) => {
+      await this.persistGradeSideEffects(tx as ReviewPersistenceClient, {
         cardId,
-        ease: ReviewsService.DEFAULT_EASE,
-        interval: intervalHours,
-        due: nextDue,
-        reps: wasSuccessful ? 1 : 0,
-        lapses: wasSuccessful ? 0 : 1,
-        lastGrade: grade,
-      },
-    });
-
-    await this.prisma.reviewLog.create({
-      data: {
-        cardId,
-        reviewedAt: now,
+        chunkId: chunk.id,
+        now,
+        nextDue,
+        nextConsecutiveSuccessCount,
         grade,
-        oldInterval: existingCardState?.interval ?? 0,
-        newInterval: intervalHours,
-        oldEase: existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
-        newEase: existingCardState?.ease ?? ReviewsService.DEFAULT_EASE,
-        mode: currentChunkCard.card.kind,
-        wasCorrect: wasSuccessful,
-      },
+        intervalHours,
+        wasSuccessful,
+        existingCardState,
+        mode: currentCardMode,
+      });
     });
 
     const nextSnapshot = this.deriveChunkReviewState(chunk, now, {

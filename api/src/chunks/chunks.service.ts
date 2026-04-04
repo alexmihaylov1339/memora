@@ -48,9 +48,27 @@ export type UpdateChunkResult =
   | { status: 'not_found' }
   | { status: 'invalid_cards' };
 
+type ChunkPersistenceClient = Pick<PrismaService, 'card' | 'chunk' | 'deck'>;
+
 @Injectable()
 export class ChunksService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async hasValidDeckCards(
+    client: ChunkPersistenceClient,
+    deckId: string,
+    cardIds: string[],
+  ): Promise<boolean> {
+    const cards = await client.card.findMany({
+      where: { id: { in: cardIds } },
+      select: { id: true, deckId: true },
+    });
+
+    return (
+      cards.length === cardIds.length &&
+      cards.every((card) => card.deckId === deckId)
+    );
+  }
 
   private mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
     return {
@@ -65,51 +83,48 @@ export class ChunksService {
   }
 
   async create(data: CreateChunkInput): Promise<CreateChunkResult> {
-    const deck = await this.prisma.deck.findUnique({
-      where: { id: data.deckId },
-    });
-    if (!deck) {
-      return { status: 'deck_not_found' };
-    }
-
-    if (data.cardIds && data.cardIds.length > 0) {
-      const cards = await this.prisma.card.findMany({
-        where: { id: { in: data.cardIds } },
-        select: { id: true, deckId: true },
+    return this.prisma.$transaction(async (tx) => {
+      const client = tx as ChunkPersistenceClient;
+      const deck = await client.deck.findUnique({
+        where: { id: data.deckId },
       });
+      if (!deck) {
+        return { status: 'deck_not_found' } satisfies CreateChunkResult;
+      }
 
       if (
-        cards.length !== data.cardIds.length ||
-        cards.some((card) => card.deckId !== data.deckId)
+        data.cardIds &&
+        data.cardIds.length > 0 &&
+        !(await this.hasValidDeckCards(client, data.deckId, data.cardIds))
       ) {
-        return { status: 'invalid_cards' };
+        return { status: 'invalid_cards' } satisfies CreateChunkResult;
       }
-    }
 
-    const chunk = await this.prisma.chunk.create({
-      data: {
-        deckId: data.deckId,
-        title: data.title,
-        position: data.position ?? 0,
-        chunkCards: {
-          create:
-            data.cardIds?.map((cardId, index) => ({
-              cardId,
-              sequenceIndex: index,
-            })) ?? [],
+      const chunk = await client.chunk.create({
+        data: {
+          deckId: data.deckId,
+          title: data.title,
+          position: data.position ?? 0,
+          chunkCards: {
+            create:
+              data.cardIds?.map((cardId, index) => ({
+                cardId,
+                sequenceIndex: index,
+              })) ?? [],
+          },
         },
-      },
-      include: {
-        chunkCards: {
-          orderBy: { sequenceIndex: 'asc' },
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
         },
-      },
+      });
+
+      return {
+        status: 'created',
+        chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
+      } satisfies CreateChunkResult;
     });
-
-    return {
-      status: 'created',
-      chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
-    };
   }
 
   async findOne(id: string): Promise<ChunkSummary | null> {
@@ -174,54 +189,51 @@ export class ChunksService {
   }
 
   async update(id: string, data: UpdateChunkInput): Promise<UpdateChunkResult> {
-    const existing = await this.prisma.chunk.findUnique({ where: { id } });
+    return this.prisma.$transaction(async (tx) => {
+      const client = tx as ChunkPersistenceClient;
+      const existing = await client.chunk.findUnique({ where: { id } });
 
-    if (!existing) {
-      return { status: 'not_found' };
-    }
-
-    if (data.cardIds && data.cardIds.length > 0) {
-      const cards = await this.prisma.card.findMany({
-        where: { id: { in: data.cardIds } },
-        select: { id: true, deckId: true },
-      });
+      if (!existing) {
+        return { status: 'not_found' } satisfies UpdateChunkResult;
+      }
 
       if (
-        cards.length !== data.cardIds.length ||
-        cards.some((card) => card.deckId !== existing.deckId)
+        data.cardIds &&
+        data.cardIds.length > 0 &&
+        !(await this.hasValidDeckCards(client, existing.deckId, data.cardIds))
       ) {
-        return { status: 'invalid_cards' };
+        return { status: 'invalid_cards' } satisfies UpdateChunkResult;
       }
-    }
 
-    const chunk = await this.prisma.chunk.update({
-      where: { id },
-      data: {
-        title: data.title,
-        position: data.position,
-        ...(data.cardIds !== undefined
-          ? {
-              chunkCards: {
-                deleteMany: {},
-                create: data.cardIds.map((cardId, index) => ({
-                  cardId,
-                  sequenceIndex: index,
-                })),
-              },
-            }
-          : {}),
-      },
-      include: {
-        chunkCards: {
-          orderBy: { sequenceIndex: 'asc' },
+      const chunk = await client.chunk.update({
+        where: { id },
+        data: {
+          title: data.title,
+          position: data.position,
+          ...(data.cardIds !== undefined
+            ? {
+                chunkCards: {
+                  deleteMany: {},
+                  create: data.cardIds.map((cardId, index) => ({
+                    cardId,
+                    sequenceIndex: index,
+                  })),
+                },
+              }
+            : {}),
         },
-      },
-    });
+        include: {
+          chunkCards: {
+            orderBy: { sequenceIndex: 'asc' },
+          },
+        },
+      });
 
-    return {
-      status: 'updated',
-      chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
-    };
+      return {
+        status: 'updated',
+        chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
+      } satisfies UpdateChunkResult;
+    });
   }
 
   async remove(id: string) {

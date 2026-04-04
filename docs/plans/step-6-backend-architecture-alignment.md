@@ -461,7 +461,7 @@ Verification:
 ### T5 - Tighten transactions and persistence orchestration
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Audit multi-step writes for consistency risk.
@@ -489,6 +489,16 @@ Acceptance:
 Verification:
 - Service tests cover at least the main transactional flows.
 - Transactions are introduced only where they provide real consistency value.
+
+Verification:
+- `api/src/reviews/reviews.service.ts` now wraps grade persistence side effects in a single Prisma transaction so chunk review state, card review state, and review log writes stay consistent
+- `api/src/chunks/chunks.service.ts` now uses transaction-scoped clients for create/update flows so validation and chunk membership writes are orchestrated in one persistence boundary
+- `api/src/reviews/reviews.service.spec.ts` now asserts transactional orchestration for successful and reset grading flows
+- `api/src/chunks/chunks.service.spec.ts` now asserts transactional orchestration for create/update flows
+- `cd api && npx eslint 'src/reviews/**/*.ts' 'src/chunks/**/*.ts'` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npx jest src/chunks/chunks.service.spec.ts src/reviews/reviews.service.spec.ts src/reviews/reviews.controller.spec.ts --runInBand` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 

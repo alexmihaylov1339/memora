@@ -4,7 +4,7 @@ import type { GradeChunkReviewResult } from './reviews.service';
 import { ReviewsService } from './reviews.service';
 
 function createPrismaMock() {
-  return {
+  const prisma = {
     chunk: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -21,7 +21,16 @@ function createPrismaMock() {
     reviewLog: {
       create: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
+
+  const runInTransaction = async <T>(
+    callback: (tx: typeof prisma) => Promise<T>,
+  ): Promise<T> => await callback(prisma);
+
+  prisma.$transaction.mockImplementation(runInTransaction as never);
+
+  return prisma;
 }
 
 describe('ReviewsService', () => {
@@ -509,6 +518,7 @@ describe('ReviewsService', () => {
         },
       });
       expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
       const [successfulLogCall] = prisma.reviewLog.create.mock.calls as Array<
         [
           {
@@ -670,6 +680,7 @@ describe('ReviewsService', () => {
         },
       });
       expect(prisma.reviewLog.create).toHaveBeenCalledTimes(1);
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
       const [resetLogCall] = prisma.reviewLog.create.mock.calls as Array<
         [
           {

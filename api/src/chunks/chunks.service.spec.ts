@@ -16,7 +16,7 @@ type ChunkRecord = {
 };
 
 function createPrismaMock() {
-  return {
+  const prisma = {
     deck: {
       findUnique: jest.fn(),
     },
@@ -30,7 +30,16 @@ function createPrismaMock() {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
+
+  const runInTransaction = async <T>(
+    callback: (tx: typeof prisma) => Promise<T>,
+  ): Promise<T> => await callback(prisma);
+
+  prisma.$transaction.mockImplementation(runInTransaction as never);
+
+  return prisma;
 }
 
 describe('ChunksService', () => {
@@ -116,6 +125,7 @@ describe('ChunksService', () => {
           },
         },
       });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -339,6 +349,7 @@ describe('ChunksService', () => {
           },
         },
       });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
   });
 
