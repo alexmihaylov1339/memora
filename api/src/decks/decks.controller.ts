@@ -15,9 +15,15 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { DecksService } from './decks.service';
 import { ChunksService } from '../chunks/chunks.service';
+import { serializeChunkResponseList } from '../chunks/dto/chunk-response.dto';
 import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
+import {
+  serializeDeckDetail,
+  serializeDeckListResponse,
+  serializeDeckRecord,
+} from './dto/deck-response.dto';
 import type { UpdateDeckDto } from './dto/update-deck.dto';
 import { validateListChunksQuery } from '../chunks/dto/chunk-validation';
 import {
@@ -45,14 +51,16 @@ export class DecksController {
 
   @Get()
   list() {
-    return this.decks.findAll();
+    return this.decks.findAll().then(serializeDeckListResponse);
   }
 
   @Post()
   create(@Body() body: CreateDeckDto) {
     validateCreateDeckInput(body);
 
-    return this.decks.create(body.name.trim(), body.description?.trim());
+    return this.decks
+      .create(body.name.trim(), body.description?.trim())
+      .then(serializeDeckRecord);
   }
 
   @Get(':id/chunks')
@@ -62,10 +70,8 @@ export class DecksController {
   ) {
     const id = validateDeckId(params.id);
     const normalizedQuery = validateListChunksQuery({
-      limit:
-        query.limit !== undefined ? Number(query.limit) : undefined,
-      offset:
-        query.offset !== undefined ? Number(query.offset) : undefined,
+      limit: query.limit !== undefined ? Number(query.limit) : undefined,
+      offset: query.offset !== undefined ? Number(query.offset) : undefined,
       direction: query.direction,
     });
 
@@ -74,7 +80,7 @@ export class DecksController {
       throw new NotFoundException('deck not found');
     }
 
-    return chunks;
+    return serializeChunkResponseList(chunks);
   }
 
   @Get(':id')
@@ -86,7 +92,7 @@ export class DecksController {
       throw new NotFoundException('deck not found');
     }
 
-    return deck;
+    return serializeDeckDetail(deck);
   }
 
   @Put(':id')
@@ -102,7 +108,7 @@ export class DecksController {
       throw new NotFoundException('deck not found');
     }
 
-    return deck;
+    return serializeDeckDetail(deck);
   }
 
   @Delete(':id')

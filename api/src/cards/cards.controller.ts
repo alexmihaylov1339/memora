@@ -22,6 +22,7 @@ import {
   validateUpdateCardInput,
 } from './dto/card-validation';
 import type { Prisma } from '@prisma/client';
+import { serializeCardResponse } from './dto/card-response.dto';
 
 @Controller('cards')
 @UseGuards(AuthGuard)
@@ -42,7 +43,7 @@ export class CardsController {
       throw new NotFoundException('deck not found');
     }
 
-    return card;
+    return serializeCardResponse(card);
   }
 
   @Get(':id')
@@ -54,7 +55,7 @@ export class CardsController {
       throw new NotFoundException('card not found');
     }
 
-    return card;
+    return serializeCardResponse(card);
   }
 
   @Put(':id')
@@ -70,7 +71,7 @@ export class CardsController {
       throw new NotFoundException('card not found');
     }
 
-    return card;
+    return serializeCardResponse(card);
   }
 
   @Delete(':id')

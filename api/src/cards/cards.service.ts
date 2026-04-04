@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import type { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+
+export interface CardRecord {
+  id: string;
+  deckId: string;
+  kind: string;
+  fields: Prisma.JsonValue;
+  createdAt: Date;
+}
 
 @Injectable()
 export class CardsService {
@@ -10,7 +18,7 @@ export class CardsService {
     deckId: string;
     kind: string;
     fields: Prisma.JsonObject;
-  }) {
+  }): Promise<CardRecord | null> {
     const deck = await this.prisma.deck.findUnique({
       where: { id: data.deckId },
     });
@@ -24,26 +32,28 @@ export class CardsService {
         kind: data.kind,
         fields: data.fields,
       },
-    });
+    }) as Promise<CardRecord>;
   }
 
-  async findOne(id: string) {
-    return this.prisma.card.findUnique({ where: { id } });
+  async findOne(id: string): Promise<CardRecord | null> {
+    return (await this.prisma.card.findUnique({
+      where: { id },
+    })) as CardRecord | null;
   }
 
   async update(
     id: string,
     data: { kind?: string; fields?: Prisma.JsonObject },
-  ) {
+  ): Promise<CardRecord | null> {
     const existing = await this.prisma.card.findUnique({ where: { id } });
     if (!existing) {
       return null;
     }
 
-    return this.prisma.card.update({
+    return (await this.prisma.card.update({
       where: { id },
       data,
-    });
+    })) as CardRecord;
   }
 
   async remove(id: string) {

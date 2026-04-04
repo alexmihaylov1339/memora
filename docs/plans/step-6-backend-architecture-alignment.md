@@ -360,7 +360,7 @@ Verification:
 ### T3 - Normalize service return contracts and response mapping
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Standardize how services return data when endpoints expose non-trivial shapes.
@@ -395,6 +395,17 @@ Acceptance:
 Verification:
 - DTO/mapper files exist where needed.
 - Unit/e2e tests assert intended shapes instead of relying on loose object containment only.
+
+Verification:
+- `api/src/cards/dto/card-response.dto.ts` now defines card API serialization explicitly instead of returning raw Prisma rows directly from controllers
+- `api/src/chunks/dto/chunk-response.dto.ts` now owns chunk API serialization, while `api/src/chunks/chunks.service.ts` returns explicit domain summaries/results
+- `api/src/decks/dto/deck-response.dto.ts` now centralizes deck list/detail/create response serialization instead of mixing transport shaping into controllers/services implicitly
+- `cards`, `chunks`, and `decks` controllers now serialize API responses intentionally rather than exposing service return shapes directly
+- `cards`, `chunks`, and `decks` services now use explicit exported interfaces for their non-trivial return shapes
+- `cd api && npx eslint 'src/cards/**/*.ts' 'src/chunks/**/*.ts' 'src/decks/**/*.ts'` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npx jest src/chunks/chunks.service.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts --runInBand` passes
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 

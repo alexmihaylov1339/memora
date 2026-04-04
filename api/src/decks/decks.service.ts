@@ -1,11 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
+export interface DeckListItem {
+  id: string;
+  name: string;
+  count: number;
+}
+
+export interface DeckRecord {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DeckDetail extends DeckRecord {
+  count: number;
+}
+
 @Injectable()
 export class DecksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(): Promise<DeckListItem[]> {
     const decks = await this.prisma.deck.findMany({
       include: {
         _count: {
@@ -18,16 +36,16 @@ export class DecksService {
       id: deck.id,
       name: deck.name,
       count: deck._count.cards,
-    }));
+    })) as DeckListItem[];
   }
 
-  async create(name: string, description?: string) {
-    return this.prisma.deck.create({
+  async create(name: string, description?: string): Promise<DeckRecord> {
+    return (await this.prisma.deck.create({
       data: { name, description },
-    });
+    })) as DeckRecord;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<DeckDetail | null> {
     const deck = await this.prisma.deck.findUnique({
       where: { id },
       include: {
@@ -48,10 +66,13 @@ export class DecksService {
       count: deck._count.cards,
       createdAt: deck.createdAt,
       updatedAt: deck.updatedAt,
-    };
+    } as DeckDetail;
   }
 
-  async update(id: string, data: { name?: string; description?: string }) {
+  async update(
+    id: string,
+    data: { name?: string; description?: string },
+  ): Promise<DeckDetail | null> {
     const existing = await this.prisma.deck.findUnique({ where: { id } });
     if (!existing) {
       return null;
@@ -74,7 +95,7 @@ export class DecksService {
       count: deck._count.cards,
       createdAt: deck.createdAt,
       updatedAt: deck.updatedAt,
-    };
+    } as DeckDetail;
   }
 
   async remove(id: string) {

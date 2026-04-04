@@ -22,6 +22,7 @@ import {
   validateCreateChunkInput,
   validateUpdateChunkInput,
 } from './dto/chunk-validation';
+import { serializeChunkResponse } from './dto/chunk-response.dto';
 
 @Controller('chunks')
 @UseGuards(AuthGuard)
@@ -49,7 +50,7 @@ export class ChunksController {
       );
     }
 
-    return result.chunk;
+    return serializeChunkResponse(result.chunk);
   }
 
   @Get(':id')
@@ -61,7 +62,7 @@ export class ChunksController {
       throw new NotFoundException('chunk not found');
     }
 
-    return chunk;
+    return serializeChunkResponse(chunk);
   }
 
   @Put(':id')
@@ -85,7 +86,7 @@ export class ChunksController {
       );
     }
 
-    return result.chunk;
+    return serializeChunkResponse(result.chunk);
   }
 
   @Delete(':id')

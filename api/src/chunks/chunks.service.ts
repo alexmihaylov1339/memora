@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-interface ChunkRecord {
+interface PersistedChunkRecord {
   id: string;
   deckId: string;
   title: string;
@@ -28,7 +28,7 @@ interface UpdateChunkInput {
   position?: number;
 }
 
-export interface ChunkResponse {
+export interface ChunkSummary {
   id: string;
   deckId: string;
   title: string;
@@ -39,12 +39,12 @@ export interface ChunkResponse {
 }
 
 export type CreateChunkResult =
-  | { status: 'created'; chunk: ChunkResponse }
+  | { status: 'created'; chunk: ChunkSummary }
   | { status: 'deck_not_found' }
   | { status: 'invalid_cards' };
 
 export type UpdateChunkResult =
-  | { status: 'updated'; chunk: ChunkResponse }
+  | { status: 'updated'; chunk: ChunkSummary }
   | { status: 'not_found' }
   | { status: 'invalid_cards' };
 
@@ -52,7 +52,7 @@ export type UpdateChunkResult =
 export class ChunksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private serializeChunk(chunk: ChunkRecord): ChunkResponse {
+  private mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
     return {
       id: chunk.id,
       deckId: chunk.deckId,
@@ -108,11 +108,11 @@ export class ChunksService {
 
     return {
       status: 'created',
-      chunk: this.serializeChunk(chunk as ChunkRecord),
+      chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<ChunkSummary | null> {
     const chunk = await this.prisma.chunk.findUnique({
       where: { id },
       include: {
@@ -126,10 +126,10 @@ export class ChunksService {
       return null;
     }
 
-    return this.serializeChunk(chunk as ChunkRecord);
+    return this.mapChunkSummary(chunk as PersistedChunkRecord);
   }
 
-  async findByDeck(deckId: string) {
+  async findByDeck(deckId: string): Promise<ChunkSummary[] | null> {
     return this.findByDeckWithOptions(deckId, {
       limit: 50,
       offset: 0,
@@ -144,7 +144,7 @@ export class ChunksService {
       offset: number;
       direction: 'asc' | 'desc';
     },
-  ) {
+  ): Promise<ChunkSummary[] | null> {
     const deck = await this.prisma.deck.findUnique({
       where: { id: deckId },
       select: { id: true },
@@ -168,7 +168,9 @@ export class ChunksService {
       },
     });
 
-    return chunks.map((chunk) => this.serializeChunk(chunk as ChunkRecord));
+    return chunks.map((chunk) =>
+      this.mapChunkSummary(chunk as PersistedChunkRecord),
+    );
   }
 
   async update(id: string, data: UpdateChunkInput): Promise<UpdateChunkResult> {
@@ -218,7 +220,7 @@ export class ChunksService {
 
     return {
       status: 'updated',
-      chunk: this.serializeChunk(chunk as ChunkRecord),
+      chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
     };
   }
 
