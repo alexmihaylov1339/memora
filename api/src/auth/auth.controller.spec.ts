@@ -32,7 +32,7 @@ describe('AuthController', () => {
     controller = new AuthController(authService as never);
   });
 
-  it('validates login input before calling the service', async () => {
+  it('validates login input before calling the service', () => {
     expect(() =>
       controller.login({ email: '   ', password: 'secret123' }),
     ).toThrow(AUTH_ERROR_MESSAGES.emailRequired);

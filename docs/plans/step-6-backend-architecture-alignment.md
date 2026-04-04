@@ -1,6 +1,6 @@
 # Memora: Step 6 Plan - Backend Architecture Alignment
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-04  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 6
 
@@ -592,7 +592,7 @@ Verification:
 ### T8 - Final backend readiness pass for Step 7 handoff
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Re-read the changed backend modules as one cohesive system.
@@ -619,6 +619,22 @@ Acceptance:
 
 Verification:
 - Final plan section is updated with what was completed, what was verified, and what was intentionally deferred.
+- Re-read the Step 6 changes as one backend slice:
+  - controllers now consistently stay focused on boundary validation, response shaping, and HTTP semantics
+  - services retain ownership of business rules, orchestration, and transaction boundaries
+  - DTO usage is now explicit in the modules Step 7 depends on most heavily
+  - review response contracts remain aligned with the Step 5 frontend-safe serialization work
+  - Prisma schema, migration SQL, and bootstrap artifacts remain aligned after the Step 6 cleanup
+- Confirmed Step 7 can rely on stable behavior without reinterpreting backend internals in the UI layer
+- Intentionally deferred:
+  - no new product-scope API changes were introduced beyond the architecture alignment needed for Step 7
+  - broader non-blocking backend cleanup outside the touched modules remains out of scope for this step
+- `cd api && npx eslint 'src/**/*.ts' 'test/**/*.ts'` passes
+- `cd api && npx tsc --noEmit --pretty false` passes
+- `cd api && npx jest --runInBand` passes
+- `cd api && npm run test:e2e -- --runInBand` passes
+- `cd api && npx prisma validate` passes
+- `cd api && npx prisma migrate status` reports the database schema is up to date
 
 ---
 
