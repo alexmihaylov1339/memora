@@ -283,7 +283,7 @@ Important UX principle:
 ### T1 - Lock Step 7 UX and API scope before UI implementation
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Reconfirm the exact user flows Step 7 will ship.
@@ -316,6 +316,22 @@ Acceptance:
 
 Verification:
 - This plan contains the Step 7 flow and contract decisions clearly enough to act as the working spec.
+- Scope lock decisions confirmed against the current repo:
+  - review UI will ship as a global queue route at `web/src/app/[locale]/review/page.tsx`
+  - chunk authoring will replace the current placeholder at `web/src/app/[locale]/chunks/new/components/ChunkCreatePlaceholder.tsx`
+  - deck edit remains the authoring workspace anchor and will be expanded rather than replaced
+  - Step 7 needs one companion backend support contract: `GET /v1/decks/:id/cards`
+  - the current backend already provides the chunk and review contracts Step 7 will consume directly
+- MVP UX decisions locked for implementation:
+  - chunk authoring is based on existing deck cards, not inline card creation inside the chunk form
+  - review is queue-driven and not deck-filtered in this step
+  - schedule preview is informational only and should come from a frontend constant that mirrors the current backend chunk cadence
+  - `basic` is the only polished review renderer in Step 7; unknown card kinds should degrade safely instead of blocking the page
+  - chunk management priority is visibility plus deletion if it stays small; richer chunk editing is explicitly secondary to the create-and-review flow
+- Explicitly deferred from Step 7:
+  - advanced chunk editing UX
+  - backend-driven review configuration endpoint for cadence preview
+  - full multi-kind exercise rendering architecture from Step 8
 
 ---
 
