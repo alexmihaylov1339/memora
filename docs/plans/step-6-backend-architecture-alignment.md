@@ -505,7 +505,7 @@ Verification:
 ### T6 - Reconcile schema, migrations, and bootstrap SQL discipline
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Verify current Prisma schema, migrations, and bootstrap SQL are aligned after the Step 3-5 work.
@@ -535,6 +535,13 @@ Verification:
 - Prisma validation passes.
 - Relevant migration/deploy commands succeed in the expected environment.
 - Bootstrap SQL is updated if schema changes require it.
+
+Verification:
+- `api/prisma/migrations/20260402090000_add_chunk_review_state/migration.sql` now matches the Prisma schema/bootstrap SQL by using the `Grade` enum for `ChunkReviewState.lastGrade`
+- `api/prisma/supabase-apply-full-schema.sql` was audited against `schema.prisma` and the committed migrations; no additional bootstrap SQL changes were needed after reconciling the migration drift
+- `cd api && npx prisma validate` passes
+- `cd api && npx prisma migrate status` reports the database schema is up to date
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passes
 
 ---
 

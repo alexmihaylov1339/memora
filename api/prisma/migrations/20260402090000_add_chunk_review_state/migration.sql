@@ -3,7 +3,7 @@ CREATE TABLE "ChunkReviewState" (
     "chunkId" TEXT NOT NULL,
     "due" TIMESTAMP(3) NOT NULL,
     "consecutiveSuccessCount" INTEGER NOT NULL DEFAULT 0,
-    "lastGrade" TEXT,
+    "lastGrade" "Grade",
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "ChunkReviewState_chunkId_fkey"
