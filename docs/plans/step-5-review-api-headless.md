@@ -292,6 +292,9 @@ Verification:
 
 ### T5 - Strengthen API-level tests for review flow
 
+Status:
+- Done
+
 Tasks:
 - Add/confirm tests for:
   - queue response shape
@@ -308,6 +311,14 @@ Explanation:
 
 Acceptance:
 - Review API contracts are test-covered enough for Step 7 frontend work.
+
+Verification:
+- `api/test/app.e2e-spec.ts` now asserts the public queue item keys directly instead of only partial object containment
+- review grade responses now have explicit API-level shape checks for the top-level payload, nested `chunk`, and nested `nextActionableItem`
+- invalid grade handling remains covered with a `400` API test
+- non-actionable grading remains covered with a `400` API test in the sequential review flow
+- not-found grading is now covered with a `404` API test
+- sequential queue progression across a chunk remains covered end-to-end
 
 ---
 

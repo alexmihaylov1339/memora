@@ -40,6 +40,22 @@ function getArrayField(
   return value;
 }
 
+function expectExactKeys(
+  source: Record<string, unknown>,
+  expectedKeys: string[],
+): void {
+  expect(Object.keys(source).sort()).toEqual([...expectedKeys].sort());
+}
+
+function expectIsoDateField(
+  source: Record<string, unknown>,
+  field: string,
+): string {
+  const value = getStringField(source, field);
+  expect(Number.isNaN(Date.parse(value))).toBe(false);
+  return value;
+}
+
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -255,24 +271,37 @@ describe('AppController (e2e)', () => {
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual(
+        const body = asRecord(parseJson(res.text));
+        expectExactKeys(body, ['items']);
+        const items = getArrayField(body, 'items');
+        const queueItem = asRecord(items[0]);
+
+        expectExactKeys(queueItem, [
+          'cardId',
+          'deckId',
+          'chunkId',
+          'chunkTitle',
+          'chunkPosition',
+          'positionInChunk',
+          'due',
+          'kind',
+          'fields',
+          'consecutiveSuccessCount',
+        ]);
+        expect(queueItem).toEqual(
           expect.objectContaining({
-            items: expect.arrayContaining([
-              expect.objectContaining({
-                cardId,
-                deckId,
-                chunkId: expect.any(String),
-                chunkTitle: expect.any(String),
-                chunkPosition: expect.any(Number),
-                positionInChunk: expect.any(Number),
-                due: expect.any(String),
-                kind: 'basic',
-                fields: expect.any(Object),
-                consecutiveSuccessCount: expect.any(Number),
-              }),
-            ]),
+            cardId,
+            deckId,
+            chunkId: expect.any(String),
+            chunkTitle: expect.any(String),
+            chunkPosition: expect.any(Number),
+            positionInChunk: expect.any(Number),
+            kind: 'basic',
+            fields: expect.any(Object),
+            consecutiveSuccessCount: expect.any(Number),
           }),
         );
+        expectIsoDateField(queueItem, 'due');
       });
 
     await request(server)
@@ -286,6 +315,21 @@ describe('AppController (e2e)', () => {
             statusCode: 400,
             message: REVIEW_ERROR_MESSAGES.invalidGrade,
             error: 'Bad Request',
+          }),
+        );
+      });
+
+    await request(server)
+      .post('/v1/reviews/card-missing/grade')
+      .set(authHeader)
+      .send({ grade: 'good' })
+      .expect(404)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 404,
+            message: REVIEW_ERROR_MESSAGES.cardNotFound,
+            error: 'Not Found',
           }),
         );
       });
@@ -426,16 +470,36 @@ describe('AppController (e2e)', () => {
       .expect(200);
     const initialQueueBody = asRecord(parseJson(initialQueueRes.text));
     const initialQueueItems = getArrayField(initialQueueBody, 'items');
+    const initialQueueItem = asRecord(initialQueueItems[0]);
 
-    expect(initialQueueItems).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          cardId: firstCardId,
-          chunkId,
-          positionInChunk: 0,
-        }),
-      ]),
+    expectExactKeys(initialQueueBody, ['items']);
+    expect(initialQueueItems).toHaveLength(1);
+    expectExactKeys(initialQueueItem, [
+      'cardId',
+      'deckId',
+      'chunkId',
+      'chunkTitle',
+      'chunkPosition',
+      'positionInChunk',
+      'due',
+      'kind',
+      'fields',
+      'consecutiveSuccessCount',
+    ]);
+    expect(initialQueueItem).toEqual(
+      expect.objectContaining({
+        cardId: firstCardId,
+        deckId,
+        chunkId,
+        chunkTitle: 'spielen chunk',
+        chunkPosition: expect.any(Number),
+        positionInChunk: 0,
+        kind: 'basic',
+        fields: expect.any(Object),
+        consecutiveSuccessCount: 0,
+      }),
     );
+    expectIsoDateField(initialQueueItem, 'due');
 
     const firstGradeRes = await request(server)
       .post(`/v1/reviews/${firstCardId}/grade`)
@@ -443,6 +507,22 @@ describe('AppController (e2e)', () => {
       .send({ grade: 'good' })
       .expect(200);
     const firstGradeBody = asRecord(parseJson(firstGradeRes.text));
+    const firstGradeChunk = asRecord(firstGradeBody.chunk);
+    const firstNextActionableItem = asRecord(firstGradeBody.nextActionableItem);
+
+    expectExactKeys(firstGradeBody, [
+      'cardId',
+      'grade',
+      'wasSuccessful',
+      'advanced',
+      'reset',
+      'previousConsecutiveSuccessCount',
+      'consecutiveSuccessCount',
+      'due',
+      'intervalHours',
+      'chunk',
+      'nextActionableItem',
+    ]);
     expect(firstGradeBody).toEqual(
       expect.objectContaining({
         cardId: firstCardId,
@@ -454,37 +534,68 @@ describe('AppController (e2e)', () => {
         previousConsecutiveSuccessCount: 0,
         due: expect.any(String),
         intervalHours: expect.any(Number),
-        chunk: expect.objectContaining({
-          chunkId,
-          deckId,
-          title: 'spielen chunk',
-          position: expect.any(Number),
-          due: expect.any(String),
-          isDue: expect.any(Boolean),
-          consecutiveSuccessCount: 1,
-          requiredConsecutiveSuccesses: expect.any(Number),
-          hasMastery: expect.any(Boolean),
-          totalCards: 2,
-          currentCard: expect.objectContaining({
-            cardId: secondCardId,
-            sequenceIndex: 1,
-          }),
-          lastGrade: 'good',
-        }),
-        nextActionableItem: expect.objectContaining({
-          cardId: secondCardId,
-          chunkId,
-          positionInChunk: 1,
-          deckId,
-          chunkTitle: 'spielen chunk',
-          chunkPosition: expect.any(Number),
-          due: expect.any(String),
-          kind: 'basic',
-          fields: expect.any(Object),
-          consecutiveSuccessCount: 1,
-        }),
       }),
     );
+    expectIsoDateField(firstGradeBody, 'due');
+    expectExactKeys(firstGradeChunk, [
+      'chunkId',
+      'deckId',
+      'title',
+      'position',
+      'due',
+      'isDue',
+      'consecutiveSuccessCount',
+      'requiredConsecutiveSuccesses',
+      'hasMastery',
+      'totalCards',
+      'currentCard',
+      'lastGrade',
+    ]);
+    expect(firstGradeChunk).toEqual(
+      expect.objectContaining({
+        chunkId,
+        deckId,
+        title: 'spielen chunk',
+        position: expect.any(Number),
+        isDue: expect.any(Boolean),
+        consecutiveSuccessCount: 1,
+        requiredConsecutiveSuccesses: expect.any(Number),
+        hasMastery: expect.any(Boolean),
+        totalCards: 2,
+        currentCard: {
+          cardId: secondCardId,
+          sequenceIndex: 1,
+        },
+        lastGrade: 'good',
+      }),
+    );
+    expectIsoDateField(firstGradeChunk, 'due');
+    expectExactKeys(firstNextActionableItem, [
+      'cardId',
+      'deckId',
+      'chunkId',
+      'chunkTitle',
+      'chunkPosition',
+      'positionInChunk',
+      'due',
+      'kind',
+      'fields',
+      'consecutiveSuccessCount',
+    ]);
+    expect(firstNextActionableItem).toEqual(
+      expect.objectContaining({
+        cardId: secondCardId,
+        chunkId,
+        positionInChunk: 1,
+        deckId,
+        chunkTitle: 'spielen chunk',
+        chunkPosition: expect.any(Number),
+        kind: 'basic',
+        fields: expect.any(Object),
+        consecutiveSuccessCount: 1,
+      }),
+    );
+    expectIsoDateField(firstNextActionableItem, 'due');
 
     await request(server)
       .get('/v1/reviews/queue')
@@ -525,6 +636,22 @@ describe('AppController (e2e)', () => {
       .send({ grade: 'again' })
       .expect(200);
     const resetGradeBody = asRecord(parseJson(resetGradeRes.text));
+    const resetGradeChunk = asRecord(resetGradeBody.chunk);
+    const resetNextActionableItem = asRecord(resetGradeBody.nextActionableItem);
+
+    expectExactKeys(resetGradeBody, [
+      'cardId',
+      'grade',
+      'wasSuccessful',
+      'advanced',
+      'reset',
+      'previousConsecutiveSuccessCount',
+      'consecutiveSuccessCount',
+      'due',
+      'intervalHours',
+      'chunk',
+      'nextActionableItem',
+    ]);
     expect(resetGradeBody).toEqual(
       expect.objectContaining({
         cardId: secondCardId,
@@ -536,29 +663,65 @@ describe('AppController (e2e)', () => {
         consecutiveSuccessCount: 0,
         due: expect.any(String),
         intervalHours: expect.any(Number),
-        chunk: expect.objectContaining({
-          chunkId,
-          deckId,
-          title: 'spielen chunk',
-          totalCards: 2,
-          currentCard: expect.objectContaining({
-            cardId: firstCardId,
-            sequenceIndex: 0,
-          }),
-          lastGrade: 'again',
-        }),
-        nextActionableItem: expect.objectContaining({
-          cardId: firstCardId,
-          chunkId,
-          positionInChunk: 0,
-          deckId,
-          chunkTitle: 'spielen chunk',
-          kind: 'basic',
-          fields: expect.any(Object),
-          consecutiveSuccessCount: 0,
-        }),
       }),
     );
+    expectIsoDateField(resetGradeBody, 'due');
+    expectExactKeys(resetGradeChunk, [
+      'chunkId',
+      'deckId',
+      'title',
+      'position',
+      'due',
+      'isDue',
+      'consecutiveSuccessCount',
+      'requiredConsecutiveSuccesses',
+      'hasMastery',
+      'totalCards',
+      'currentCard',
+      'lastGrade',
+    ]);
+    expect(resetGradeChunk).toEqual(
+      expect.objectContaining({
+        chunkId,
+        deckId,
+        title: 'spielen chunk',
+        position: expect.any(Number),
+        isDue: expect.any(Boolean),
+        totalCards: 2,
+        currentCard: {
+          cardId: firstCardId,
+          sequenceIndex: 0,
+        },
+        lastGrade: 'again',
+      }),
+    );
+    expectIsoDateField(resetGradeChunk, 'due');
+    expectExactKeys(resetNextActionableItem, [
+      'cardId',
+      'deckId',
+      'chunkId',
+      'chunkTitle',
+      'chunkPosition',
+      'positionInChunk',
+      'due',
+      'kind',
+      'fields',
+      'consecutiveSuccessCount',
+    ]);
+    expect(resetNextActionableItem).toEqual(
+      expect.objectContaining({
+        cardId: firstCardId,
+        chunkId,
+        positionInChunk: 0,
+        deckId,
+        chunkTitle: 'spielen chunk',
+        chunkPosition: expect.any(Number),
+        kind: 'basic',
+        fields: expect.any(Object),
+        consecutiveSuccessCount: 0,
+      }),
+    );
+    expectIsoDateField(resetNextActionableItem, 'due');
 
     await prisma.chunkReviewState.update({
       where: { chunkId },
