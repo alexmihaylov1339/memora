@@ -163,7 +163,7 @@ Likely new files:
 ### T1 - Perform backend architecture audit and lock Step 6 target scope
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Review `auth`, `decks`, `cards`, `chunks`, and `reviews` against `backend-patterns.md`.
@@ -204,6 +204,106 @@ Acceptance:
 
 Verification:
 - A written audit summary is added to this plan or to implementation notes before major refactors begin.
+
+Audit summary:
+
+Module review:
+- `reviews` is currently the strongest reference module for Step 6 patterns:
+  - controller is thin
+  - validation stays at the boundary
+  - service owns business behavior
+  - response serialization is explicit
+  - tests cover helper, service, controller, and e2e flow
+- `chunks` is functional but still architecture-drifting:
+  - controller translates multiple failure causes through coarse `null -> NotFoundException`
+  - service serializes API-ish shapes itself instead of clearly separating service/domain and response mapping
+  - create/update flows perform multi-step persistence decisions without a transaction boundary
+  - chunk tests exist, but only at service level
+- `cards` is the most obviously under-aligned module:
+  - controller is thin enough structurally, but service returns raw Prisma rows directly
+  - there is no card service/controller spec coverage
+  - no explicit response DTO layer exists even though Step 7 will likely consume these endpoints more directly
+- `decks` is partially aligned:
+  - return shapes are already somewhat intentional in the service
+  - controller still depends directly on `ChunksService` for `/decks/:id/chunks`, which may be acceptable but needs to be treated as an explicit architectural choice
+  - deck-specific automated unit coverage is currently missing
+- `auth` is the oldest-looking boundary:
+  - controller still uses inline body object types instead of feature DTO files
+  - validation mostly lives in service methods instead of the module boundary
+  - semantics are often reasonable, but the pattern does not match the stricter style now used in `reviews`
+  - auth may not need a full redesign in Step 6, but it is the clearest candidate for boundary modernization
+
+Test coverage audit:
+- Existing focused unit/spec coverage exists for:
+  - `reviews`
+  - chunk scheduling helper
+  - `chunks.service`
+- Missing or weak coverage exists for:
+  - `cards.service`
+  - `cards.controller`
+  - `decks.service`
+  - `decks.controller`
+  - `auth` controller/service boundary validation semantics
+- This makes Step 6 riskier in `auth`, `cards`, and `decks` unless we add regression tests while refactoring.
+
+Schema/migration audit:
+- Prisma schema and migrations for chunk/review features are now working against the configured Postgres database.
+- The recent Step 5 fix showed that migration compatibility and actual datasource behavior can drift silently.
+- `supabase-apply-full-schema.sql` still needs an intentional Step 6 comparison against the live schema/migrations rather than being assumed correct.
+
+Controller thinness audit:
+- Good:
+  - `reviews.controller.ts`
+  - most of `cards.controller.ts`
+- Mixed:
+  - `chunks.controller.ts`
+  - `decks.controller.ts`
+- Needs modernization:
+  - `auth.controller.ts`
+
+Service contract audit:
+- Good reference:
+  - `reviews.service.ts`
+- Mixed:
+  - `decks.service.ts`
+  - `chunks.service.ts`
+- Weakest alignment:
+  - `cards.service.ts`
+
+Error semantics audit:
+- `reviews` is the clearest and most intentional.
+- `auth` uses framework exceptions reasonably but boundary validation is inconsistent.
+- `chunks` has the most obvious ambiguity because multiple failure causes currently collapse into the same `404` message.
+- `cards` and `decks` are simpler, but they still need explicit confirmation that their current status-code choices are intentional rather than just inherited.
+
+Transaction/persistence audit:
+- Highest-value transaction candidate:
+  - `reviews.service.ts` grade flow
+- Likely transaction candidate:
+  - `chunks.service.ts` update flow when replacing `chunkCards`
+- Lower urgency:
+  - `cards.service.ts`
+  - `decks.service.ts`
+  - most auth flows
+
+Must-fix in Step 6:
+- Align `chunks` error/result semantics so controller responses are not based on coarse `null` ambiguity.
+- Decide and standardize response mapping for `cards` and `chunks`.
+- Introduce missing regression coverage for modules touched by Step 6, especially `cards` and `decks`.
+- Re-check transaction boundaries for review grading and chunk membership replacement.
+- Reconcile `supabase-apply-full-schema.sql` with the current Prisma schema/migrations.
+- Modernize at least the most important auth boundary patterns if the effort is moderate and does not balloon scope.
+
+Acceptable to leave for Step 7 only if needed:
+- deeper reorganization of deck/chunk feature boundaries if current direct service usage remains clear and stable
+- broad auth refactors beyond DTO/boundary cleanup
+- cosmetic consistency work that does not materially improve architecture or Step 7 safety
+
+Explicitly deferred beyond Step 6:
+- card type registry/extensibility architecture from Step 8
+- review behavior redesign
+- multi-user ownership redesign
+- frontend authoring or review UI work
 
 ---
 
@@ -587,4 +687,3 @@ Possible commit sequence:
 4. `chore(api): reconcile prisma schema and bootstrap artifacts`
 5. `test(api): strengthen backend architecture regression coverage`
 6. `chore(plan): document step 6 backend architecture alignment`
-
