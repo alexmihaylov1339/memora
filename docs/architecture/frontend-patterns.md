@@ -7,8 +7,8 @@
 3. Services must use `ManageService` for request execution.
 4. Use query-based hooks (`useQuery` via our shared query pattern) for data fetching.
 5. Use `FormBuilder` every time we have a form in the project.
-6. Prefer small, reusable components instead of large page files.
-7. Always consider whether a custom hook should be extracted for page/component logic.
+6. Prefer small components instead of large page files. Reuse is beneficial, but readability and separation of responsibilities come first even for feature-local single-use components.
+7. Extract a custom hook when page/component logic includes orchestration concerns such as query handling, derived state, submit flows, event coordination, modal state, or other non-trivial UI logic.
 8. Follow SOLID, but do not force abstractions where a simpler solution is clearer. Prefer practical SOLID over theoretical purity.
 9. Prefer clarity over aggressive DRY. Duplicate small, stable code when abstraction would make the flow harder to understand.
 10. Reuse already existing project building blocks before creating new ones: components, custom hooks, helpers, utils, and services.
@@ -22,14 +22,16 @@
 15. Keep business logic out of presentational components; components should focus on rendering and user interaction.
 16. Derive values instead of storing duplicated state. Do not put in state anything that can be computed from props, query data, or other state.
 17. Keep side effects isolated:
-   - use hooks for React side effects
-   - use services for API communication
-   - use helpers/utils for pure transformations
-18. One file should have one clear responsibility. If a file starts handling rendering, data mapping, validation, and orchestration together, split it.
+
+- use hooks for React side effects
+- use services for API communication
+- use helpers/utils for pure transformations
+
+18. One file should have one primary responsibility. A page should not be treated as a single responsibility if it also contains detailed rendering sections, data mapping, validation, and orchestration together; split those concerns into dedicated files.
 19. Avoid prop drilling when it makes components harder to maintain; extract composition patterns, feature hooks, or context only when it clearly improves clarity.
-20. Feature hooks should expose a small, stable API to pages/components and hide service/query implementation details.
+20. Feature hooks should expose a small, stable API to pages/components and hide service/query implementation details, normalization, and orchestration logic so pages stay thin.
 21. Query hooks must return normalized UI-friendly data when useful, so pages/components stay simple.
-22. Define explicit loading, error, empty, and success states for every async screen.
+22. Define explicit loading, error, empty, and success states for every async screen, and avoid long inline conditional JSX branches by extracting named state components or render helpers when the screen becomes complex.
 23. Do not transform API response shapes repeatedly in components; centralize mapping in hooks, adapters, or mappers.
 24. Prefer named constants over magic numbers/strings in UI logic, validation rules, limits, and statuses.
 25. Event handlers and local functions must use intention-revealing names (`handleSubmit`, `handleRetry`, `mapAccountToOption`) instead of vague names (`onClickFn`, `processData`).
@@ -73,6 +75,7 @@
 44. Avoid excessive vertical spacing; prioritize readable grouping over rigid spacing rules.
 
 45. Keep component bodies visually structured:
+
 - hooks
 - derived values
 - handlers
@@ -86,6 +89,28 @@
 - derived values (useMemo, computed data)
 - handlers (callbacks)
 - render (return)
+
+## Decomposition Rules
+
+47. Pages must be orchestration-first. They should compose feature hooks and smaller feature components, not contain large rendering sections or business logic.
+
+48. Pages must not directly implement large sections such as forms, tables, filters, summary panels, dialogs, sidebars, or multi-step state blocks inline. Extract these into feature-level components.
+
+49. Components do not need to be reused across the app to deserve extraction. Prefer feature-local components over large page/component files.
+
+50. Extract a custom hook when a component starts handling a mix of query state, derived values, event handlers, modal state, submit flows, or other orchestration logic that reduces readability.
+
+51. If a component renders more than 2 distinct visual sections, split those sections into smaller components unless keeping them together is clearly simpler.
+
+52. If JSX contains nested conditional rendering for loading, error, empty, and success states, extract named state components or render helpers.
+
+53. If a file mixes rendering, mapping, validation, and orchestration logic, split it immediately so each file has one primary responsibility.
+
+54. Response mapping beyond trivial property access must live in feature hooks, adapters, or mappers, not in page components.
+
+55. Single-use extraction is encouraged when it improves readability. Reuse is a bonus, not a requirement.
+
+56. Prefer several small feature-local files over one large “smart” page/component.
 
 ## Decision Order
 
@@ -101,15 +126,27 @@ When implementing a feature, apply decisions in this order:
 ## Review Checklist
 
 Before submitting code, verify:
+
 - data fetching is done only through feature hooks
 - forms use `FormBuilder`
 - page/component files stay focused and reasonably small
+- page files are orchestration-focused and not overloaded with detailed section rendering
+- large forms/tables/filters/dialogs were extracted into feature components
+- loading/error/empty/success UI is not buried in long inline JSX branches
+- single-use feature-local components/hooks were extracted where it improves readability
+- mapping/validation/orchestration are not mixed together in page files
 - loading/error/empty states are covered
 - no duplicated response mapping is spread across the UI
 - routes/endpoints/constants are centralized
 - reused logic is extracted only when it truly improves maintainability
 - naming is clear and intention-revealing
 - tests were added or updated where the change contains business logic
+
+## Anti-Patterns to Avoid
+
+- Large page components that fetch data, map API responses, define field configs, manage modal state, handle submit flows, and render multiple sections in one file
+- Keeping form, table, filter, dialog, and summary markup together in a single page component
+- Delaying extraction until reuse is proven, even when the current file is already hard to scan
 
 ## Enforcement Intent
 
