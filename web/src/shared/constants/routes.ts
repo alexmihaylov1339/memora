@@ -6,6 +6,7 @@ export const APP_ROUTES = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   decks: '/decks',
+  review: '/review',
   newDeck: '/decks/new',
   newCard: '/cards/new',
   newChunk: '/chunks/new',

@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/navigation';
+import { APP_ROUTES } from '@shared/constants';
 
 interface DeckWorkspaceHeaderProps {
   deckId: string;
@@ -32,12 +33,12 @@ export default function DeckWorkspaceHeader({
             Add Chunk
           </Link>
 
-          <span
-            aria-disabled="true"
-            className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-2 text-sm text-slate-500"
+          <Link
+            href={APP_ROUTES.review}
+            className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
           >
-            Review UI in T6
-          </span>
+            Start Review
+          </Link>
         </div>
       </div>
     </div>

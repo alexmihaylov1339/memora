@@ -22,6 +22,9 @@ export default function Navigation() {
               <Link href={APP_ROUTES.decks}>
                 <span className="text-blue-600 hover:underline">Decks</span>
               </Link>
+              <Link href={APP_ROUTES.review}>
+                <span className="text-blue-600 hover:underline">Review</span>
+              </Link>
               <Link href={APP_ROUTES.account}>
                 <span className="text-blue-600 hover:underline">Account</span>
               </Link>

@@ -575,7 +575,7 @@ Verification:
 ### T6 - Build the review page and queue-driven session shell
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Add a review route.
@@ -619,6 +619,23 @@ Verification:
   - no due items
   - one due item
   - multiple due items where only the first actionable item is shown
+- Implemented review shell:
+  - `/review` route now exists and is protected
+  - review is reachable from both global navigation and the deck workspace CTA
+  - the page loads the queue through a feature hook and renders the first actionable item
+  - `basic` cards support front/back reveal interaction
+  - unsupported card kinds degrade to an explicit unsupported-state screen instead of breaking the page
+- Queue states now include:
+  - loading
+  - error
+  - empty queue
+  - current actionable item
+- Scope boundary held for T6:
+  - grade buttons are rendered to lock the UI shape
+  - actual grade submission and progression logic remain deferred to T7
+- Verification completed:
+  - `cd web && npx tsc --noEmit` passes
+  - `cd web && npx eslint 'src/app/[locale]/review/page.tsx' 'src/app/[locale]/review/components/ReviewPageHeader.tsx' 'src/app/[locale]/review/components/ReviewEmptyState.tsx' 'src/app/[locale]/review/components/ReviewUnsupportedCard.tsx' 'src/app/[locale]/review/components/ReviewGradeButtons.tsx' 'src/app/[locale]/review/components/ReviewCurrentItemCard.tsx' 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/index.ts' 'src/features/reviews/reviewCardFields.ts' 'src/features/reviews/hooks/index.ts' 'src/features/reviews/hooks/useReviewQueries.ts' 'src/features/reviews/hooks/useReviewMutations.ts' 'src/features/reviews/hooks/useReviewScreen.ts' 'src/features/reviews/index.ts' 'src/features/reviews/types/index.ts' 'src/shared/components/Navigation/Navigation.tsx' 'src/shared/constants/routes.ts' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.tsx'` passes
 
 ---
 

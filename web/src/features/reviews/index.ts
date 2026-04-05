@@ -1,5 +1,11 @@
 export { reviewService } from './services';
-export { REVIEW_QUERY_KEYS, useReviewQueueQuery, useGradeReviewMutation } from './hooks';
+export type { BasicReviewCardFields } from './reviewCardFields';
+export {
+  REVIEW_QUERY_KEYS,
+  useReviewQueueQuery,
+  useGradeReviewMutation,
+  useReviewScreen,
+} from './hooks';
 export type {
   ChunkProgressSnapshot,
   GradeReviewDto,
