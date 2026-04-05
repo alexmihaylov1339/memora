@@ -158,7 +158,115 @@
 
 ---
 
-## Step 8: Prepare extensible card/exercise architecture
+## Step 8: Add ownership, visibility, and deck sharing
+
+**Objective:** Make decks, cards, and chunks private-by-default and intentionally shareable.
+
+**Deliverables**
+- Access control rules:
+  - a user can see/edit their own decks, cards, and chunks
+  - shared decks are visible to invited users with clearly defined permissions
+  - cards/chunks are not globally visible to unrelated users
+- Deck sharing flow:
+  - share action on each deck
+  - invite by username or email
+  - visible shared-users state in the UI
+- Backend authorization updates across deck/card/chunk/review routes.
+
+**Why now**
+- Privacy and ownership rules affect every later browsing and navigation decision.
+- Deck-scoped/global library UX should be built on the real visibility model, not on temporary open access.
+
+**Exit criteria**
+- A signed-in user only sees decks/cards/chunks they own or that are explicitly shared with them.
+- A deck can be shared intentionally from the UI.
+
+---
+
+## Step 9: Rework deck information architecture and deck-scoped workspaces
+
+**Objective:** Turn deck pages into scalable hubs instead of long mixed-content pages.
+
+**Deliverables**
+- Deck page becomes an overview/workspace hub instead of showing every card and chunk inline.
+- Clear deck actions:
+  - `Open Chunks`
+  - `Open Cards`
+  - `Start Review`
+  - `Add Card`
+  - `Add Chunk`
+- Dedicated deck-scoped pages:
+  - `/decks/:id/cards`
+  - `/decks/:id/chunks`
+- User-facing cleanup:
+  - remove raw ids from deck overview
+  - show chunks before cards where both are previewed
+  - keep only small summary previews on the deck page
+
+**Why now**
+- The current mixed deck page will become cluttered as content grows.
+- We should fix the content architecture before adding global libraries and heavier design work.
+
+**Exit criteria**
+- Opening a deck feels like entering a hub with clear next actions.
+- Cards and chunks inside a deck are browsed through dedicated deck-scoped views.
+
+---
+
+## Step 10: Add global card/chunk libraries and deck attach flows
+
+**Objective:** Separate “items already in this deck” from “all items I own”.
+
+**Deliverables**
+- Global navigation entries:
+  - `Decks`
+  - `Cards`
+  - `Chunks`
+- Global library pages:
+  - `/cards` for all cards the user owns/can access
+  - `/chunks` for all chunks the user owns/can access
+- Deck attach flows:
+  - from a deck, `Add Card` opens a global card picker scoped to attaching into the current deck
+  - from a deck, `Add Chunk` opens a global chunk picker scoped to attaching into the current deck
+- Supporting backend/API contracts for deck membership browsing and attach/detach actions.
+
+**Why now**
+- Users need two different mental models:
+  - what is already inside this deck
+  - what exists in their full library
+- Those flows should be explicit instead of overloaded into one page.
+
+**Exit criteria**
+- Users can browse deck contents in deck context and browse their whole card/chunk library from global navigation.
+- Users can attach existing cards/chunks into a deck from dedicated selection flows.
+
+---
+
+## Step 11: Redesign scalable deck, card, and chunk UX
+
+**Objective:** Introduce a cleaner visual system and scalable browsing patterns for the new IA.
+
+**Deliverables**
+- Redesigned deck overview page with stronger hierarchy and actions.
+- Redesigned deck cards/chunks pages for scalable browsing.
+- Redesigned global cards/chunks library pages.
+- Scalable management patterns:
+  - list-first layouts by default
+  - search for cards/chunks
+  - sensible preview density
+  - pagination or load-more only where needed after search/sort are in place
+- Consistent removal of low-value technical details from user-facing UI.
+
+**Why now**
+- The redesign should follow the new page structure, not fight against the old one.
+- This is where we can improve usability and visual clarity without constantly rewriting IA decisions.
+
+**Exit criteria**
+- The new deck/cards/chunks surfaces feel coherent, usable, and scalable beyond small demo datasets.
+
+---
+
+## Step 12: Prepare extensible card/exercise architecture
 
 **Objective:** Avoid hardcoding “basic flashcard only” in core flows.
 
@@ -175,7 +283,7 @@
 
 ---
 
-## Step 9: Quality, observability, and rollout safety
+## Step 13: Quality, observability, and rollout safety
 
 **Objective:** De-risk production behavior over time.
 
@@ -201,7 +309,11 @@
 7. Step 7
 8. Step 8
 9. Step 9
-
+10. Step 10
+11. Step 11
+12. Step 12
+13. Step 13
+ 
 ---
 
 ## Notes for next planning cycle
