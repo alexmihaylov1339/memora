@@ -2,6 +2,7 @@ import { ErrorMessage, PageLoader } from '@shared/components';
 import { useReviewScreen } from '@features/reviews';
 import ReviewCurrentItemCard from './ReviewCurrentItemCard';
 import ReviewEmptyState from './ReviewEmptyState';
+import ReviewFeedbackBanner from './ReviewFeedbackBanner';
 import ReviewGradeButtons from './ReviewGradeButtons';
 import ReviewUnsupportedCard from './ReviewUnsupportedCard';
 
@@ -10,6 +11,11 @@ export default function ReviewScreen() {
     basicCardFields,
     currentItem,
     errorMessage,
+    gradeErrorMessage,
+    gradeResult,
+    handleGrade,
+    handleRefreshQueue,
+    isGrading,
     isAnswerRevealed,
     isLoading,
     queueCount,
@@ -25,6 +31,17 @@ export default function ReviewScreen() {
   }
 
   if (!currentItem) {
+    if (gradeResult) {
+      return (
+        <ReviewEmptyState
+          title="Review step complete"
+          description="No next actionable item was returned. Refresh the queue to check for the next due review."
+          actionLabel="Refresh Queue"
+          onAction={handleRefreshQueue}
+        />
+      );
+    }
+
     return <ReviewEmptyState />;
   }
 
@@ -34,6 +51,8 @@ export default function ReviewScreen() {
 
   return (
     <div className="space-y-6">
+      {gradeResult && <ReviewFeedbackBanner result={gradeResult} />}
+
       <ReviewCurrentItemCard
         item={currentItem}
         basicCardFields={basicCardFields}
@@ -42,7 +61,12 @@ export default function ReviewScreen() {
         onRevealAnswer={handleRevealAnswer}
       />
 
-      <ReviewGradeButtons />
+      <ReviewGradeButtons
+        disabled={!isAnswerRevealed || isGrading}
+        errorMessage={gradeErrorMessage}
+        isLoading={isGrading}
+        onGrade={handleGrade}
+      />
     </div>
   );
 }

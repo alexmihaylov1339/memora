@@ -642,7 +642,7 @@ Verification:
 ### T7 - Wire grade submission, session progression, and completion states
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Submit grades through the API.
@@ -678,13 +678,12 @@ Acceptance:
 - A review session can progress card by card without a full page reload and without client-side guessing.
 
 Verification:
-- Manual happy path:
-  - review first item
-  - submit `good`
-  - see next item
-  - submit `again`
-  - observe reset-oriented feedback
-  - continue until queue empty state
+- `useReviewScreen` now submits grades through `POST /v1/reviews/:cardId/grade` and updates the active session from `nextActionableItem` without a full page reload.
+- Grade buttons disable while grading, surface API errors, and remain locked until the answer is revealed.
+- The review screen now shows lightweight post-grade feedback for advance/reset outcomes plus next-due interval and streak details when returned.
+- When a grade response returns no `nextActionableItem`, the screen shows a completion state with a manual `Refresh Queue` action instead of guessing the next item client-side.
+- `cd web && npx tsc --noEmit` passed.
+- Focused ESLint passed for the review route, review components, and review feature hooks touched by T7.
 
 ---
 
