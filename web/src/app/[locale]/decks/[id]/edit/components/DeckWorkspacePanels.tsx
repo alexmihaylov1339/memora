@@ -12,6 +12,9 @@ interface DeckWorkspacePanelsProps {
   chunksLoading: boolean;
   cardsError?: string;
   chunksError?: string;
+  chunkDeleteError?: string;
+  deletingChunkId?: string;
+  onDeleteChunk: (chunkId: string) => void;
 }
 
 export default function DeckWorkspacePanels({
@@ -22,6 +25,9 @@ export default function DeckWorkspacePanels({
   chunksLoading,
   cardsError,
   chunksError,
+  chunkDeleteError,
+  deletingChunkId,
+  onDeleteChunk,
 }: DeckWorkspacePanelsProps) {
   return (
     <section className="space-y-6">
@@ -35,9 +41,13 @@ export default function DeckWorkspacePanels({
         />
 
         <DeckChunksPanel
+          cards={cards}
           chunks={chunks}
+          deleteError={chunkDeleteError}
+          deletingChunkId={deletingChunkId}
           isLoading={chunksLoading}
           error={chunksError}
+          onDeleteChunk={onDeleteChunk}
         />
       </div>
     </section>

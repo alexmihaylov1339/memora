@@ -1,20 +1,34 @@
-import { ErrorMessage, PageLoader } from '@shared/components';
-import type { ChunkRecord } from '@features/chunks';
+import { useMemo } from 'react';
 
-const USER_VISIBLE_POSITION_OFFSET = 1;
-const SINGULAR_CARD_COUNT = 1;
+import { ErrorMessage, PageLoader } from '@shared/components';
+import type { CardRecord } from '@features/decks';
+import type { ChunkRecord } from '@features/chunks';
+import DeckChunksList from './DeckChunksList';
 
 interface DeckChunksPanelProps {
+  cards?: CardRecord[];
   chunks?: ChunkRecord[];
+  deleteError?: string;
+  deletingChunkId?: string;
   isLoading: boolean;
   error?: string;
+  onDeleteChunk: (chunkId: string) => void;
 }
 
 export default function DeckChunksPanel({
+  cards,
   chunks,
+  deleteError,
+  deletingChunkId,
   isLoading,
   error,
+  onDeleteChunk,
 }: DeckChunksPanelProps) {
+  const cardsById = useMemo(
+    () => new Map((cards ?? []).map((card) => [card.id, card])),
+    [cards],
+  );
+
   return (
     <section className="rounded-lg border border-[var(--border)] bg-white p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -42,37 +56,13 @@ export default function DeckChunksPanel({
       )}
 
       {!isLoading && !error && chunks && chunks.length > 0 && (
-        <ul className="space-y-3">
-          {chunks.map((chunk) => (
-            <li
-              key={chunk.id}
-              className="rounded-md border border-slate-200 bg-slate-50 p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-medium text-slate-900">{chunk.title}</h3>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Position {chunk.position + USER_VISIBLE_POSITION_OFFSET} •{' '}
-                    {chunk.cardIds.length} card
-                    {chunk.cardIds.length === SINGULAR_CARD_COUNT ? '' : 's'}
-                  </p>
-                </div>
-                <span className="font-mono text-xs text-slate-500">{chunk.id}</span>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {chunk.cardIds.map((cardId, index) => (
-                  <span
-                    key={`${chunk.id}-${cardId}`}
-                    className="rounded-full bg-white px-2.5 py-1 text-xs text-slate-600"
-                  >
-                    #{index + USER_VISIBLE_POSITION_OFFSET} {cardId}
-                  </span>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <DeckChunksList
+          chunks={chunks}
+          cardsById={cardsById}
+          deleteError={deleteError}
+          deletingChunkId={deletingChunkId}
+          onDeleteChunk={onDeleteChunk}
+        />
       )}
     </section>
   );

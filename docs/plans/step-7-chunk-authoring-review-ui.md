@@ -528,7 +528,7 @@ Verification:
 ### T5 - Add minimal chunk management and inspection affordances
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Make chunks visible and understandable after creation.
@@ -559,6 +559,16 @@ Acceptance:
 
 Verification:
 - Manual check confirms the user can distinguish chunks, inspect their membership at a glance, and at minimum remove obviously wrong ones if deletion is included.
+- Implemented workspace inspection and management:
+  - deck workspace chunk entries now show friendlier ordered card previews based on deck card text when available, instead of only raw card ids
+  - chunk deletion is now available directly from the deck workspace
+  - deletion refetches the deck chunk list so the workspace stays in sync after removal
+- Scope decision held:
+  - chunk edit remains deferred
+  - Step 7 currently provides visibility plus deletion, which is the preferred MVP management level from this plan
+- Verification completed:
+  - `cd web && npx tsc --noEmit` passes
+  - `cd web && npx eslint 'src/app/[locale]/decks/[id]/edit/page.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckChunksPanel.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckChunkItem.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckChunksList.tsx' 'src/app/[locale]/decks/[id]/edit/components/deckChunkPreview.ts' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspacePanels.tsx' 'src/app/[locale]/decks/[id]/edit/components/index.ts' 'src/features/chunks/**/*.ts'` passes
 
 ---
 
