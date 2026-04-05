@@ -461,7 +461,7 @@ Verification:
 ### T4 - Replace the chunk placeholder with a real chunk creation flow
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Build the chunk creation form on `/chunks/new`.
@@ -505,6 +505,23 @@ Verification:
   - select/order cards
   - create chunk
   - return to deck workspace and see it listed
+- Implemented chunk creation flow:
+  - `/chunks/new` now renders a real chunk-create screen instead of the old placeholder
+  - when `deckId` is missing from the route query, the user first chooses a deck through a `FormBuilder`-based deck selection step
+  - once deck context exists, the screen loads deck cards automatically and supports explicit add/remove/reorder controls
+  - chunk creation redirects back to the deck workspace after success
+- UX behavior now includes:
+  - deck-aware back navigation
+  - read-only deck summary context with optional deck switching
+  - selected-card ordering via simple move up / move down controls
+  - graceful empty state when a chosen deck still has no cards
+  - schedule preview driven by a frontend constant mirroring the current backend chunk cadence and mastery target
+- Explicitly deferred within T4:
+  - drag-and-drop ordering
+  - success notifications
+- Verification completed:
+  - `cd web && npx tsc --noEmit` passes
+  - `cd web && npx eslint 'src/app/[locale]/chunks/new/page.tsx' 'src/app/[locale]/chunks/new/components/ChunkCreateHeader.tsx' 'src/app/[locale]/chunks/new/components/ChunkCreateScreen.tsx' 'src/app/[locale]/chunks/new/components/ChunkCreateForm.tsx' 'src/app/[locale]/chunks/new/components/ChunkDeckSelectionForm.tsx' 'src/app/[locale]/chunks/new/components/ChunkCardSelectionPanel.tsx' 'src/app/[locale]/chunks/new/components/ChunkSchedulePreview.tsx' 'src/app/[locale]/chunks/new/components/chunkCreatePreview.ts' 'src/app/[locale]/chunks/new/components/index.ts' 'src/features/chunks/constants/reviewSchedule.ts' 'src/features/chunks/hooks/index.ts' 'src/features/chunks/hooks/useChunkCreateScreen.ts' 'src/features/chunks/hooks/useChunkFormFields.ts' 'src/features/chunks/index.ts'` passes
 
 ---
 

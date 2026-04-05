@@ -1,0 +1,1 @@
+export const USER_VISIBLE_POSITION_OFFSET = 1;

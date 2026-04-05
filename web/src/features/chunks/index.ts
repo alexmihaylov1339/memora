@@ -1,6 +1,15 @@
 export { chunkService } from './services';
 export {
+  CHUNK_MASTERY_TARGET,
+  CHUNK_REVIEW_PREVIEW_HOURS,
+  MIN_CHUNK_CARD_SELECTION,
+  formatChunkScheduleInterval,
+} from './constants/reviewSchedule';
+export {
   CHUNK_QUERY_KEYS,
+  useChunkCreateFormFields,
+  useChunkCreateScreen,
+  useChunkDeckSelectionFields,
   useChunkDetailQuery,
   useDeckChunksQuery,
   useCreateChunkMutation,
