@@ -6,12 +6,14 @@ import { useRouter } from '@/i18n/navigation';
 import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {
+  useDeckCardsQuery,
   useDeckDetailQuery,
   useDeleteDeckMutation,
   useUpdateDeckMutation,
 } from '@features/decks';
+import { useDeckChunksQuery } from '@features/chunks';
 import { resolveSingleParam } from '@/shared/utils';
-import { DeckEditForm, EditDeckHeader } from './components';
+import { DeckEditForm, DeckWorkspacePanels, EditDeckHeader } from './components';
 
 export default function EditDeckPage() {
   const params = useParams();
@@ -19,6 +21,8 @@ export default function EditDeckPage() {
   const id = resolveSingleParam(params?.id as string | string[] | undefined);
 
   const deckQuery = useDeckDetailQuery(id);
+  const cardsQuery = useDeckCardsQuery(id);
+  const chunksQuery = useDeckChunksQuery(id);
 
   const updateDeck = useUpdateDeckMutation({
     onSuccess: () => {
@@ -34,24 +38,36 @@ export default function EditDeckPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-2xl p-6">
+      <main className="mx-auto w-full max-w-6xl p-6">
         <EditDeckHeader />
 
         {deckQuery.isLoading && <PageLoader />}
         {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}
 
         {deckQuery.result && (
-          <DeckEditForm
-            key={deckQuery.result.id}
-            id={deckQuery.result.id}
-            name={deckQuery.result.name}
-            description={deckQuery.result.description}
-            onUpdate={(payload) => updateDeck.fetch(payload)}
-            onDelete={() => deleteDeck.fetch({ id })}
-            isDeleting={deleteDeck.isLoading}
-            updateError={updateDeck.error?.message}
-            deleteError={deleteDeck.error?.message}
-          />
+          <div className="space-y-6">
+            <DeckEditForm
+              key={deckQuery.result.id}
+              id={deckQuery.result.id}
+              name={deckQuery.result.name}
+              description={deckQuery.result.description}
+              onUpdate={(payload) => updateDeck.fetch(payload)}
+              onDelete={() => deleteDeck.fetch({ id })}
+              isDeleting={deleteDeck.isLoading}
+              updateError={updateDeck.error?.message}
+              deleteError={deleteDeck.error?.message}
+            />
+
+            <DeckWorkspacePanels
+              deckId={deckQuery.result.id}
+              cards={cardsQuery.result}
+              chunks={chunksQuery.result}
+              cardsLoading={cardsQuery.isLoading}
+              chunksLoading={chunksQuery.isLoading}
+              cardsError={cardsQuery.error?.message}
+              chunksError={chunksQuery.error?.message}
+            />
+          </div>
         )}
       </main>
     </ProtectedRoute>

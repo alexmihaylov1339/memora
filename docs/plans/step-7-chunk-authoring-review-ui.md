@@ -401,7 +401,7 @@ Verification:
 ### T3 - Turn deck edit into a real authoring workspace
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Expand the deck edit route from a basic edit form into a workspace page.
@@ -442,6 +442,19 @@ Acceptance:
 
 Verification:
 - Manual flow confirms the deck page can load deck, card list, and chunk list together without breaking existing edit behavior.
+- Implemented workspace expansion:
+  - `web/src/app/[locale]/decks/[id]/edit/page.tsx` now loads deck detail, deck cards, and deck chunks together
+  - `web/src/app/[locale]/decks/[id]/edit/components/DeckWorkspacePanels.tsx` now renders the authoring workspace panels
+  - existing deck update/delete behavior remains in place via the current form component
+- Workspace behavior now includes:
+  - quick actions for add card and add chunk
+  - explicit review CTA placeholder text instead of linking to a non-existent route before T6
+  - card list with `kind`, readable `front/back` preview when available, and direct links to existing card edit pages
+  - chunk list with title, position, card count, and ordered card membership preview
+  - empty, loading, and error states for both cards and chunks
+- Verification completed:
+  - `cd web && npx tsc --noEmit` passes
+  - `cd web && npx eslint 'src/app/[locale]/decks/[id]/edit/page.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspacePanels.tsx' 'src/app/[locale]/decks/[id]/edit/components/EditDeckHeader.tsx' 'src/app/[locale]/decks/[id]/edit/components/index.ts' 'src/features/decks/constants/endpoints.ts' 'src/features/decks/hooks/index.ts' 'src/features/decks/hooks/useCardMutations.ts' 'src/features/decks/hooks/useCardQueries.ts' 'src/features/decks/index.ts' 'src/features/decks/services/cardService.ts' 'src/features/decks/types/index.ts' 'src/features/chunks/**/*.ts'` passes
 
 ---
 
