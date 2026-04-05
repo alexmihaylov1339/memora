@@ -1,6 +1,6 @@
 # Memora: Step 7 Plan - Chunk Authoring + Review UI
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-04  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 7
 
@@ -690,7 +690,7 @@ Verification:
 ### T8 - Tests, polish, i18n, and final readiness pass
 
 Status:
-- Proposed
+- Done
 
 Tasks:
 - Add focused frontend and e2e-safe regression coverage.
@@ -724,7 +724,19 @@ Acceptance:
 - Step 7 delivers a usable chunked-learning UI with enough confidence to move into extensibility work.
 
 Verification:
-- Final plan section is updated with actual outcomes and passing checks.
+- Step 7 now closes with:
+  - deck workspace card and chunk authoring panels
+  - real chunk creation flow with ordered card selection
+  - chunk inspection and deletion from the deck workspace
+  - protected global review page with queue loading, reveal, grading, progression, and completion refresh handling
+- `cd web && npx tsc --noEmit` passed.
+- `cd web && npx eslint src` passed.
+- `cd web && npm test -- --runInBand` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd api && npx jest --runInBand` passed.
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passed.
+- The review e2e assertions were hardened to scope queue expectations to the test-created deck, preventing false failures from unrelated due review items in the shared test database.
+- No Step 7 locale file expansion was added in this pass because the surrounding route surfaces still use inline UI copy rather than a consistent translation-key pattern; partial key churn was intentionally avoided and can be handled in a broader i18n step later.
 
 ---
 

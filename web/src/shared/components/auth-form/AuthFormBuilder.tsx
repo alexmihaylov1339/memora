@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import Button from './Button';
 import Fields from './formfields/Fields';
@@ -24,36 +24,44 @@ const AuthFormBuilder: React.FC<AuthFormBuilderProps> = ({
   submitLabel = 'Submit',
   initialValues,
 }) => {
-  const [values, setValues] = useState<Record<string, string>>(
-    fields.reduce(
-      (acc, field) => {
-        acc[field.name] = initialValues?.[field.name] ?? '';
-        return acc;
-      },
-      {} as Record<string, string>,
-    ),
-  );
-
-  useEffect(() => {
-    if (!initialValues) return;
-    setValues((prev) =>
+  const initialFieldValues = useMemo(
+    () =>
       fields.reduce(
         (acc, field) => {
-          acc[field.name] = initialValues[field.name] ?? prev[field.name] ?? '';
+          acc[field.name] = initialValues?.[field.name] ?? '';
           return acc;
         },
         {} as Record<string, string>,
       ),
-    );
-  }, [initialValues, fields]);
+    [fields, initialValues],
+  );
+
+  const [values, setValues] = useState<Record<string, string>>(
+    initialFieldValues,
+  );
+
+  const fieldValues = useMemo(
+    () =>
+      fields.reduce(
+        (acc, field) => {
+          acc[field.name] = values[field.name] ?? initialFieldValues[field.name] ?? '';
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    [fields, initialFieldValues, values],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
+    setValues((currentValues) => ({
+      ...currentValues,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(values);
+    onSubmit(fieldValues);
   };
 
   return (
@@ -68,7 +76,7 @@ const AuthFormBuilder: React.FC<AuthFormBuilderProps> = ({
             key={field.name}
             name={field.name}
             label={field.label}
-            value={values[field.name]}
+            value={fieldValues[field.name]}
             onChange={handleChange}
             placeholder={field.placeholder}
             required={field.required}

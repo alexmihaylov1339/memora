@@ -45,6 +45,15 @@ function getArrayField(
   return value;
 }
 
+function getReviewItemsForDeck(
+  source: Record<string, unknown>,
+  deckId: string,
+): Record<string, unknown>[] {
+  return getArrayField(source, 'items')
+    .map((item) => asRecord(item))
+    .filter((item) => item.deckId === deckId);
+}
+
 function expectExactKeys(
   source: Record<string, unknown>,
   expectedKeys: string[],
@@ -362,7 +371,9 @@ describe('AppController (e2e)', () => {
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual({ items: [] });
+        const body = asRecord(res.body);
+        expectExactKeys(body, ['items']);
+        expect(getReviewItemsForDeck(body, deckId)).toEqual([]);
       });
 
     await request(server)
@@ -530,7 +541,7 @@ describe('AppController (e2e)', () => {
       .set(authHeader)
       .expect(200);
     const initialQueueBody = asRecord(parseJson(initialQueueRes.text));
-    const initialQueueItems = getArrayField(initialQueueBody, 'items');
+    const initialQueueItems = getReviewItemsForDeck(initialQueueBody, deckId);
     const initialQueueItem = asRecord(initialQueueItems[0]);
 
     expectExactKeys(initialQueueBody, ['items']);
@@ -663,7 +674,9 @@ describe('AppController (e2e)', () => {
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual({ items: [] });
+        const body = asRecord(res.body);
+        expectExactKeys(body, ['items']);
+        expect(getReviewItemsForDeck(body, deckId)).toEqual([]);
       });
 
     await prisma.chunkReviewState.update({

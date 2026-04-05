@@ -59,7 +59,7 @@ const contactFormFields: FieldConfig[] = [
 ];
 
 // Example 3: Card creation form with all field types
-const cardFormFields: FieldConfig[] = [
+export const cardFormFields: FieldConfig[] = [
   {
     type: 'text',
     name: 'question',
@@ -99,7 +99,7 @@ const cardFormFields: FieldConfig[] = [
 ];
 
 // Example 4: Survey form with radio buttons
-const surveyFormFields: FieldConfig[] = [
+export const surveyFormFields: FieldConfig[] = [
   {
     type: 'radio',
     name: 'experience',
@@ -180,4 +180,3 @@ export function AdvancedForm() {
     />
   );
 }
-
