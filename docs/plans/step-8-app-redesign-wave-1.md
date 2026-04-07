@@ -128,9 +128,24 @@ Verification:
 
 ### T3 - Redesign `Sign In`
 
+Status:
+- Done
+
 - Apply the new design to the sign-in page.
 - Preserve validation, submission, loading, error, and success behavior.
 - Keep the UX consistent with register while respecting any intentional design differences.
+
+Implemented in this task:
+- Sign In now follows the approved `SignIn-1` frame from `QuickTaskApp`.
+- The screen reuses the shared auth shell introduced during register redesign.
+- Existing login submit, loading, and error behavior were preserved.
+- Intentional design differences from register were applied:
+  - register CTA prompt above the fields
+  - forgot-password recall link below the CTA
+
+Verification:
+- Sign In keeps the existing login flow intact.
+- The page now visually aligns with the approved auth redesign and shared auth direction.
 
 ### T4 - Shared auth refinement
 
