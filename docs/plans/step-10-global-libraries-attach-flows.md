@@ -1,8 +1,8 @@
-# Memora: Step 10 Plan - Global Card/Chunk Libraries and Deck Attach Flows
+# Memora: Step 11 Plan - Global Card/Chunk Libraries and Deck Attach Flows
 
 **Status:** Proposed  
 **Date:** 2026-04-05  
-**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 10
+**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 11
 
 ---
 
@@ -112,4 +112,3 @@ Verification:
 - Deck attach flow clearly shows target deck context.
 - Existing items can be attached successfully.
 - Duplicates and invalid actions are handled intentionally.
-

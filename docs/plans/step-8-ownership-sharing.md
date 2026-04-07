@@ -1,8 +1,8 @@
-# Memora: Step 8 Plan - Ownership, Visibility, and Deck Sharing
+# Memora: Step 9 Plan - Ownership, Visibility, and Deck Sharing
 
 **Status:** Proposed  
 **Date:** 2026-04-05  
-**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 8
+**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 9
 
 ---
 
@@ -139,4 +139,3 @@ Verification:
 - Shared deck is visible to invited user.
 - Unshared deck is hidden from unrelated users.
 - Review still works correctly for allowed users.
-

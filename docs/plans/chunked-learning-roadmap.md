@@ -158,7 +158,34 @@
 
 ---
 
-## Step 8: Add ownership, visibility, and deck sharing
+## Step 8: Start app redesign (begin with `Register` and `Sign In`)
+
+**Objective:** Start the redesign as the next forward step after the currently completed product work, beginning with the auth entry screens and continuing page by page as designs arrive.
+
+**Deliverables**
+- Redesigned `Register`
+- Redesigned `Sign In`
+- Clear redesign sequence for the next surfaces that will later follow:
+  - deck overview / deck hub
+  - deck cards
+  - deck chunks
+  - review page
+  - global cards
+  - global chunks
+  - sharing / invite surfaces
+
+**Why now**
+- The product flow is functional enough that presentation quality now matters.
+- Auth is the first place where a redesign has immediate value and clear design direction.
+- We should add redesign as a new forward-moving step instead of rewriting completed roadmap steps.
+
+**Exit criteria**
+- `Register` and `Sign In` are redesigned and still work correctly.
+- The redesign queue for later pages is explicitly captured in the plan.
+
+---
+
+## Step 9: Add ownership, visibility, and deck sharing
 
 **Objective:** Make decks, cards, and chunks private-by-default and intentionally shareable.
 
@@ -183,7 +210,7 @@
 
 ---
 
-## Step 9: Rework deck information architecture and deck-scoped workspaces
+## Step 10: Rework deck information architecture and deck-scoped workspaces
 
 **Objective:** Turn deck pages into scalable hubs instead of long mixed-content pages.
 
@@ -213,7 +240,7 @@
 
 ---
 
-## Step 10: Add global card/chunk libraries and deck attach flows
+## Step 11: Add global card/chunk libraries and deck attach flows
 
 **Objective:** Separate “items already in this deck” from “all items I own”.
 
@@ -242,7 +269,7 @@
 
 ---
 
-## Step 11: Redesign scalable deck, card, and chunk UX
+## Step 12: Redesign scalable deck, card, and chunk UX
 
 **Objective:** Introduce a cleaner visual system and scalable browsing patterns for the new IA.
 
@@ -266,7 +293,7 @@
 
 ---
 
-## Step 12: Prepare extensible card/exercise architecture
+## Step 13: Prepare extensible card/exercise architecture
 
 **Objective:** Avoid hardcoding “basic flashcard only” in core flows.
 
@@ -283,7 +310,7 @@
 
 ---
 
-## Step 13: Quality, observability, and rollout safety
+## Step 14: Quality, observability, and rollout safety
 
 **Objective:** De-risk production behavior over time.
 
@@ -313,6 +340,7 @@
 11. Step 11
 12. Step 12
 13. Step 13
+14. Step 14
  
 ---
 

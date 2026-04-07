@@ -1,8 +1,8 @@
-# Memora: Step 9 Plan - Deck Information Architecture and Deck-Scoped Workspaces
+# Memora: Step 10 Plan - Deck Information Architecture and Deck-Scoped Workspaces
 
 **Status:** Proposed  
 **Date:** 2026-04-05  
-**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 9
+**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 10
 
 ---
 
@@ -123,4 +123,3 @@ Verification:
 - `Open Chunks` goes to deck-only chunks.
 - `Start Review` remains reachable.
 - No raw ids are shown in the main deck workspace UI.
-

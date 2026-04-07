@@ -83,7 +83,7 @@ By the end of Step 7, a logged-in user should be able to:
 7. Submit a grade.
 8. See the next actionable item or a clear completion/empty state.
 
-This is the minimum full functionality needed before extensibility work in Step 8.
+This is the minimum full functionality needed before the later redesign and extensibility work.
 
 ---
 
@@ -331,7 +331,7 @@ Verification:
 - Explicitly deferred from Step 7:
   - advanced chunk editing UX
   - backend-driven review configuration endpoint for cadence preview
-  - full multi-kind exercise rendering architecture from Step 8
+  - full multi-kind exercise rendering architecture from Step 13
 
 ---
 
@@ -695,7 +695,7 @@ Status:
 Tasks:
 - Add focused frontend and e2e-safe regression coverage.
 - Ensure Step 7 does not leave rough contract edges.
-- Document what remains intentionally deferred to Step 8 or Step 9.
+- Document what remains intentionally deferred to Step 8, Step 9, or Step 10.
 
 Subtasks:
 - Frontend tests:
@@ -811,7 +811,7 @@ Risk:
 - Review UI becomes tightly coupled to `basic` card assumptions in unsafe ways.
 
 Mitigation:
-- Make `basic` the only polished renderer for now, but isolate rendering so Step 8 can add a registry cleanly.
+- Make `basic` the only polished renderer for now, but isolate rendering so Step 13 can add a registry cleanly.
 
 Risk:
 - Localization work becomes scattered and incomplete.
