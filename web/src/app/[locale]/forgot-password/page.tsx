@@ -2,21 +2,18 @@
 
 import { GuestOnlyRoute } from '@/shared/components/AuthProvider';
 
+import { AuthShell } from '@features/auth/components';
 import { ForgotPasswordForm } from '@features/auth/forgot-password/components';
 
 export default function ForgotPasswordPage() {
   return (
     <GuestOnlyRoute>
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-2xl border p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold">Memora</h1>
-          <p className="mt-1 text-sm text-gray-600">Forgot password</p>
-
-          <div className="mt-6">
-            <ForgotPasswordForm />
-          </div>
-        </div>
-      </div>
+      <AuthShell
+        description="Forgot your password? No worries. Enter your email to proceed."
+        descriptionClassName="mb-[30px] max-w-[382px] text-[20px] font-bold leading-[30px] tracking-[0.01em] text-[rgba(1,1,1,0.75)]"
+      >
+        <ForgotPasswordForm />
+      </AuthShell>
     </GuestOnlyRoute>
   );
 }

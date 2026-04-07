@@ -15,9 +15,15 @@ const robotoFlex = Roboto_Flex({
 
 interface AuthShellProps {
   children: ReactNode;
+  description?: ReactNode;
+  descriptionClassName?: string;
 }
 
-export default function AuthShell({ children }: AuthShellProps) {
+export default function AuthShell({
+  children,
+  description = 'From cards to memory',
+  descriptionClassName,
+}: AuthShellProps) {
   return (
     <div
       className={`${robotoFlex.className} min-h-screen bg-white px-6 py-10 sm:px-8`}
@@ -37,8 +43,13 @@ export default function AuthShell({ children }: AuthShellProps) {
             </span>
           </div>
 
-          <p className="mb-10 text-[20px] font-bold leading-[20px] tracking-[0.01em] text-[rgba(1,1,1,0.75)]">
-            From cards to memory
+          <p
+            className={
+              descriptionClassName ||
+              'mb-10 text-[20px] font-bold leading-[20px] tracking-[0.01em] text-[rgba(1,1,1,0.75)]'
+            }
+          >
+            {description}
           </p>
 
           {children}

@@ -48,6 +48,7 @@ We should not retroactively change completed roadmap steps just because the new 
 In scope for this redesign wave:
 - `Register`
 - `Sign In`
+- `Forgot Password`
 - the redesign plan for the next user-facing app surfaces that will follow as designs arrive
 
 Planned redesign targets after auth, when designs are available:
@@ -71,8 +72,9 @@ Out of scope for this step:
 
 1. `Register`
 2. `Sign In`
-3. shared auth layout/pattern cleanup if justified by real reuse
-4. next page redesigns added intentionally as designs are provided
+3. `Forgot Password`
+4. shared auth layout/pattern cleanup if justified by real reuse
+5. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -147,13 +149,31 @@ Verification:
 - Sign In keeps the existing login flow intact.
 - The page now visually aligns with the approved auth redesign and shared auth direction.
 
-### T4 - Shared auth refinement
+### T4 - Redesign `Forgot Password`
+
+Status:
+- Done
+
+- Apply the approved design to the forgot-password page.
+- Preserve the existing submission behavior and success/error states.
+- Keep the page visually aligned with the new shared auth direction while respecting any copy/layout differences in the Figma design.
+
+Implemented in this task:
+- Forgot Password now follows the approved `ForgotPassword-1` auth frame.
+- The screen reuses the shared auth shell while providing its own longer recovery message.
+- Existing forgot-password request, success state, and dev reset-link behavior were preserved.
+
+Verification:
+- Forgot Password keeps the existing submission flow intact.
+- The page now visually aligns with the auth redesign system and approved Figma direction.
+
+### T5 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T5 - Prepare the next redesign queue
+### T6 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub
@@ -171,6 +191,7 @@ Verification:
 
 - `Register` is redesigned.
 - `Sign In` is redesigned.
+- `Forgot Password` is redesigned.
 - Auth functionality still works correctly.
 - The roadmap clearly shows redesign as a forward step instead of modifying completed historical steps.
 
