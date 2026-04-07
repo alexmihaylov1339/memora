@@ -80,9 +80,32 @@ Out of scope for this step:
 
 ### T1 - Lock redesign wave boundaries
 
+Status:
+- Done
+
 - Confirm that this redesign wave starts with auth only.
 - Record which additional pages are expected to be redesigned next, but do not force implementation before designs exist.
 - Keep the roadmap history intact; add redesign as a new forward-moving step.
+
+Locked boundary for this step:
+- Figma file: `QuickTaskApp`
+- File URL: `https://www.figma.com/design/ilx1au1dGmuEOp6Lde7gfe/QuickTaskApp?node-id=0-1&p=f&t=YdeS4mzplHkMcjSe-0`
+- Confirmed auth redesign targets available now:
+  - `SignIn-1` (`41:259`)
+  - `Register-1` (`41:335`)
+- A `Home-1` frame also exists in the file, but it is not part of the current redesign wave unless explicitly promoted later.
+
+What this means for implementation:
+- Step 8 starts with auth only.
+- `Register` and `Sign In` are the only approved implementation targets in this wave right now.
+- The next redesign targets remain queued conceptually, but they should not be implemented until matching designs are confirmed.
+
+Verification:
+- Step 8 scope is now grounded in the live Figma file instead of assumption.
+- The plan now explicitly distinguishes:
+  - approved now: `Register`, `Sign In`
+  - visible but deferred: `Home-1`
+  - future pages to add later when designs arrive
 
 ### T2 - Redesign `Register`
 
