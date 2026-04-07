@@ -49,6 +49,7 @@ In scope for this redesign wave:
 - `Register`
 - `Sign In`
 - `Forgot Password`
+- `Navigation`
 - the redesign plan for the next user-facing app surfaces that will follow as designs arrive
 
 Planned redesign targets after auth, when designs are available:
@@ -73,8 +74,9 @@ Out of scope for this step:
 1. `Register`
 2. `Sign In`
 3. `Forgot Password`
-4. shared auth layout/pattern cleanup if justified by real reuse
-5. next page redesigns added intentionally as designs are provided
+4. `Navigation`
+5. shared auth layout/pattern cleanup if justified by real reuse
+6. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -167,13 +169,41 @@ Verification:
 - Forgot Password keeps the existing submission flow intact.
 - The page now visually aligns with the auth redesign system and approved Figma direction.
 
-### T5 - Shared auth refinement
+### T5 - Redesign `Navigation`
+
+Status:
+- Done
+
+- Apply the approved navigation design when the matching Figma frame is confirmed.
+- Update the main app navigation so it aligns with the new visual system introduced by the auth redesign.
+- Preserve route behavior and active-state clarity while improving the visual hierarchy.
+
+Implemented in this task:
+- Navigation was inferred from the `Home-1` left-sidebar design.
+- The app now uses a left authenticated sidebar instead of the old top navigation.
+- The brand mark/logo links to home.
+- Main navigation items are:
+  - `Decks`
+  - `Chunks`
+  - `Cards`
+  - `Account`
+- Guest/auth pages no longer show the signed-in navigation shell.
+
+Implementation note:
+- Until dedicated top-level cards/chunks browsing pages are redesigned, the `Chunks` and `Cards` navigation items point to the currently existing top-level chunk/card entry pages.
+
+Verification:
+- Signed-in users see the left navigation shell.
+- Guest-only auth pages render without the signed-in navigation.
+- Sidebar links route correctly and show active-state styling.
+
+### T6 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T6 - Prepare the next redesign queue
+### T7 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub
@@ -192,6 +222,7 @@ Verification:
 - `Register` is redesigned.
 - `Sign In` is redesigned.
 - `Forgot Password` is redesigned.
+- `Navigation` is redesigned.
 - Auth functionality still works correctly.
 - The roadmap clearly shows redesign as a forward step instead of modifying completed historical steps.
 
