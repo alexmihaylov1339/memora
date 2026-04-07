@@ -9,8 +9,22 @@ interface EmailFieldProps {
 
 export default function EmailField({ config, disabled }: EmailFieldProps) {
   return (
-    <div className={styles.fieldWrapper}>
-      <label htmlFor={config.name} className={styles.label}>
+    <div
+      className={
+        config.fieldWrapperClassName
+          ? `${styles.fieldWrapper} ${config.fieldWrapperClassName}`
+          : styles.fieldWrapper
+      }
+      style={config.fieldWrapperStyle}
+    >
+      <label
+        htmlFor={config.name}
+        className={
+          config.labelClassName
+            ? `${styles.label} ${config.labelClassName}`
+            : styles.label
+        }
+      >
         {config.label}
         {config.required && <span className={styles.required}> *</span>}
       </label>
@@ -22,7 +36,12 @@ export default function EmailField({ config, disabled }: EmailFieldProps) {
         placeholder={config.placeholder}
         required={config.required}
         disabled={disabled || config.disabled}
-        className={styles.input}
+        className={
+          config.inputClassName
+            ? `${styles.input} ${config.inputClassName}`
+            : styles.input
+        }
+        style={config.inputStyle}
       />
     </div>
   );

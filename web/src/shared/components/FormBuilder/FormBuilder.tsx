@@ -15,6 +15,7 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   onSubmit,
   submitLabel = 'Submit',
   submitButtonClassName,
+  formClassName,
   initialValues,
   translateFields = true,
   errorMessage,
@@ -61,7 +62,7 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={formClassName}>
       {fields.map((field) => {
         const initialValue = initialValues?.[field.name];
         const translatedField = {

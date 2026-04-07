@@ -109,9 +109,22 @@ Verification:
 
 ### T2 - Redesign `Register`
 
+Status:
+- Done
+
 - Apply the new design to the register page.
 - Preserve validation, submission, loading, error, and success behavior.
 - Ensure desktop and mobile layouts both work.
+
+Implemented in this task:
+- Register now follows the approved `Register-1` Figma frame from `QuickTaskApp`.
+- The page uses a dedicated auth shell matching the new brand direction.
+- Existing register validation and mutation flow were preserved.
+- The form system was extended slightly so auth-specific input styling can be applied without bypassing shared `FormBuilder` usage.
+
+Verification:
+- Register page keeps existing submit behavior and password-match validation.
+- The page now matches the approved auth redesign direction on both desktop and narrow layouts.
 
 ### T3 - Redesign `Sign In`
 

@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 // Base types shared across all fields
 export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio';
 
@@ -11,6 +13,11 @@ export interface BaseFieldConfig {
   placeholder?: string;
   /** Initial/default value for uncontrolled input rendering */
   defaultValue?: string | number;
+  fieldWrapperClassName?: string;
+  fieldWrapperStyle?: CSSProperties;
+  labelClassName?: string;
+  inputClassName?: string;
+  inputStyle?: CSSProperties;
 }
 
 // Import field types to create union
@@ -43,6 +50,7 @@ export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   submitLabel?: string;
   /** Optional className for submit button styling */
   submitButtonClassName?: string;
+  formClassName?: string;
   /** Optional initial values mapped by field name */
   initialValues?: Partial<Record<string, unknown>>;
   /** Whether labels/placeholders should be translated through next-intl */
