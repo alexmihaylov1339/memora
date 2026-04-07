@@ -1,8 +1,8 @@
-# Memora: Step 11 Plan - UI Redesign and Scalable Browsing
+# Memora: Step 12 Plan - UI Redesign and Scalable Browsing
 
 **Status:** Proposed  
 **Date:** 2026-04-05  
-**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 11
+**Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 12
 
 ---
 

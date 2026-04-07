@@ -6,6 +6,15 @@
 
 ---
 
+## Branch proposal
+
+- `feat/step8-app-redesign-wave-1`
+
+Alternative shorter option:
+- `feat/auth-redesign-wave-1`
+
+---
+
 ## Objective
 
 Start the application redesign as the next step after the currently completed product foundation work, beginning with the auth entry screens and then expanding across the app as designs are provided.
