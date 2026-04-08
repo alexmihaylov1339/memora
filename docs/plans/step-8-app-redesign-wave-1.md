@@ -77,8 +77,10 @@ Out of scope for this step:
 4. `Navigation`
 5. reusable search infrastructure
 6. search styling pass when designs are ready
-7. shared auth layout/pattern cleanup if justified by real reuse
-8. next page redesigns added intentionally as designs are provided
+7. reusable grid behavior for decks/cards/chunks front pages
+8. grid styling pass when designs are ready
+9. shared auth layout/pattern cleanup if justified by real reuse
+10. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -267,13 +269,96 @@ Acceptance:
 Verification:
 - The same search behavior works after styling is applied.
 
-### T8 - Shared auth refinement
+### T8 - Build a simple reusable grid component for front pages
+
+Status:
+- Proposed
+
+- Build one reusable grid component inspired by the way AG Grid accepts configuration, but simpler and appropriate for this project.
+- The grid should be reusable for:
+  - decks front page
+  - cards front page
+  - chunks front page
+
+Required API shape:
+- `id`
+- `rowData` / stored data to render
+- `columnDefs`
+
+Behavior goals:
+- Keep the component generic so it can render different entity datasets.
+- Keep the implementation intentionally lightweight for this project.
+- It should be good enough to display all decks, cards, and chunks on their main pages.
+- Do not try to clone full AG Grid complexity.
+
+Initial functionality scope:
+- render rows from provided data
+- render columns from provided column definitions
+- support simple cell value access
+- support simple cell rendering where needed
+- support row click handling if the consumer provides it
+- stay compatible with the shared search usage on those front pages
+
+Requirements:
+- Follow SOLID principles:
+  - grid component should not know deck/card/chunk specifics
+  - column behavior should be driven by configuration
+  - data source should come from the consumer page/service layer
+- Keep it implementation-friendly and small.
+- Do not add styling in this task.
+- Do not add advanced AG Grid features yet:
+  - no sorting
+  - no filtering inside the grid
+  - no resizing
+  - no pagination logic inside the grid unless already needed by the page
+  - no selection model beyond simple row click support
+
+Suggested implementation shape:
+- shared reusable grid component under shared UI
+- small project-specific column definition type
+- optional row click callback
+- simple render path for primitive values and optional custom renderer
+
+First use targets:
+- decks page
+- cards page
+- chunks page
+
+Acceptance:
+- A single reusable grid component can render decks, cards, and chunks through configuration instead of page-specific table markup.
+- The front pages can use the same grid primitive without the grid knowing domain specifics.
+
+Verification:
+- Manual check:
+  - decks page renders through the reusable grid
+  - cards page renders through the reusable grid
+  - chunks page renders through the reusable grid
+  - row click behavior works where provided
+- Code check:
+  - grid props stay generic and do not leak deck/card/chunk-specific assumptions
+
+### T9 - Grid styling pass
+
+Status:
+- Proposed
+
+- Add styling for the reusable grid only after the designer finishes the relevant design direction.
+- Keep this as a separate visual-only task.
+- Do not mix behavior changes with styling changes in this task.
+
+Acceptance:
+- The reusable grid behavior from T8 remains unchanged while visual treatment is layered on later.
+
+Verification:
+- Grid still behaves the same after styling is applied.
+
+### T10 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T9 - Prepare the next redesign queue
+### T11 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub
@@ -294,6 +379,7 @@ Verification:
 - `Forgot Password` is redesigned.
 - `Navigation` is redesigned.
 - Reusable backend-driven search behavior exists without page-specific coupling.
+- A simple reusable grid is planned as the next shared primitive for decks/cards/chunks front pages, with styling intentionally deferred until designs are ready.
 - Auth functionality still works correctly.
 - The roadmap clearly shows redesign as a forward step instead of modifying completed historical steps.
 
