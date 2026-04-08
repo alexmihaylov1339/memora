@@ -49,6 +49,13 @@ export const cardService = {
       .execRequest<CardRecord>();
   },
 
+  getAll() {
+    return api
+      .prepareRequest(CARD_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<CardRecord[]>();
+  },
+
   listByDeck(params: DeckCardsParams) {
     return api
       .prepareRequest(DECK_ENDPOINTS.CARDS(params.deckId), HTTP_METHODS.GET)

@@ -1,13 +1,31 @@
 'use client';
 
 import { Link, useRouter } from '@/i18n/navigation';
-import { EntitySearch, ProtectedRoute } from '@shared/components';
+import {
+  EntitySearch,
+  ErrorMessage,
+  Grid,
+  PageLoader,
+  ProtectedRoute,
+} from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
-import { chunkService } from '@features/chunks';
+import type { ChunkRecord } from '@features/chunks';
+import { chunkService, useChunksListQuery } from '@features/chunks';
 import { SEARCH_QUERY_KEYS } from '@features/search';
+import useChunkGridColumns from './components/useChunkGridColumns';
 
 export default function ChunksPage() {
   const router = useRouter();
+  const { isLoading, error, result } = useChunksListQuery();
+  const columnDefs = useChunkGridColumns();
+
+  function handleChunkSelect(id: string) {
+    router.replace(APP_ROUTES.chunkEdit(id));
+  }
+
+  function handleChunkRowClick(chunk: ChunkRecord) {
+    handleChunkSelect(chunk.id);
+  }
 
   return (
     <ProtectedRoute>
@@ -27,10 +45,20 @@ export default function ChunksPage() {
           queryKey={SEARCH_QUERY_KEYS.chunk}
           search={chunkService.search}
           placeholder="Search chunks"
-          onSelect={(item) => {
-            router.replace(APP_ROUTES.chunkEdit(item.id));
-          }}
+          onSelect={(item) => handleChunkSelect(item.id)}
         />
+
+        {isLoading && <PageLoader />}
+        {error && <ErrorMessage message={error.message} />}
+        {result && (
+          <Grid
+            id="chunks-grid"
+            rowData={result}
+            columnDefs={columnDefs}
+            onRowClick={handleChunkRowClick}
+            emptyMessage="No chunks found."
+          />
+        )}
       </main>
     </ProtectedRoute>
   );

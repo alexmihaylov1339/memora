@@ -8,6 +8,7 @@ export {
   useCreateDeckMutation,
   useUpdateDeckMutation,
   useDeleteDeckMutation,
+  useCardsListQuery,
   useCardDetailQuery,
   useDeckCardsQuery,
   useCreateCardMutation,

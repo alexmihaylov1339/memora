@@ -3,9 +3,16 @@ import { chunkService } from '../services';
 import type { ChunkRecord, DeckChunkListParams } from '../types';
 
 export const CHUNK_QUERY_KEYS = {
+  all: ['chunks'],
   detail: (id: string) => ['chunks', 'detail', id],
   listByDeck: (deckId: string) => ['chunks', 'deck', deckId],
 };
+
+export function useChunksListQuery(
+  options?: UseServiceQueryOptions<ChunkRecord[]>,
+) {
+  return useServiceQuery(CHUNK_QUERY_KEYS.all, chunkService.listAll, options);
+}
 
 export function useChunkDetailQuery(
   id: string,

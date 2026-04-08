@@ -327,6 +327,39 @@ describe('AppController (e2e)', () => {
       });
 
     await request(server)
+      .get('/v1/cards')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: cardId,
+              deckId,
+              kind: 'basic',
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get('/v1/chunks')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId,
+              title: 'German word chunk',
+              cardIds: [cardId],
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
       .put(`/v1/chunks/${chunkId}`)
       .set(authHeader)
       .send({ title: 'Updated German word chunk', cardIds: [], position: 1 })

@@ -23,12 +23,22 @@ import {
   validateUpdateCardInput,
 } from './dto/card-validation';
 import type { Prisma } from '@prisma/client';
-import { serializeCardResponse } from './dto/card-response.dto';
+import {
+  serializeCardResponse,
+  serializeCardResponseList,
+} from './dto/card-response.dto';
 
 @Controller('cards')
 @UseGuards(AuthGuard)
 export class CardsController {
   constructor(private readonly cards: CardsService) {}
+
+  @Get()
+  async list() {
+    const cards = await this.cards.findAll();
+
+    return serializeCardResponseList(cards);
+  }
 
   @Post()
   async create(@Body() body: CreateCardDto) {

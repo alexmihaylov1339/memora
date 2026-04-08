@@ -54,6 +54,21 @@ type ChunkPersistenceClient = Pick<PrismaService, 'card' | 'chunk' | 'deck'>;
 export class ChunksService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(): Promise<ChunkSummary[]> {
+    const chunks = await this.prisma.chunk.findMany({
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      include: {
+        chunkCards: {
+          orderBy: { sequenceIndex: 'asc' },
+        },
+      },
+    });
+
+    return chunks.map((chunk) =>
+      this.mapChunkSummary(chunk as PersistedChunkRecord),
+    );
+  }
+
   private async hasValidDeckCards(
     client: ChunkPersistenceClient,
     deckId: string,

@@ -7,6 +7,7 @@ export {
 } from './constants/reviewSchedule';
 export {
   CHUNK_QUERY_KEYS,
+  useChunksListQuery,
   useChunkCreateFormFields,
   useChunkCreateScreen,
   useChunkDeckSelectionFields,

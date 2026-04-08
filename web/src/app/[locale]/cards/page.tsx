@@ -1,14 +1,31 @@
 'use client';
 
 import { useRouter } from '@/i18n/navigation';
-import { EntitySearch, ProtectedRoute } from '@shared/components';
+import {
+  EntitySearch,
+  ErrorMessage,
+  Grid,
+  PageLoader,
+  ProtectedRoute,
+} from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
-import { cardService } from '@features/decks';
+import type { CardRecord } from '@features/decks';
+import { cardService, useCardsListQuery } from '@features/decks';
 import { SEARCH_QUERY_KEYS } from '@features/search';
-import { CardsPageHeader } from './components';
+import { CardsPageHeader, useCardGridColumns } from './components';
 
 export default function CardsPage() {
   const router = useRouter();
+  const { isLoading, error, result } = useCardsListQuery();
+  const columnDefs = useCardGridColumns();
+
+  function handleCardSelect(id: string) {
+    router.replace(APP_ROUTES.cardEdit(id));
+  }
+
+  function handleCardRowClick(card: CardRecord) {
+    handleCardSelect(card.id);
+  }
 
   return (
     <ProtectedRoute>
@@ -18,10 +35,20 @@ export default function CardsPage() {
           queryKey={SEARCH_QUERY_KEYS.card}
           search={cardService.search}
           placeholder="Search cards"
-          onSelect={(item) => {
-            router.replace(APP_ROUTES.cardEdit(item.id));
-          }}
+          onSelect={(item) => handleCardSelect(item.id)}
         />
+
+        {isLoading && <PageLoader />}
+        {error && <ErrorMessage message={error.message} />}
+        {result && (
+          <Grid
+            id="cards-grid"
+            rowData={result}
+            columnDefs={columnDefs}
+            onRowClick={handleCardRowClick}
+            emptyMessage="No cards found."
+          />
+        )}
       </main>
     </ProtectedRoute>
   );

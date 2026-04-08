@@ -14,6 +14,12 @@ export interface CardRecord {
 export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(): Promise<CardRecord[]> {
+    return (await this.prisma.card.findMany({
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    })) as CardRecord[];
+  }
+
   async create(data: {
     deckId: string;
     kind: string;

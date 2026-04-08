@@ -21,6 +21,13 @@ const SEARCH_ENDPOINTS = {
 } as const;
 
 export const chunkService = {
+  listAll() {
+    return api
+      .prepareRequest(CHUNK_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<ChunkRecord[]>();
+  },
+
   create(params: CreateChunkDto) {
     return api
       .prepareRequest(CHUNK_ENDPOINTS.BASE, HTTP_METHODS.POST)

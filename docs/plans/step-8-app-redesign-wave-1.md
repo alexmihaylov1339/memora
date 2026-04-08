@@ -272,7 +272,7 @@ Verification:
 ### T8 - Build a simple reusable grid component for front pages
 
 Status:
-- Proposed
+- Done
 
 - Build one reusable grid component inspired by the way AG Grid accepts configuration, but simpler and appropriate for this project.
 - The grid should be reusable for:
@@ -329,13 +329,22 @@ Acceptance:
 - The front pages can use the same grid primitive without the grid knowing domain specifics.
 
 Verification:
-- Manual check:
-  - decks page renders through the reusable grid
-  - cards page renders through the reusable grid
-  - chunks page renders through the reusable grid
-  - row click behavior works where provided
-- Code check:
-  - grid props stay generic and do not leak deck/card/chunk-specific assumptions
+- Implemented in this task:
+  - a shared grid component now accepts:
+    - `id`
+    - `rowData`
+    - `columnDefs`
+    - optional `onRowClick`
+  - the grid is intentionally lightweight and unstyled
+  - decks, cards, and chunks front pages now render through the same shared grid primitive
+  - top-level `GET /v1/cards` and `GET /v1/chunks` endpoints were added so cards/chunks front pages can show all items
+- Verification:
+  - `cd api && npx tsc --noEmit --pretty false` passed
+  - `cd api && npx jest --runInBand` passed
+  - `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passed
+  - `cd web && npx tsc --noEmit` passed
+  - focused `web` ESLint passed for the grid, front pages, and new list-query wiring
+- Styling remains intentionally deferred to T9 while the designer finalizes the visual direction.
 
 ### T9 - Grid styling pass
 

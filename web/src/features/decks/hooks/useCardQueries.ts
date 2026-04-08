@@ -3,9 +3,16 @@ import { cardService } from '../services';
 import type { CardRecord, DeckCardsParams } from '../types';
 
 const CARD_QUERY_KEYS = {
+  all: ['cards'],
   detail: (id: string) => ['cards', 'detail', id],
   listByDeck: (deckId: string) => ['cards', 'deck', deckId],
 };
+
+export function useCardsListQuery(
+  options?: UseServiceQueryOptions<CardRecord[]>,
+) {
+  return useServiceQuery(CARD_QUERY_KEYS.all, cardService.getAll, options);
+}
 
 export function useCardDetailQuery(
   id: string,

@@ -7,7 +7,11 @@ export {
   useUpdateDeckMutation,
   useDeleteDeckMutation,
 } from './useDeckMutations';
-export { useCardDetailQuery, useDeckCardsQuery } from './useCardQueries';
+export {
+  useCardsListQuery,
+  useCardDetailQuery,
+  useDeckCardsQuery,
+} from './useCardQueries';
 export {
   useCreateCardMutation,
   useUpdateCardMutation,

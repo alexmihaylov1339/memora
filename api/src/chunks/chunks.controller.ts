@@ -23,12 +23,22 @@ import {
   validateCreateChunkInput,
   validateUpdateChunkInput,
 } from './dto/chunk-validation';
-import { serializeChunkResponse } from './dto/chunk-response.dto';
+import {
+  serializeChunkResponse,
+  serializeChunkResponseList,
+} from './dto/chunk-response.dto';
 
 @Controller('chunks')
 @UseGuards(AuthGuard)
 export class ChunksController {
   constructor(private readonly chunks: ChunksService) {}
+
+  @Get()
+  async list() {
+    const chunks = await this.chunks.findAll();
+
+    return serializeChunkResponseList(chunks);
+  }
 
   @Post()
   async create(@Body() body: CreateChunkDto) {
