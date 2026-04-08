@@ -75,8 +75,10 @@ Out of scope for this step:
 2. `Sign In`
 3. `Forgot Password`
 4. `Navigation`
-5. shared auth layout/pattern cleanup if justified by real reuse
-6. next page redesigns added intentionally as designs are provided
+5. reusable search infrastructure
+6. search styling pass when designs are ready
+7. shared auth layout/pattern cleanup if justified by real reuse
+8. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -197,13 +199,81 @@ Verification:
 - Guest-only auth pages render without the signed-in navigation.
 - Sidebar links route correctly and show active-state styling.
 
-### T6 - Shared auth refinement
+### T6 - Build reusable backend-driven search with dropdown behavior
+
+Status:
+- Proposed
+
+- Build one reusable search component/hook set that can be used across many pages.
+- Search should support the same entity families:
+  - decks
+  - cards
+  - chunks
+- Typing should invoke the backend after a normal debounce/delay instead of on every keystroke.
+- Results should appear in a dropdown below the input.
+- Clicking a result should call a consumer-provided callback so each page can decide what happens next.
+
+Requirements:
+- Keep search behavior reusable and open for extension.
+- Do not hardcode redirect logic into the base search component.
+- In the first use case, clicking a deck result should redirect to that deck edit page.
+- Keep styling intentionally minimal or deferred; this task should focus on behavior, structure, and reusability.
+- Follow SOLID principles:
+  - separate data fetching from presentation
+  - separate entity mapping from interaction behavior
+  - keep the click action injectable
+  - avoid page-specific logic inside the shared component
+
+Suggested implementation shape:
+- backend:
+  - add a unified or parallel search contract for decks/cards/chunks
+  - return lightweight result items suitable for dropdown rendering
+- frontend:
+  - shared debounced search hook
+  - shared dropdown result component
+  - entity adapters/mappers for decks/cards/chunks
+  - consumer-supplied `onSelect`
+
+First concrete use case:
+- searching for decks
+- showing deck results in the dropdown
+- clicking a result redirects to the exact deck edit page
+
+Acceptance:
+- A shared search component can query the backend with debounce, show dropdown results, and delegate click behavior through a provided callback.
+- The first deck search flow works without embedding deck-specific behavior into the reusable search base.
+
+Verification:
+- Manual happy path:
+  - type into the shared search
+  - backend search is invoked after debounce
+  - dropdown results appear
+  - clicking a deck result redirects to the deck edit page in the first consumer
+- Manual extensibility check:
+  - confirm another consumer can pass a different `onSelect` behavior without changing the shared search core
+
+### T7 - Search styling pass
+
+Status:
+- Proposed
+
+- Apply the approved styling once the search design is ready.
+- Keep this task visual only; do not mix structural behavior changes into it.
+- Align the dropdown, input, empty state, loading state, and focus state with the redesign system when that system is approved.
+
+Acceptance:
+- Search logic from T6 remains unchanged while visual treatment is added cleanly on top.
+
+Verification:
+- The same search behavior works after styling is applied.
+
+### T8 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T7 - Prepare the next redesign queue
+### T9 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub
@@ -223,6 +293,7 @@ Verification:
 - `Sign In` is redesigned.
 - `Forgot Password` is redesigned.
 - `Navigation` is redesigned.
+- Reusable backend-driven search behavior exists without page-specific coupling.
 - Auth functionality still works correctly.
 - The roadmap clearly shows redesign as a forward step instead of modifying completed historical steps.
 

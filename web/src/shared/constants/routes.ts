@@ -6,14 +6,15 @@ export const APP_ROUTES = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   decks: '/decks',
-  chunks: '/chunks/new',
-  cards: '/cards/new',
+  chunks: '/chunks',
+  cards: '/cards',
   review: '/review',
   newDeck: '/decks/new',
   newCard: '/cards/new',
   newChunk: '/chunks/new',
   deckEdit: (id: string) => `/decks/${id}/edit`,
   cardEdit: (id: string) => `/cards/${id}/edit`,
+  chunkEdit: (id: string) => `/chunks/${id}/edit`,
   resetPasswordWithToken: (token: string) =>
     `/reset-password?token=${encodeURIComponent(token)}`,
 } as const;

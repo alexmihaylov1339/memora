@@ -6,6 +6,7 @@ import type {
   DeckChunkListParams,
   UpdateChunkDto,
 } from '../types';
+import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const api = ManageService(API_URL);
@@ -14,6 +15,9 @@ const CHUNK_ENDPOINTS = {
   BASE: '/v1/chunks',
   DETAIL: (id: string) => `/v1/chunks/${id}`,
   LIST_BY_DECK: (deckId: string) => `/v1/decks/${deckId}/chunks`,
+} as const;
+const SEARCH_ENDPOINTS = {
+  BASE: '/v1/search',
 } as const;
 
 export const chunkService = {
@@ -68,5 +72,17 @@ export const chunkService = {
       .setHeaders(getAuthHeaders())
       .setQueryParams(queryParams)
       .execRequest<ChunkRecord[]>();
+  },
+
+  search(params: SearchRequest) {
+    return api
+      .prepareRequest(SEARCH_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .setQueryParams({
+        q: params.q,
+        type: 'chunk',
+        limit: params.limit,
+      })
+      .execRequest<SearchResultItem[]>();
   },
 };

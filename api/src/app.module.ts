@@ -8,10 +8,12 @@ import { AuthModule } from './auth/auth.module';
 import { CardsModule } from './cards/cards.module';
 import { ChunksModule } from './chunks/chunks.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { SearchController } from './search/search.controller';
+import { SearchService } from './search/search.service';
 
 @Module({
   imports: [PrismaModule, AuthModule, CardsModule, ChunksModule, ReviewsModule],
-  controllers: [AppController, DecksController],
-  providers: [AppService, DecksService],
+  controllers: [AppController, DecksController, SearchController],
+  providers: [AppService, DecksService, SearchService],
 })
 export class AppModule {}

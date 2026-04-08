@@ -8,11 +8,15 @@ import type {
   UpdateDeckDto,
   UpdateDeckResponse,
 } from '../types';
+import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 import { DECK_ENDPOINTS } from '../constants';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const api = ManageService(API_URL);
+const SEARCH_ENDPOINTS = {
+  BASE: '/v1/search',
+} as const;
 
 /**
  * Deck service with all CRUD operations
@@ -95,5 +99,17 @@ export const deckService = {
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
       .setHeaders(getAuthHeaders())
       .execRequest<void>();
+  },
+
+  search(params: SearchRequest) {
+    return api
+      .prepareRequest(SEARCH_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .setQueryParams({
+        q: params.q,
+        type: 'deck',
+        limit: params.limit,
+      })
+      .execRequest<SearchResultItem[]>();
   },
 };

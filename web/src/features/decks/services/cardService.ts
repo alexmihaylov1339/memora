@@ -1,6 +1,7 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import { DECK_ENDPOINTS } from '../constants';
 import type { CardRecord, DeckCardsParams } from '../types';
+import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
   deckId: string;
@@ -26,6 +27,9 @@ const api = ManageService(API_URL);
 const CARD_ENDPOINTS = {
   BASE: '/v1/cards',
   DETAIL: (id: string) => `/v1/cards/${id}`,
+} as const;
+const SEARCH_ENDPOINTS = {
+  BASE: '/v1/search',
 } as const;
 
 export const cardService = {
@@ -67,5 +71,17 @@ export const cardService = {
       .prepareRequest(CARD_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
       .setHeaders(getAuthHeaders())
       .execRequest<void>();
+  },
+
+  search(params: SearchRequest) {
+    return api
+      .prepareRequest(SEARCH_ENDPOINTS.BASE, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .setQueryParams({
+        q: params.q,
+        type: 'card',
+        limit: params.limit,
+      })
+      .execRequest<SearchResultItem[]>();
   },
 };

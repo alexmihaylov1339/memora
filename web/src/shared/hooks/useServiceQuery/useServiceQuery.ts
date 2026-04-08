@@ -49,14 +49,14 @@ const DEFAULT_REFETCH_INTERVAL = false;
 
 // Overload: service without params
 export function useServiceQuery<TData = unknown>(
-  queryKey: unknown[],
+  queryKey: readonly unknown[],
   service: () => Promise<TData>,
   options?: UseServiceQueryOptions<TData>
 ): UseServiceQueryResult<TData>;
 
 // Overload: service with params
 export function useServiceQuery<TParams, TData = unknown>(
-  queryKey: unknown[],
+  queryKey: readonly unknown[],
   service: QueryServiceFunction<TParams, TData>,
   params: TParams,
   options?: UseServiceQueryOptions<TData>
@@ -64,7 +64,7 @@ export function useServiceQuery<TParams, TData = unknown>(
 
 // Implementation
 export function useServiceQuery<TParams = void, TData = unknown>(
-  queryKey: unknown[],
+  queryKey: readonly unknown[],
   service: QueryServiceFunction<TParams, TData> | (() => Promise<TData>),
   paramsOrOptions?: TParams | UseServiceQueryOptions<TData>,
   options?: UseServiceQueryOptions<TData>
@@ -111,5 +111,4 @@ export function useServiceQuery<TParams = void, TData = unknown>(
     isRefetching: query.isRefetching,
   };
 }
-
 
