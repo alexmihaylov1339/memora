@@ -75,12 +75,13 @@ Out of scope for this step:
 2. `Sign In`
 3. `Forgot Password`
 4. `Navigation`
-5. reusable search infrastructure
-6. search styling pass when designs are ready
-7. reusable grid behavior for decks/cards/chunks front pages
-8. grid styling pass when designs are ready
-9. shared auth layout/pattern cleanup if justified by real reuse
-10. next page redesigns added intentionally as designs are provided
+5. add grid-local quick search/filter behavior
+6. reusable search infrastructure
+7. search styling pass when designs are ready
+8. reusable grid behavior for decks/cards/chunks front pages
+9. grid styling pass when designs are ready
+10. shared auth layout/pattern cleanup if justified by real reuse
+11. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -201,7 +202,49 @@ Verification:
 - Guest-only auth pages render without the signed-in navigation.
 - Sidebar links route correctly and show active-state styling.
 
-### T6 - Build reusable backend-driven search with dropdown behavior
+### T6 - Add AG Grid-style quick search for the grid only
+
+Status:
+- Done
+
+- Add a grid-local quick search input that filters the rows currently loaded into the grid.
+- This should behave like the familiar AG Grid quick filter pattern:
+  - one lightweight search box
+  - live filtering as the user types
+  - no route change required
+  - no backend request required for the basic filter behavior
+- The quick filter should apply only to the current page/grid dataset.
+- Clearing the quick filter should restore the full currently loaded grid rows.
+
+Why this needs to be explicit:
+- This task should not change or replace broader app-level search concepts.
+- Grid search helps the user narrow what is already visible inside one page.
+
+Acceptance:
+- A user can type in the grid quick-search input and the visible grid results are filtered accordingly.
+- Clearing the input restores the full currently loaded grid dataset.
+
+Verification:
+- Manual happy path:
+  - open a page with the reusable grid
+  - type text that matches some rows
+  - only matching rows remain visible
+  - clear the search
+  - the full grid dataset returns
+
+Implemented in this task:
+- Added a built-in grid quick-search input to the shared grid component.
+- The quick filter works locally against the rows already loaded into the grid.
+- Decks, cards, and chunks front pages now keep both search layers:
+  - the existing page-level entity search outside the grid
+  - the new quick filter inside the grid
+
+Verification:
+- Typing into the grid search filters visible rows live.
+- Clearing the search restores the full currently loaded dataset.
+- No backend request is required for the grid quick-filter behavior.
+
+### T7 - Build reusable backend-driven search with dropdown behavior
 
 Status:
 - Proposed
@@ -254,7 +297,7 @@ Verification:
 - Manual extensibility check:
   - confirm another consumer can pass a different `onSelect` behavior without changing the shared search core
 
-### T7 - Search styling pass
+### T8 - Search styling pass
 
 Status:
 - Proposed
@@ -269,7 +312,7 @@ Acceptance:
 Verification:
 - The same search behavior works after styling is applied.
 
-### T8 - Build a simple reusable grid component for front pages
+### T9 - Build a simple reusable grid component for front pages
 
 Status:
 - Done

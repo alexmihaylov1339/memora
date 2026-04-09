@@ -51,6 +51,8 @@ export default function DecksPage() {
             columnDefs={columnDefs}
             onRowClick={handleDeckRowClick}
             emptyMessage="No decks found."
+            showQuickFilter
+            quickFilterPlaceholder="Search decks in grid"
           />
         )}
       </main>

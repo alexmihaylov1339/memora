@@ -31,6 +31,7 @@ export default function CardsPage() {
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-2xl p-6">
         <CardsPageHeader title="Cards" />
+
         <EntitySearch
           queryKey={SEARCH_QUERY_KEYS.card}
           search={cardService.search}
@@ -47,6 +48,8 @@ export default function CardsPage() {
             columnDefs={columnDefs}
             onRowClick={handleCardRowClick}
             emptyMessage="No cards found."
+            showQuickFilter
+            quickFilterPlaceholder="Search cards in grid"
           />
         )}
       </main>

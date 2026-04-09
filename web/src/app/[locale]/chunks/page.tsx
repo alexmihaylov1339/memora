@@ -57,6 +57,8 @@ export default function ChunksPage() {
             columnDefs={columnDefs}
             onRowClick={handleChunkRowClick}
             emptyMessage="No chunks found."
+            showQuickFilter
+            quickFilterPlaceholder="Search chunks in grid"
           />
         )}
       </main>
