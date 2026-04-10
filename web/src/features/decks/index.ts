@@ -1,5 +1,6 @@
 // Components
 export { CreateDeckForm } from './components';
+export { DeckCardMultiSelect } from './components';
 
 // Hooks
 export {

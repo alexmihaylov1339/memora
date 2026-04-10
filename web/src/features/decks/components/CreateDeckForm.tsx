@@ -4,6 +4,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { useState } from 'react';
 
 // Components
 import { FormBuilder } from '@shared/components';
@@ -15,10 +16,12 @@ import { useCreateDeckMutation } from '../hooks';
 
 // Types
 import type { CreateDeckDto } from '../types';
+import type { SearchResultItem } from '../../search/types';
 
 // Constants
 import { DECKS_QUERY_KEYS, createDeckFormFields } from '../constants';
 import { TRANSLATION_KEYS } from '@/i18n';
+import DeckCardMultiSelect from './DeckCardMultiSelect';
 
 // Styles
 import styles from './CreateDeckForm.module.scss';
@@ -28,6 +31,7 @@ export default function CreateDeckForm() {
   const queryClient = useQueryClient();
   const { success, error } = useNotification();
   const t = useTranslations();
+  const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>([]);
 
   const handleCreateSuccess = (data: { name: string }) => {
     queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
@@ -45,11 +49,19 @@ export default function CreateDeckForm() {
   });
 
   const handleSubmit = (values: CreateDeckDto) => {
-    return createDeck.fetch(values);
+    return createDeck.fetch({
+      ...values,
+      cardIds: selectedCards.map((item) => item.id),
+    });
   };
 
   return (
     <div className={styles.container}>
+      <DeckCardMultiSelect
+        selectedItems={selectedCards}
+        onSelectionChange={setSelectedCards}
+      />
+
       <FormBuilder<CreateDeckDto>
         fields={createDeckFormFields}
         onSubmit={handleSubmit}

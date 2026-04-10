@@ -14,6 +14,14 @@ export interface SearchResultItem {
   description?: string;
 }
 
+export const SEARCH_SELECTION_MODES = {
+  single: 'single',
+  multiple: 'multiple',
+} as const;
+
+export type SearchSelectionMode =
+  (typeof SEARCH_SELECTION_MODES)[keyof typeof SEARCH_SELECTION_MODES];
+
 export interface SearchQueryParams {
   q: string;
   type: SearchEntityType;

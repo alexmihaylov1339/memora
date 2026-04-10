@@ -1,5 +1,6 @@
 import {
   Body,
+  BadRequestException,
   Controller,
   Delete,
   Get,
@@ -57,12 +58,22 @@ export class DecksController {
   }
 
   @Post()
-  create(@Body() body: CreateDeckDto) {
+  async create(@Body() body: CreateDeckDto) {
     validateCreateDeckInput(body);
 
-    return this.decks
-      .create(body.name.trim(), body.description?.trim())
-      .then(serializeDeckRecord);
+    const result = await this.decks.create(
+      body.name.trim(),
+      body.description?.trim(),
+      normalizeCardIds(body.cardIds),
+    );
+
+    if (result.status === 'invalid_cards') {
+      throw new BadRequestException(
+        DECK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      );
+    }
+
+    return serializeDeckRecord(result.deck);
   }
 
   @Get(':id/chunks')
@@ -117,12 +128,19 @@ export class DecksController {
     const deck = await this.decks.update(id, {
       name: body.name?.trim(),
       description: body.description?.trim(),
+      cardIds: normalizeCardIds(body.cardIds),
     });
-    if (!deck) {
+    if (deck.status === 'not_found') {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
 
-    return serializeDeckDetail(deck);
+    if (deck.status === 'invalid_cards') {
+      throw new BadRequestException(
+        DECK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      );
+    }
+
+    return serializeDeckDetail(deck.deck);
   }
 
   @Delete(':id')
@@ -135,4 +153,8 @@ export class DecksController {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
   }
+}
+
+function normalizeCardIds(cardIds?: string[]) {
+  return cardIds?.map((cardId) => cardId.trim()) ?? [];
 }

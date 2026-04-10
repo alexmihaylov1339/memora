@@ -1,6 +1,7 @@
 export interface CreateDeckDto {
   name: string;
   description?: string;
+  cardIds?: string[];
 }
 
 export interface DeckListItem {
@@ -24,6 +25,7 @@ export interface DeckDetail extends DeckRecord {
 export interface UpdateDeckDto {
   name?: string;
   description?: string;
+  cardIds?: string[];
 }
 
 export interface DeckIdParams {

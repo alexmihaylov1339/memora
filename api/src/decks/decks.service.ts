@@ -20,9 +20,27 @@ export interface DeckDetail extends DeckRecord {
   count: number;
 }
 
+type CreateDeckResult =
+  | { status: 'created'; deck: DeckRecord }
+  | { status: 'invalid_cards' };
+
+type UpdateDeckResult =
+  | { status: 'updated'; deck: DeckDetail }
+  | { status: 'not_found' }
+  | { status: 'invalid_cards' };
+
 @Injectable()
 export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async hasExistingCards(cardIds: string[]): Promise<boolean> {
+    const cards = await this.prisma.card.findMany({
+      where: { id: { in: cardIds } },
+      select: { id: true },
+    });
+
+    return cards.length === cardIds.length;
+  }
 
   async findAll(): Promise<DeckListItem[]> {
     const decks = await this.prisma.deck.findMany({
@@ -40,10 +58,33 @@ export class DecksService {
     })) as DeckListItem[];
   }
 
-  async create(name: string, description?: string): Promise<DeckRecord> {
-    return (await this.prisma.deck.create({
-      data: { name, description },
-    })) as DeckRecord;
+  async create(
+    name: string,
+    description?: string,
+    cardIds: string[] = [],
+  ): Promise<CreateDeckResult> {
+    if (cardIds.length > 0 && !(await this.hasExistingCards(cardIds))) {
+      return { status: 'invalid_cards' };
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const deck = (await tx.deck.create({
+        data: { name, description },
+      })) as DeckRecord;
+
+      if (cardIds.length > 0) {
+        await tx.chunkCard.deleteMany({
+          where: { cardId: { in: cardIds } },
+        });
+
+        await tx.card.updateMany({
+          where: { id: { in: cardIds } },
+          data: { deckId: deck.id },
+        });
+      }
+
+      return { status: 'created', deck } satisfies CreateDeckResult;
+    });
   }
 
   async findOne(id: string): Promise<DeckDetail | null> {
@@ -72,31 +113,59 @@ export class DecksService {
 
   async update(
     id: string,
-    data: { name?: string; description?: string },
-  ): Promise<DeckDetail | null> {
+    data: { name?: string; description?: string; cardIds?: string[] },
+  ): Promise<UpdateDeckResult> {
     const existing = await this.prisma.deck.findUnique({ where: { id } });
     if (!existing) {
-      return null;
+      return { status: 'not_found' };
     }
 
-    const deck = await this.prisma.deck.update({
-      where: { id },
-      data,
-      include: {
-        _count: {
-          select: { cards: true },
-        },
-      },
-    });
+    if (
+      data.cardIds &&
+      data.cardIds.length > 0 &&
+      !(await this.hasExistingCards(data.cardIds))
+    ) {
+      return { status: 'invalid_cards' };
+    }
 
-    return {
-      id: deck.id,
-      name: deck.name,
-      description: deck.description ?? undefined,
-      count: deck._count.cards,
-      createdAt: deck.createdAt,
-      updatedAt: deck.updatedAt,
-    } as DeckDetail;
+    return this.prisma.$transaction(async (tx) => {
+      if (data.cardIds && data.cardIds.length > 0) {
+        await tx.chunkCard.deleteMany({
+          where: { cardId: { in: data.cardIds } },
+        });
+
+        await tx.card.updateMany({
+          where: { id: { in: data.cardIds } },
+          data: { deckId: id },
+        });
+      }
+
+      const deckData = {
+        name: data.name,
+        description: data.description,
+      };
+      const deck = await tx.deck.update({
+        where: { id },
+        data: deckData,
+        include: {
+          _count: {
+            select: { cards: true },
+          },
+        },
+      });
+
+      return {
+        status: 'updated',
+        deck: {
+          id: deck.id,
+          name: deck.name,
+          description: deck.description ?? undefined,
+          count: deck._count.cards,
+          createdAt: deck.createdAt,
+          updatedAt: deck.updatedAt,
+        } as DeckDetail,
+      } satisfies UpdateDeckResult;
+    });
   }
 
   async remove(id: string) {

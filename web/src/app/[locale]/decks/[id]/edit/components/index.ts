@@ -1,4 +1,5 @@
 export { default as DeckEditForm } from './DeckEditForm';
+export { default as DeckActionLink } from './DeckActionLink';
 export { default as DeckCardsPanel } from './DeckCardsPanel';
 export { default as DeckChunkItem } from './DeckChunkItem';
 export { default as DeckChunksList } from './DeckChunksList';

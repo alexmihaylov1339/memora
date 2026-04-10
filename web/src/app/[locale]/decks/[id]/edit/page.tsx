@@ -28,7 +28,8 @@ export default function EditDeckPage() {
 
   const updateDeck = useUpdateDeckMutation({
     onSuccess: () => {
-      deckQuery.refetch();
+      void deckQuery.refetch();
+      void cardsQuery.refetch();
     },
   });
 
@@ -52,6 +53,15 @@ export default function EditDeckPage() {
     void deleteChunk.fetch({ id: chunkId });
   }
 
+  async function handleUpdateDeck(payload: {
+    id: string;
+    name: string;
+    description?: string;
+    cardIds?: string[];
+  }): Promise<void> {
+    await updateDeck.fetch(payload);
+  }
+
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-6xl p-6">
@@ -67,7 +77,7 @@ export default function EditDeckPage() {
               id={deckQuery.result.id}
               name={deckQuery.result.name}
               description={deckQuery.result.description}
-              onUpdate={(payload) => updateDeck.fetch(payload)}
+              onUpdate={handleUpdateDeck}
               onDelete={() => deleteDeck.fetch({ id })}
               isDeleting={deleteDeck.isLoading}
               updateError={updateDeck.error?.message}

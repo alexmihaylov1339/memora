@@ -345,7 +345,7 @@ Verification:
   - `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passed
   - `cd web && npx tsc --noEmit` passed
   - focused `web` ESLint passed for the grid, front pages, and new list-query wiring
-- Styling remains intentionally deferred to T10 while the designer finalizes the visual direction.
+- Styling remains intentionally deferred to T11 while the designer finalizes the visual direction.
 
 ### T9 - Add AG Grid-style quick search to the reusable grid
 
@@ -403,7 +403,53 @@ Verification:
   - clearing the input restores all rows
   - row click still navigates correctly after filtering
 
-### T10 - Grid styling pass
+### T10 - Add multi-select support to `EntitySearch`
+
+Status:
+- Proposed
+
+- Extend the reusable `EntitySearch` so it can work in both:
+  - single-select mode
+  - multi-select mode
+- Keep the existing single-select behavior intact for current pages.
+- Add a controlled multi-select path so future deck attach/select flows can reuse the same search without forking the component.
+
+Required behavior:
+- the shared search should support a mode switch such as:
+  - `single`
+  - `multiple`
+- in multi-select mode:
+  - clicking a dropdown result adds it to a selected collection instead of immediately closing the flow
+  - selected items are rendered in a simple list/chip area near the search input
+  - each selected item can be removed
+  - already selected items should not be re-added accidentally
+- in single-select mode:
+  - current redirect/callback behavior should keep working without breaking existing consumers
+
+Suggested API direction:
+- keep the component generic and domain-agnostic
+- use controlled selection props so page consumers own the selected item collection
+- preserve backward compatibility for current single-select consumers
+- avoid embedding deck/card/chunk logic into the shared search component
+
+Why this task exists:
+- upcoming attach flows will need to select multiple cards or chunks from a reusable search UI
+- we want one shared search primitive that scales from redirect-style selection to multi-pick workflows
+- adding this now keeps future deck-management flows from creating one-off search variants
+
+Acceptance:
+- `EntitySearch` supports both single-select and multi-select usage without breaking current single-select pages.
+- A future consumer can pass selected items and selection-change behavior to build attach flows without changing the shared search internals.
+
+Verification:
+- Manual single-select regression check:
+  - decks/cards/chunks pages still redirect correctly from search result click
+- Manual multi-select behavior check:
+  - a test consumer can add multiple results
+  - duplicate adds are prevented
+  - selected items can be removed
+
+### T11 - Grid styling pass
 
 Status:
 - Proposed
@@ -418,13 +464,13 @@ Acceptance:
 Verification:
 - Grid still behaves the same after styling is applied.
 
-### T11 - Shared auth refinement
+### T12 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T12 - Prepare the next redesign queue
+### T13 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub

@@ -1,13 +1,20 @@
-import { Link } from '@/i18n/navigation';
+import { useState } from 'react';
 
 import { Button, FormBuilder } from '@shared/components';
-import { useDeckEditFormFields } from '@features/decks';
+import { DeckCardMultiSelect, useDeckEditFormFields } from '@features/decks';
+import type { SearchResultItem } from '@features/search';
+import DeckActionLink from './DeckActionLink';
 
 interface DeckEditFormProps {
   id: string;
   name: string;
   description?: string;
-  onUpdate: (payload: { id: string; name: string; description?: string }) => void;
+  onUpdate: (payload: {
+    id: string;
+    name: string;
+    description?: string;
+    cardIds?: string[];
+  }) => Promise<void> | void;
   onDelete: () => void;
   isDeleting: boolean;
   updateError?: string;
@@ -25,19 +32,30 @@ export default function DeckEditForm({
   deleteError,
 }: DeckEditFormProps) {
   const fields = useDeckEditFormFields();
+  const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>([]);
+
+  async function handleSubmit(values: { name: string; description?: string }) {
+    await onUpdate({
+      id,
+      name: (values.name ?? '').trim(),
+      description: values.description?.trim() || undefined,
+      cardIds: selectedCards.map((item) => item.id),
+    });
+
+    setSelectedCards([]);
+  }
 
   return (
     <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
+      <DeckCardMultiSelect
+        selectedItems={selectedCards}
+        onSelectionChange={setSelectedCards}
+      />
+
       <FormBuilder<{ name: string; description?: string }>
         fields={fields}
         initialValues={{ name, description: description ?? '' }}
-        onSubmit={(values) =>
-          onUpdate({
-            id,
-            name: (values.name ?? '').trim(),
-            description: values.description?.trim() || undefined,
-          })
-        }
+        onSubmit={handleSubmit}
         submitLabel="Save Deck"
         submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
         errorMessage={updateError}
@@ -47,19 +65,13 @@ export default function DeckEditForm({
       {deleteError && <p className="text-sm text-[var(--destructive)]">{deleteError}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href={{ pathname: '/cards/new', query: { deckId: id } }}
-          className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
-        >
+        <DeckActionLink href={{ pathname: '/cards/new', query: { deckId: id } }}>
           Add Card
-        </Link>
+        </DeckActionLink>
 
-        <Link
-          href={{ pathname: '/chunks/new', query: { deckId: id } }}
-          className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
-        >
+        <DeckActionLink href={{ pathname: '/chunks/new', query: { deckId: id } }}>
           Add Chunk
-        </Link>
+        </DeckActionLink>
 
         <Button
           onClick={onDelete}

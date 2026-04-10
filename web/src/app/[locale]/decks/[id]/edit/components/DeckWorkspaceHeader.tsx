@@ -1,5 +1,5 @@
-import { Link } from '@/i18n/navigation';
 import { APP_ROUTES } from '@shared/constants';
+import DeckActionLink from './DeckActionLink';
 
 interface DeckWorkspaceHeaderProps {
   deckId: string;
@@ -19,26 +19,20 @@ export default function DeckWorkspaceHeader({
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link
+          <DeckActionLink
             href={{ pathname: '/cards/new', query: { deckId } }}
-            className="rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            variant="primary"
           >
             Add Card
-          </Link>
+          </DeckActionLink>
 
-          <Link
-            href={{ pathname: '/chunks/new', query: { deckId } }}
-            className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
-          >
+          <DeckActionLink href={{ pathname: '/chunks/new', query: { deckId } }}>
             Add Chunk
-          </Link>
+          </DeckActionLink>
 
-          <Link
-            href={APP_ROUTES.review}
-            className="rounded-md border border-[var(--border)] bg-white px-4 py-2 text-sm hover:bg-slate-50"
-          >
+          <DeckActionLink href={APP_ROUTES.review}>
             Start Review
-          </Link>
+          </DeckActionLink>
         </div>
       </div>
     </div>
