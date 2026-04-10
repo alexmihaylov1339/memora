@@ -46,6 +46,7 @@ export default function CardsPage() {
             rowData={result}
             columnDefs={columnDefs}
             onRowClick={handleCardRowClick}
+            quickFilterPlaceholder="Filter card rows"
             emptyMessage="No cards found."
           />
         )}

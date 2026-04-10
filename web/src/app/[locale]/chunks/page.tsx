@@ -56,6 +56,7 @@ export default function ChunksPage() {
             rowData={result}
             columnDefs={columnDefs}
             onRowClick={handleChunkRowClick}
+            quickFilterPlaceholder="Filter chunk rows"
             emptyMessage="No chunks found."
           />
         )}

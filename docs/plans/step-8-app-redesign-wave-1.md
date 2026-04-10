@@ -345,12 +345,12 @@ Verification:
   - `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` passed
   - `cd web && npx tsc --noEmit` passed
   - focused `web` ESLint passed for the grid, front pages, and new list-query wiring
-- Styling remains intentionally deferred to T9 while the designer finalizes the visual direction.
+- Styling remains intentionally deferred to T10 while the designer finalizes the visual direction.
 
-### T9 - Grid styling pass
+### T9 - Add AG Grid-style quick search to the reusable grid
 
 Status:
-- Proposed
+- Done
 
 - Add shared grid search behavior as the next reusable step after the base grid exists.
 - The behavior should feel like the quick search/filtering users expect from AG Grid:
@@ -388,13 +388,20 @@ Acceptance:
 - Grid search works alongside the existing backend-driven dropdown search instead of replacing it.
 
 Verification:
-- Manual happy path:
-  - type into the grid search input on decks/cards/chunks front pages
-  - visible rows narrow as expected
-  - clearing the search restores the full dataset
-- Manual behavior check:
-  - row click still works after filtering
-  - valueGetter-based columns still participate in search when appropriate
+- Implemented in this task:
+  - the shared grid now accepts a search value and filters visible rows client-side
+  - filtering is case-insensitive and checks across searchable columns
+  - primitive field values and `valueGetter` results participate in search by default
+  - pages now use a shared lightweight grid search input plus debounced search state
+  - decks, cards, and chunks front pages all use the same grid quick-filter behavior
+- Verification:
+  - `cd web && npx tsc --noEmit` passed
+  - focused `web` ESLint passed for the grid, the shared grid search pieces, and the three front pages
+- Manual check still recommended in-browser:
+  - type into the grid search input on decks/cards/chunks pages
+  - visible rows narrow
+  - clearing the input restores all rows
+  - row click still navigates correctly after filtering
 
 ### T10 - Grid styling pass
 

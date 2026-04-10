@@ -50,6 +50,7 @@ export default function DecksPage() {
             rowData={result}
             columnDefs={columnDefs}
             onRowClick={handleDeckRowClick}
+            quickFilterPlaceholder="Filter deck rows"
             emptyMessage="No decks found."
           />
         )}
