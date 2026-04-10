@@ -78,9 +78,10 @@ Out of scope for this step:
 5. reusable search infrastructure
 6. search styling pass when designs are ready
 7. reusable grid behavior for decks/cards/chunks front pages
-8. grid styling pass when designs are ready
-9. shared auth layout/pattern cleanup if justified by real reuse
-10. next page redesigns added intentionally as designs are provided
+8. reusable grid search behavior
+9. grid styling pass when designs are ready
+10. shared auth layout/pattern cleanup if justified by real reuse
+11. next page redesigns added intentionally as designs are provided
 
 ---
 
@@ -351,6 +352,55 @@ Verification:
 Status:
 - Proposed
 
+- Add shared grid search behavior as the next reusable step after the base grid exists.
+- The behavior should feel like the quick search/filtering users expect from AG Grid:
+  - one search input above the grid
+  - typing filters visible rows immediately after a normal debounce
+  - matching should work across the row, not only a single preselected column
+  - the consumer should not need to hand-write per-page filter loops for common usage
+- This task should focus on behavior and API shape, not visual treatment.
+
+Required behavior:
+- the grid should accept a search value from the consumer
+- the grid should derive visible rows by checking whether the search text matches any searchable column/cell text
+- default behavior should work out of the box for primitive field values and `valueGetter` output
+- column definitions should be able to opt out of global search if a column should not participate
+- the search should be case-insensitive
+- empty search should show all rows again
+- row click behavior and existing column rendering must continue to work
+
+Suggested API direction:
+- keep the grid generic and lightweight
+- add a simple search prop surface such as:
+  - `searchText`
+  - optional per-column search participation flag
+  - optional override for advanced row-to-search-text extraction if needed later
+- keep page-level search input ownership outside the grid so the grid stays reusable in different layouts
+
+Why this task exists:
+- decks, cards, and chunks front pages will quickly become harder to scan as row counts grow
+- a shared grid-level search behavior avoids reimplementing similar filter logic on every page
+- we want AG Grid-like usefulness for small-project needs without introducing AG Grid complexity
+
+Acceptance:
+- The shared grid can filter rows based on a provided search value in a way that feels like AG Grid quick filter behavior.
+- Decks, cards, and chunks pages can use the same grid search behavior without page-specific filtering code duplication.
+- Grid search works alongside the existing backend-driven dropdown search instead of replacing it.
+
+Verification:
+- Manual happy path:
+  - type into the grid search input on decks/cards/chunks front pages
+  - visible rows narrow as expected
+  - clearing the search restores the full dataset
+- Manual behavior check:
+  - row click still works after filtering
+  - valueGetter-based columns still participate in search when appropriate
+
+### T10 - Grid styling pass
+
+Status:
+- Proposed
+
 - Add styling for the reusable grid only after the designer finishes the relevant design direction.
 - Keep this as a separate visual-only task.
 - Do not mix behavior changes with styling changes in this task.
@@ -361,13 +411,13 @@ Acceptance:
 Verification:
 - Grid still behaves the same after styling is applied.
 
-### T10 - Shared auth refinement
+### T11 - Shared auth refinement
 
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
 
-### T11 - Prepare the next redesign queue
+### T12 - Prepare the next redesign queue
 
 - Keep the following pages explicitly listed as future redesign targets:
   - deck overview / deck hub
@@ -388,7 +438,9 @@ Verification:
 - `Forgot Password` is redesigned.
 - `Navigation` is redesigned.
 - Reusable backend-driven search behavior exists without page-specific coupling.
-- A simple reusable grid is planned as the next shared primitive for decks/cards/chunks front pages, with styling intentionally deferred until designs are ready.
+- A simple reusable grid exists for decks/cards/chunks front pages.
+- Grid search is planned as the next shared behavior layer in an AG Grid-like quick-filter style.
+- Grid styling remains intentionally deferred until designs are ready.
 - Auth functionality still works correctly.
 - The roadmap clearly shows redesign as a forward step instead of modifying completed historical steps.
 
