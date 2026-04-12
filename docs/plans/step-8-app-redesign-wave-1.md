@@ -205,7 +205,7 @@ Verification:
 ### T6 - Build reusable backend-driven search with dropdown behavior
 
 Status:
-- Proposed
+- Done
 
 - Build one reusable search component/hook set that can be used across many pages.
 - Search should support the same entity families:
@@ -227,33 +227,26 @@ Requirements:
   - keep the click action injectable
   - avoid page-specific logic inside the shared component
 
-Suggested implementation shape:
-- backend:
-  - add a unified or parallel search contract for decks/cards/chunks
-  - return lightweight result items suitable for dropdown rendering
-- frontend:
-  - shared debounced search hook
-  - shared dropdown result component
-  - entity adapters/mappers for decks/cards/chunks
-  - consumer-supplied `onSelect`
-
-First concrete use case:
-- searching for decks
-- showing deck results in the dropdown
-- clicking a result redirects to the exact deck edit page
-
-Acceptance:
-- A shared search component can query the backend with debounce, show dropdown results, and delegate click behavior through a provided callback.
-- The first deck search flow works without embedding deck-specific behavior into the reusable search base.
+Implemented in this task:
+- `web/src/features/search/` feature module provides typed search contracts:
+  - `SearchResultItem` — lightweight item shape for dropdown rendering
+  - `SearchEntityType` — entity family enum (`deck`, `card`, `chunk`)
+  - `SearchSelectionMode` — `single` | `multiple`
+  - `useEntitySearch` hook — debounced backend query, returns `results`, `isLoading`, `error`, `query`, `setQuery`, `debouncedQuery`
+- `web/src/shared/components/EntitySearch/EntitySearch.tsx` — generic dropdown search component:
+  - accepts `queryKey`, `search` service function, `onSelect` callback, `placeholder`
+  - fires backend search after debounce and shows a result dropdown while `debouncedQuery` is non-empty
+  - delegates click behavior to the `onSelect` prop so consumers decide what happens
+  - no page-specific or entity-specific logic inside the component
+- First concrete consumer: deck search on front pages — clicking a result redirects to the deck edit page via the injected `onSelect`
 
 Verification:
-- Manual happy path:
-  - type into the shared search
-  - backend search is invoked after debounce
+- `cd web && npx tsc --noEmit` passed.
+- `cd web && npx eslint` passed for the search feature module and EntitySearch component.
+- Manual happy path confirmed:
+  - typing triggers debounced backend search
   - dropdown results appear
-  - clicking a deck result redirects to the deck edit page in the first consumer
-- Manual extensibility check:
-  - confirm another consumer can pass a different `onSelect` behavior without changing the shared search core
+  - clicking a result triggers the consumer-supplied callback without touching the search internals
 
 ### T7 - Search styling pass
 
@@ -406,48 +399,53 @@ Verification:
 ### T10 - Add multi-select support to `EntitySearch`
 
 Status:
-- Proposed
+- Done
 
 - Extend the reusable `EntitySearch` so it can work in both:
   - single-select mode
   - multi-select mode
 - Keep the existing single-select behavior intact for current pages.
-- Add a controlled multi-select path so future deck attach/select flows can reuse the same search without forking the component.
+- Add a controlled multi-select path so deck attach/select flows and chunk card selection can reuse the same search without forking the component.
 
-Required behavior:
-- the shared search should support a mode switch such as:
-  - `single`
-  - `multiple`
-- in multi-select mode:
-  - clicking a dropdown result adds it to a selected collection instead of immediately closing the flow
-  - selected items are rendered in a simple list/chip area near the search input
-  - each selected item can be removed
-  - already selected items should not be re-added accidentally
-- in single-select mode:
-  - current redirect/callback behavior should keep working without breaking existing consumers
+Implemented behavior:
 
-Suggested API direction:
-- keep the component generic and domain-agnostic
-- use controlled selection props so page consumers own the selected item collection
-- preserve backward compatibility for current single-select consumers
-- avoid embedding deck/card/chunk logic into the shared search component
+Single-select mode (unchanged):
+- clicking a result in the dropdown immediately triggers `onSelect` and closes the dropdown
+- no staging, no Done button
 
-Why this task exists:
-- upcoming attach flows will need to select multiple cards or chunks from a reusable search UI
-- we want one shared search primitive that scales from redirect-style selection to multi-pick workflows
-- adding this now keeps future deck-management flows from creating one-off search variants
+Multi-select mode (staged selection pattern):
+- the dropdown shows checkboxes next to each result
+- already-confirmed items are pre-checked when the dropdown opens
+- checking/unchecking items updates internal staged state only — no `onSelectionChange` fires yet
+- staged state persists across successive searches within the same open session (user can search "cat", check Caterpillar, search "dog", check Dogwood, then confirm both at once)
+- a "Done" button inside the dropdown calls `onSelectionChange(stagedItems)` and closes the dropdown
+- abandoning the dropdown (clearing the input without clicking Done) discards staged changes; the next open re-initializes staged from the confirmed selection
+- `showSelectedList` prop (default `false`) controls whether a confirmed-selection list with Remove buttons is rendered above the search input:
+  - `true`: EntitySearch renders the confirmed items list — used by `DeckCardMultiSelect` which has no external display
+  - `false` (default): the parent is responsible for displaying confirmed items — used by `ChunkCardSearchPanel` which shows them in `ChunkSelectedCardsGrid`
 
-Acceptance:
-- `EntitySearch` supports both single-select and multi-select usage without breaking current single-select pages.
-- A future consumer can pass selected items and selection-change behavior to build attach flows without changing the shared search internals.
+Key implementation files:
+- `web/src/shared/components/EntitySearch/EntitySearch.tsx` — staging logic, checkbox dropdown, Done button, `showSelectedList` prop
+- `web/src/features/decks/components/DeckCardMultiSelect.tsx` — passes `showSelectedList={true}`
+- `web/src/app/[locale]/chunks/new/components/ChunkCardSearchPanel.tsx` — omits `showSelectedList` (defaults to `false`); selected cards are shown in `ChunkSelectedCardsGrid`
+- `web/src/app/[locale]/chunks/[id]/edit/page.tsx` — uses `ChunkCardSearchPanel` for edit flow, same pattern as create
+
+Why staged selection instead of immediate-add:
+- the previous behavior (click = instant add) was unintuitive for multi-pick workflows
+- staged selection lets users make multiple checkbox decisions in one session before committing
+- the Done button makes the confirmation intent explicit
 
 Verification:
-- Manual single-select regression check:
-  - decks/cards/chunks pages still redirect correctly from search result click
-- Manual multi-select behavior check:
-  - a test consumer can add multiple results
-  - duplicate adds are prevented
-  - selected items can be removed
+- `cd web && npx tsc --noEmit` passed.
+- Manual single-select regression: decks/cards/chunks pages still redirect correctly.
+- Manual multi-select:
+  - checkboxes appear in the dropdown for card search in deck create, deck edit, chunk create, and chunk edit
+  - previously confirmed cards appear pre-checked when the dropdown opens
+  - checking/unchecking does not immediately change the confirmed selection
+  - clicking Done commits the staged selection and closes the dropdown
+  - abandoning without Done discards staging; re-opening re-initializes from confirmed
+  - `DeckCardMultiSelect` shows the confirmed list above the search input
+  - `ChunkCardSearchPanel` does not duplicate the list (shown only in `ChunkSelectedCardsGrid`)
 
 ### T11 - Grid styling pass
 

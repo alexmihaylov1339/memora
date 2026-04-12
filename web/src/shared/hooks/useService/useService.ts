@@ -48,6 +48,7 @@ export function useService<TParams = void, TData = unknown>(
 
   return {
     fetch: (params: TParams) => mutation.mutateAsync(params),
+    trigger: (params: TParams) => mutation.mutate(params),
     isLoading: mutation.isPending,
     isLoaded: mutation.isSuccess,
     error: mutation.error,

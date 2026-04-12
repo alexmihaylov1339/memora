@@ -15,6 +15,10 @@ import {
 import { useDeckChunksQuery, useDeleteChunkMutation } from '@features/chunks';
 import { resolveSingleParam } from '@/shared/utils';
 import { DeckEditForm, DeckWorkspacePanels, EditDeckHeader } from './components';
+import {
+  cardToSearchResultItem,
+  chunkToSearchResultItem,
+} from './components/helpers/deckEditSearchItems';
 
 export default function EditDeckPage() {
   const params = useParams();
@@ -30,6 +34,7 @@ export default function EditDeckPage() {
     onSuccess: () => {
       void deckQuery.refetch();
       void cardsQuery.refetch();
+      void chunksQuery.refetch();
     },
   });
 
@@ -58,25 +63,37 @@ export default function EditDeckPage() {
     name: string;
     description?: string;
     cardIds?: string[];
+    chunkIds?: string[];
   }): Promise<void> {
     await updateDeck.fetch(payload);
   }
+
+  const isLoading = deckQuery.isLoading || cardsQuery.isLoading || chunksQuery.isLoading;
+  const allLoaded =
+    deckQuery.result !== undefined &&
+    cardsQuery.result !== undefined &&
+    chunksQuery.result !== undefined;
+  const deck = deckQuery.result;
+  const cards = cardsQuery.result ?? [];
+  const chunks = chunksQuery.result ?? [];
 
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-6xl p-6">
         <EditDeckHeader />
 
-        {deckQuery.isLoading && <PageLoader />}
+        {isLoading && <PageLoader />}
         {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}
 
-        {deckQuery.result && (
+        {allLoaded && deck && (
           <div className="space-y-6">
             <DeckEditForm
-              key={deckQuery.result.id}
-              id={deckQuery.result.id}
-              name={deckQuery.result.name}
-              description={deckQuery.result.description}
+              key={deck.id}
+              id={deck.id}
+              name={deck.name}
+              description={deck.description}
+              initialCards={cards.map(cardToSearchResultItem)}
+              initialChunks={chunks.map(chunkToSearchResultItem)}
               onUpdate={handleUpdateDeck}
               onDelete={() => deleteDeck.fetch({ id })}
               isDeleting={deleteDeck.isLoading}
@@ -85,9 +102,9 @@ export default function EditDeckPage() {
             />
 
             <DeckWorkspacePanels
-              deckId={deckQuery.result.id}
-              cards={cardsQuery.result}
-              chunks={chunksQuery.result}
+              deckId={deck.id}
+              cards={cards}
+              chunks={chunks}
               cardsLoading={cardsQuery.isLoading}
               chunksLoading={chunksQuery.isLoading}
               cardsError={cardsQuery.error?.message}

@@ -64,12 +64,19 @@ export class DecksController {
     const result = await this.decks.create(
       body.name.trim(),
       body.description?.trim(),
-      normalizeCardIds(body.cardIds),
+      normalizeIds(body.cardIds),
+      normalizeIds(body.chunkIds),
     );
 
     if (result.status === 'invalid_cards') {
       throw new BadRequestException(
         DECK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      );
+    }
+
+    if (result.status === 'invalid_chunks') {
+      throw new BadRequestException(
+        DECK_ERROR_MESSAGES.chunkIdsMustReferenceExistingChunks,
       );
     }
 
@@ -128,7 +135,8 @@ export class DecksController {
     const deck = await this.decks.update(id, {
       name: body.name?.trim(),
       description: body.description?.trim(),
-      cardIds: normalizeCardIds(body.cardIds),
+      cardIds: normalizeIds(body.cardIds),
+      chunkIds: normalizeIds(body.chunkIds),
     });
     if (deck.status === 'not_found') {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
@@ -137,6 +145,12 @@ export class DecksController {
     if (deck.status === 'invalid_cards') {
       throw new BadRequestException(
         DECK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      );
+    }
+
+    if (deck.status === 'invalid_chunks') {
+      throw new BadRequestException(
+        DECK_ERROR_MESSAGES.chunkIdsMustReferenceExistingChunks,
       );
     }
 
@@ -155,6 +169,6 @@ export class DecksController {
   }
 }
 
-function normalizeCardIds(cardIds?: string[]) {
-  return cardIds?.map((cardId) => cardId.trim()) ?? [];
+function normalizeIds(ids?: string[]) {
+  return ids?.map((id) => id.trim()) ?? [];
 }

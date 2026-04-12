@@ -1,5 +1,6 @@
 import type { CardRecord } from '@features/decks';
-import ChunkCardSelectionPanel from './ChunkCardSelectionPanel';
+import type { SearchResultItem } from '@features/search';
+import ChunkCardSearchPanel from './ChunkCardSearchPanel';
 import ChunkCreateDetailsCard from './ChunkCreateDetailsCard';
 import ChunkSchedulePreview from './ChunkSchedulePreview';
 
@@ -8,15 +9,15 @@ interface ChunkCreateFormProps {
   cardsError?: string;
   cardsLoading: boolean;
   currentDeckName?: string;
-  onAddCard: (cardId: string) => void;
   onChangeDeck: () => void;
+  onSelectionChange: (items: SearchResultItem[]) => void;
   onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
   onSubmit: (values: { title: string }) => Promise<void> | void;
   selectedCards: CardRecord[];
   submitError?: string;
   submitLoading: boolean;
-  unselectedCards: CardRecord[];
+  totalCardCount: number;
 }
 
 export default function ChunkCreateForm({
@@ -24,15 +25,15 @@ export default function ChunkCreateForm({
   cardsError,
   cardsLoading,
   currentDeckName,
-  onAddCard,
   onChangeDeck,
+  onSelectionChange,
   onMoveCard,
   onRemoveCard,
   onSubmit,
   selectedCards,
   submitError,
   submitLoading,
-  unselectedCards,
+  totalCardCount,
 }: ChunkCreateFormProps) {
   return (
     <div className="space-y-6">
@@ -46,14 +47,13 @@ export default function ChunkCreateForm({
         selectedCardCount={selectedCards.length}
         submitError={submitError}
         submitLoading={submitLoading}
-        unselectedCardCount={unselectedCards.length}
+        availableCardCount={totalCardCount}
       />
 
-      <ChunkCardSelectionPanel
-        availableCards={unselectedCards}
-        error={cardsError}
-        isLoading={cardsLoading}
-        onAddCard={onAddCard}
+      <ChunkCardSearchPanel
+        cardsError={cardsError}
+        cardsLoading={cardsLoading}
+        onSelectionChange={onSelectionChange}
         onMoveCard={onMoveCard}
         onRemoveCard={onRemoveCard}
         selectedCards={selectedCards}

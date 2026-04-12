@@ -15,7 +15,7 @@ interface ChunkCreateDetailsCardProps {
   selectedCardCount: number;
   submitError?: string;
   submitLoading: boolean;
-  unselectedCardCount: number;
+  availableCardCount: number;
 }
 
 export default function ChunkCreateDetailsCard({
@@ -28,16 +28,16 @@ export default function ChunkCreateDetailsCard({
   selectedCardCount,
   submitError,
   submitLoading,
-  unselectedCardCount,
+  availableCardCount,
 }: ChunkCreateDetailsCardProps) {
   const fields = useChunkCreateFormFields();
   const showEmptyDeckState =
     !cardsLoading &&
     !cardsError &&
-    unselectedCardCount === 0 &&
+    availableCardCount === 0 &&
     selectedCardCount === 0;
   const showForm =
-    selectedCardCount > 0 || unselectedCardCount > 0 || cardsLoading;
+    selectedCardCount > 0 || availableCardCount > 0 || cardsLoading;
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-white p-5">

@@ -57,7 +57,7 @@ export class ChunksController {
 
     if (result.status === 'invalid_cards') {
       throw new BadRequestException(
-        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
       );
     }
 
@@ -93,7 +93,7 @@ export class ChunksController {
 
     if (result.status === 'invalid_cards') {
       throw new BadRequestException(
-        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
       );
     }
 

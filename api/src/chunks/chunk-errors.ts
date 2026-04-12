@@ -3,8 +3,7 @@ export const CHUNK_ERROR_MESSAGES = {
   deckIdRequired: 'deckId is required',
   titleRequired: 'title is required',
   titleCannotBeEmpty: 'title cannot be empty',
-  cardIdsMustReferenceDeck:
-    'cardIds must reference existing cards in the same deck',
+  cardIdsMustReferenceExistingCards: 'cardIds must reference existing cards',
   cardIdsMustBeUniqueStrings:
     'cardIds must be an array of unique non-empty strings',
   positionMustBeNonNegative: 'position must be a non-negative integer',

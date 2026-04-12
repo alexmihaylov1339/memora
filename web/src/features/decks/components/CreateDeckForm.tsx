@@ -1,29 +1,21 @@
 'use client';
 
-// Modules
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useState } from 'react';
 
-// Components
 import { FormBuilder } from '@shared/components';
-
-// Hooks
 import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
 import { useCreateDeckMutation } from '../hooks';
-
-// Types
 import type { CreateDeckDto } from '../types';
 import type { SearchResultItem } from '../../search/types';
-
-// Constants
 import { DECKS_QUERY_KEYS, createDeckFormFields } from '../constants';
 import { TRANSLATION_KEYS } from '@/i18n';
-import DeckCardMultiSelect from './DeckCardMultiSelect';
+import DeckCardSelectionPanel from './DeckCardSelectionPanel';
+import DeckChunkSelectionPanel from './DeckChunkSelectionPanel';
 
-// Styles
 import styles from './CreateDeckForm.module.scss';
 
 export default function CreateDeckForm() {
@@ -32,6 +24,7 @@ export default function CreateDeckForm() {
   const { success, error } = useNotification();
   const t = useTranslations();
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>([]);
+  const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>([]);
 
   const handleCreateSuccess = (data: { name: string }) => {
     queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
@@ -52,14 +45,20 @@ export default function CreateDeckForm() {
     return createDeck.fetch({
       ...values,
       cardIds: selectedCards.map((item) => item.id),
+      chunkIds: selectedChunks.map((item) => item.id),
     });
   };
 
   return (
     <div className={styles.container}>
-      <DeckCardMultiSelect
-        selectedItems={selectedCards}
+      <DeckCardSelectionPanel
+        selectedCards={selectedCards}
         onSelectionChange={setSelectedCards}
+      />
+
+      <DeckChunkSelectionPanel
+        selectedChunks={selectedChunks}
+        onSelectionChange={setSelectedChunks}
       />
 
       <FormBuilder<CreateDeckDto>

@@ -4,6 +4,7 @@ import GridSearchInput from './GridSearchInput';
 import { resolveCellValue } from './helpers/gridCellValue';
 import { matchesGridQuickFilter } from './helpers/gridQuickFilter';
 import useGridQuickFilter from './hooks/useGridQuickFilter';
+import Button from '../Button/Button';
 
 export interface GridColumnDef<TRow> {
   field?: keyof TRow;
@@ -20,6 +21,7 @@ interface GridProps<TRow extends { id: string }> {
   columnDefs: GridColumnDef<TRow>[];
   emptyMessage?: string;
   onRowClick?: (row: TRow) => void;
+  onRemove?: (row: TRow) => void;
   quickFilterPlaceholder?: string;
   showQuickFilter?: boolean;
 }
@@ -30,11 +32,28 @@ export default function Grid<TRow extends { id: string }>({
   columnDefs,
   emptyMessage = 'No rows to display.',
   onRowClick,
+  onRemove,
   quickFilterPlaceholder = 'Search grid rows',
   showQuickFilter = true,
 }: GridProps<TRow>) {
   const { quickFilterText, setQuickFilterText, debouncedQuickFilterText } =
     useGridQuickFilter();
+
+  const allColumnDefs = useMemo<GridColumnDef<TRow>[]>(() => {
+    if (!onRemove) return columnDefs;
+    return [
+      ...columnDefs,
+      {
+        headerName: 'Actions',
+        searchable: false,
+        cellRenderer: (row) => (
+          <Button type="button" onClick={() => onRemove(row)}>
+            Remove
+          </Button>
+        ),
+      },
+    ];
+  }, [columnDefs, onRemove]);
 
   const visibleRows = useMemo(() => {
     if (!debouncedQuickFilterText) {
@@ -42,9 +61,9 @@ export default function Grid<TRow extends { id: string }>({
     }
 
     return rowData.filter((row) =>
-      matchesGridQuickFilter(row, columnDefs, debouncedQuickFilterText),
+      matchesGridQuickFilter(row, allColumnDefs, debouncedQuickFilterText),
     );
-  }, [columnDefs, debouncedQuickFilterText, rowData]);
+  }, [allColumnDefs, debouncedQuickFilterText, rowData]);
 
   return (
     <>
@@ -62,7 +81,7 @@ export default function Grid<TRow extends { id: string }>({
         <table id={id}>
           <thead>
             <tr>
-              {columnDefs.map((column) => (
+              {allColumnDefs.map((column) => (
                 <th key={column.headerName} scope="col">
                   {column.headerName}
                 </th>
@@ -86,7 +105,7 @@ export default function Grid<TRow extends { id: string }>({
                 }
                 tabIndex={onRowClick ? 0 : undefined}
               >
-                {columnDefs.map((column) => (
+                {allColumnDefs.map((column) => (
                   <td key={`${row.id}-${column.headerName}`}>
                     {resolveCellValue(row, column)}
                   </td>

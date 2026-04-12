@@ -48,7 +48,10 @@ export type UpdateChunkResult =
   | { status: 'not_found' }
   | { status: 'invalid_cards' };
 
-type ChunkPersistenceClient = Pick<PrismaService, 'card' | 'chunk' | 'deck'>;
+type ChunkPersistenceClient = Pick<
+  PrismaService,
+  'card' | 'chunk' | 'chunkCard' | 'deck'
+>;
 
 @Injectable()
 export class ChunksService {
@@ -69,20 +72,35 @@ export class ChunksService {
     );
   }
 
-  private async hasValidDeckCards(
+  private async hasExistingCards(
     client: ChunkPersistenceClient,
-    deckId: string,
     cardIds: string[],
   ): Promise<boolean> {
     const cards = await client.card.findMany({
       where: { id: { in: cardIds } },
-      select: { id: true, deckId: true },
+      select: { id: true },
     });
 
-    return (
-      cards.length === cardIds.length &&
-      cards.every((card) => card.deckId === deckId)
-    );
+    return cards.length === cardIds.length;
+  }
+
+  private async assignCardsToDeck(
+    client: ChunkPersistenceClient,
+    deckId: string,
+    cardIds: string[],
+  ) {
+    if (cardIds.length === 0) {
+      return;
+    }
+
+    await client.chunkCard.deleteMany({
+      where: { cardId: { in: cardIds } },
+    });
+
+    await client.card.updateMany({
+      where: { id: { in: cardIds } },
+      data: { deckId },
+    });
   }
 
   private mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
@@ -110,10 +128,12 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasValidDeckCards(client, data.deckId, data.cardIds))
+        !(await this.hasExistingCards(client, data.cardIds))
       ) {
         return { status: 'invalid_cards' } satisfies CreateChunkResult;
       }
+
+      await this.assignCardsToDeck(client, data.deckId, data.cardIds ?? []);
 
       const chunk = await client.chunk.create({
         data: {
@@ -215,10 +235,12 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasValidDeckCards(client, existing.deckId, data.cardIds))
+        !(await this.hasExistingCards(client, data.cardIds))
       ) {
         return { status: 'invalid_cards' } satisfies UpdateChunkResult;
       }
+
+      await this.assignCardsToDeck(client, existing.deckId, data.cardIds ?? []);
 
       const chunk = await client.chunk.update({
         where: { id },

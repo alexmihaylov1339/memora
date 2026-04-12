@@ -1,6 +1,8 @@
 // Components
 export { CreateDeckForm } from './components';
-export { DeckCardMultiSelect } from './components';
+export { DeckCardSelectionPanel } from './components';
+export { DeckChunkSelectionPanel } from './components';
+export { DeckSelectedItemsGrid } from './components';
 
 // Hooks
 export {

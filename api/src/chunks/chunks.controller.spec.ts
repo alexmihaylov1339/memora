@@ -75,7 +75,9 @@ describe('ChunksController', () => {
         cardIds: ['card-missing'],
       }),
     ).rejects.toThrow(
-      new BadRequestException(CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck),
+      new BadRequestException(
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      ),
     );
   });
 
@@ -98,7 +100,9 @@ describe('ChunksController', () => {
         { cardIds: ['card-missing'], title: 'spielen' },
       ),
     ).rejects.toThrow(
-      new BadRequestException(CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck),
+      new BadRequestException(
+        CHUNK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
+      ),
     );
   });
 

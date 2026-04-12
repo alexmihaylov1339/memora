@@ -188,7 +188,7 @@ describe('AppController (e2e)', () => {
         expect(res.body).toEqual(
           expect.objectContaining({
             statusCode: 400,
-            message: CHUNK_ERROR_MESSAGES.cardIdsMustReferenceDeck,
+            message: CHUNK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
             error: 'Bad Request',
           }),
         );

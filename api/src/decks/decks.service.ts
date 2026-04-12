@@ -22,12 +22,14 @@ export interface DeckDetail extends DeckRecord {
 
 type CreateDeckResult =
   | { status: 'created'; deck: DeckRecord }
-  | { status: 'invalid_cards' };
+  | { status: 'invalid_cards' }
+  | { status: 'invalid_chunks' };
 
 type UpdateDeckResult =
   | { status: 'updated'; deck: DeckDetail }
   | { status: 'not_found' }
-  | { status: 'invalid_cards' };
+  | { status: 'invalid_cards' }
+  | { status: 'invalid_chunks' };
 
 @Injectable()
 export class DecksService {
@@ -40,6 +42,15 @@ export class DecksService {
     });
 
     return cards.length === cardIds.length;
+  }
+
+  private async hasExistingChunks(chunkIds: string[]): Promise<boolean> {
+    const chunks = await this.prisma.chunk.findMany({
+      where: { id: { in: chunkIds } },
+      select: { id: true },
+    });
+
+    return chunks.length === chunkIds.length;
   }
 
   async findAll(): Promise<DeckListItem[]> {
@@ -62,9 +73,14 @@ export class DecksService {
     name: string,
     description?: string,
     cardIds: string[] = [],
+    chunkIds: string[] = [],
   ): Promise<CreateDeckResult> {
     if (cardIds.length > 0 && !(await this.hasExistingCards(cardIds))) {
       return { status: 'invalid_cards' };
+    }
+
+    if (chunkIds.length > 0 && !(await this.hasExistingChunks(chunkIds))) {
+      return { status: 'invalid_chunks' };
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -79,6 +95,13 @@ export class DecksService {
 
         await tx.card.updateMany({
           where: { id: { in: cardIds } },
+          data: { deckId: deck.id },
+        });
+      }
+
+      if (chunkIds.length > 0) {
+        await tx.chunk.updateMany({
+          where: { id: { in: chunkIds } },
           data: { deckId: deck.id },
         });
       }
@@ -113,7 +136,12 @@ export class DecksService {
 
   async update(
     id: string,
-    data: { name?: string; description?: string; cardIds?: string[] },
+    data: {
+      name?: string;
+      description?: string;
+      cardIds?: string[];
+      chunkIds?: string[];
+    },
   ): Promise<UpdateDeckResult> {
     const existing = await this.prisma.deck.findUnique({ where: { id } });
     if (!existing) {
@@ -128,16 +156,48 @@ export class DecksService {
       return { status: 'invalid_cards' };
     }
 
+    if (
+      data.chunkIds &&
+      data.chunkIds.length > 0 &&
+      !(await this.hasExistingChunks(data.chunkIds))
+    ) {
+      return { status: 'invalid_chunks' };
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      if (data.cardIds && data.cardIds.length > 0) {
-        await tx.chunkCard.deleteMany({
-          where: { cardId: { in: data.cardIds } },
+      if (data.cardIds !== undefined) {
+        // Delete cards in this deck that are no longer in the selection
+        await tx.card.deleteMany({
+          where: { deckId: id, id: { notIn: data.cardIds } },
         });
 
-        await tx.card.updateMany({
-          where: { id: { in: data.cardIds } },
-          data: { deckId: id },
+        if (data.cardIds.length > 0) {
+          // Remove newly-added cards from any existing chunk associations
+          await tx.chunkCard.deleteMany({
+            where: { cardId: { in: data.cardIds } },
+          });
+
+          // Move newly-added cards into this deck
+          await tx.card.updateMany({
+            where: { id: { in: data.cardIds } },
+            data: { deckId: id },
+          });
+        }
+      }
+
+      if (data.chunkIds !== undefined) {
+        // Delete chunks in this deck that are no longer in the selection
+        await tx.chunk.deleteMany({
+          where: { deckId: id, id: { notIn: data.chunkIds } },
         });
+
+        if (data.chunkIds.length > 0) {
+          // Move newly-added chunks into this deck
+          await tx.chunk.updateMany({
+            where: { id: { in: data.chunkIds } },
+            data: { deckId: id },
+          });
+        }
       }
 
       const deckData = {

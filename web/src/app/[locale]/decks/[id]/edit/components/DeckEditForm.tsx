@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { Button, FormBuilder } from '@shared/components';
-import { DeckCardMultiSelect, useDeckEditFormFields } from '@features/decks';
+import { DeckCardSelectionPanel, DeckChunkSelectionPanel, useDeckEditFormFields } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
 import DeckActionLink from './DeckActionLink';
 
@@ -9,11 +9,14 @@ interface DeckEditFormProps {
   id: string;
   name: string;
   description?: string;
+  initialCards?: SearchResultItem[];
+  initialChunks?: SearchResultItem[];
   onUpdate: (payload: {
     id: string;
     name: string;
     description?: string;
     cardIds?: string[];
+    chunkIds?: string[];
   }) => Promise<void> | void;
   onDelete: () => void;
   isDeleting: boolean;
@@ -25,6 +28,8 @@ export default function DeckEditForm({
   id,
   name,
   description,
+  initialCards = [],
+  initialChunks = [],
   onUpdate,
   onDelete,
   isDeleting,
@@ -32,7 +37,8 @@ export default function DeckEditForm({
   deleteError,
 }: DeckEditFormProps) {
   const fields = useDeckEditFormFields();
-  const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>([]);
+  const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>(initialCards);
+  const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>(initialChunks);
 
   async function handleSubmit(values: { name: string; description?: string }) {
     await onUpdate({
@@ -40,16 +46,20 @@ export default function DeckEditForm({
       name: (values.name ?? '').trim(),
       description: values.description?.trim() || undefined,
       cardIds: selectedCards.map((item) => item.id),
+      chunkIds: selectedChunks.map((item) => item.id),
     });
-
-    setSelectedCards([]);
   }
 
   return (
     <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
-      <DeckCardMultiSelect
-        selectedItems={selectedCards}
+      <DeckCardSelectionPanel
+        selectedCards={selectedCards}
         onSelectionChange={setSelectedCards}
+      />
+
+      <DeckChunkSelectionPanel
+        selectedChunks={selectedChunks}
+        onSelectionChange={setSelectedChunks}
       />
 
       <FormBuilder<{ name: string; description?: string }>

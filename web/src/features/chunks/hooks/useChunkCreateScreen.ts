@@ -3,11 +3,12 @@ import { useRouter } from '@/i18n/navigation';
 
 import { APP_ROUTES } from '@shared/constants';
 import {
-  useDeckCardsQuery,
+  useCardsListQuery,
   useDeckDetailQuery,
   useDecksListQuery,
   type CardRecord,
 } from '@features/decks';
+import type { SearchResultItem } from '@features/search';
 import { MIN_CHUNK_CARD_SELECTION } from '../constants/reviewSchedule';
 import { useCreateChunkMutation } from './useChunkMutations';
 
@@ -33,31 +34,23 @@ export function useChunkCreateScreen(initialDeckId: string) {
   const deckDetailQuery = useDeckDetailQuery(activeDeckId, {
     enabled: Boolean(activeDeckId),
   });
-  const cardsQuery = useDeckCardsQuery(activeDeckId, {
-    enabled: Boolean(activeDeckId),
-  });
+  const cardsQuery = useCardsListQuery();
   const createChunk = useCreateChunkMutation({
     onSuccess: (chunk) => {
       router.replace(APP_ROUTES.deckEdit(chunk.deckId));
     },
   });
 
-  const availableCards = useMemo(
+  const allCards = useMemo(
     () => cardsQuery.result ?? [],
     [cardsQuery.result],
   );
   const selectedCards = useMemo(
     () =>
       selectedCardIds
-        .map((cardId) => availableCards.find((card) => card.id === cardId))
+        .map((cardId) => allCards.find((card) => card.id === cardId))
         .filter((card): card is CardRecord => Boolean(card)),
-    [availableCards, selectedCardIds],
-  );
-
-  const unselectedCards = useMemo(
-    () =>
-      availableCards.filter((card) => !selectedCardIds.includes(card.id)),
-    [availableCards, selectedCardIds],
+    [allCards, selectedCardIds],
   );
 
   const hasDeckContext = Boolean(activeDeckId);
@@ -83,10 +76,8 @@ export function useChunkCreateScreen(initialDeckId: string) {
     setSelectionError(undefined);
   }
 
-  function handleAddCard(cardId: string) {
-    setSelectedCardIds((current) =>
-      current.includes(cardId) ? current : [...current, cardId],
-    );
+  function handleSelectionChange(items: SearchResultItem[]) {
+    setSelectedCardIds(items.map((item) => item.id));
     setSelectionError(undefined);
   }
 
@@ -136,7 +127,6 @@ export function useChunkCreateScreen(initialDeckId: string) {
 
   return {
     activeDeckId,
-    availableCards,
     cardsError: cardsQuery.error?.message,
     cardsLoading: cardsQuery.isLoading,
     createChunkLoading: createChunk.isLoading,
@@ -148,12 +138,12 @@ export function useChunkCreateScreen(initialDeckId: string) {
     hasNoDecks,
     selectedCards,
     submitError,
-    unselectedCards,
-    handleAddCard,
+    totalCardCount: allCards.length,
     handleCreateChunk,
     handleDeckSelection,
     handleMoveCard,
     handleRemoveCard,
     handleResetDeckSelection,
+    handleSelectionChange,
   };
 }

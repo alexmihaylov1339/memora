@@ -22,6 +22,7 @@ function createPrismaMock() {
     },
     card: {
       findMany: jest.fn(),
+      updateMany: jest.fn(),
     },
     chunk: {
       create: jest.fn(),
@@ -29,6 +30,9 @@ function createPrismaMock() {
       findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    chunkCard: {
+      deleteMany: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -63,11 +67,9 @@ describe('ChunksService', () => {
       ).resolves.toEqual({ status: 'deck_not_found' });
     });
 
-    it('returns null when referenced cards are missing or from another deck', async () => {
+    it('returns invalid_cards when referenced cards are missing', async () => {
       prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
-      prisma.card.findMany.mockResolvedValue([
-        { id: 'card-1', deckId: 'deck-1' },
-      ]);
+      prisma.card.findMany.mockResolvedValue([{ id: 'card-1' }]);
 
       await expect(
         service.create({
@@ -126,6 +128,42 @@ describe('ChunksService', () => {
         },
       });
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it('moves selected cards into the chunk deck before creating', async () => {
+      const createdChunk: ChunkRecord = {
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'Chunk 1',
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        chunkCards: [
+          {
+            cardId: 'card-2',
+            sequenceIndex: 0,
+            offsetDays: null,
+          },
+        ],
+      };
+
+      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.card.findMany.mockResolvedValue([{ id: 'card-2' }]);
+      prisma.chunk.create.mockResolvedValue(createdChunk);
+
+      await service.create({
+        deckId: 'deck-1',
+        title: 'Chunk 1',
+        cardIds: ['card-2'],
+      });
+
+      expect(prisma.chunkCard.deleteMany).toHaveBeenCalledWith({
+        where: { cardId: { in: ['card-2'] } },
+      });
+      expect(prisma.card.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['card-2'] } },
+        data: { deckId: 'deck-1' },
+      });
     });
   });
 
@@ -272,18 +310,16 @@ describe('ChunksService', () => {
       ).resolves.toEqual({ status: 'not_found' });
     });
 
-    it('returns invalid_cards when updated card references are invalid', async () => {
+    it('returns invalid_cards when updated card references are missing', async () => {
       prisma.chunk.findUnique.mockResolvedValue({
         id: 'chunk-1',
         deckId: 'deck-1',
       });
-      prisma.card.findMany.mockResolvedValue([
-        { id: 'card-1', deckId: 'deck-2' },
-      ]);
+      prisma.card.findMany.mockResolvedValue([{ id: 'card-1' }]);
 
       await expect(
         service.update('chunk-1', {
-          cardIds: ['card-1'],
+          cardIds: ['card-1', 'card-2'],
         }),
       ).resolves.toEqual({ status: 'invalid_cards' });
     });
@@ -350,6 +386,13 @@ describe('ChunksService', () => {
         },
       });
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(prisma.chunkCard.deleteMany).toHaveBeenCalledWith({
+        where: { cardId: { in: ['card-3'] } },
+      });
+      expect(prisma.card.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['card-3'] } },
+        data: { deckId: 'deck-1' },
+      });
     });
   });
 

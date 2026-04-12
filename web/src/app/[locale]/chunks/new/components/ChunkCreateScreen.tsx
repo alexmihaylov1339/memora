@@ -22,13 +22,13 @@ export default function ChunkCreateScreen({
     hasNoDecks,
     selectedCards,
     submitError,
-    unselectedCards,
-    handleAddCard,
+    totalCardCount,
     handleCreateChunk,
     handleDeckSelection,
     handleMoveCard,
     handleRemoveCard,
     handleResetDeckSelection,
+    handleSelectionChange,
   } = useChunkCreateScreen(initialDeckId);
 
   if (!hasDeckContext) {
@@ -49,15 +49,15 @@ export default function ChunkCreateScreen({
       cardsError={cardsError}
       cardsLoading={cardsLoading}
       currentDeckName={currentDeck?.name}
-      onAddCard={handleAddCard}
       onChangeDeck={handleResetDeckSelection}
+      onSelectionChange={handleSelectionChange}
       onMoveCard={handleMoveCard}
       onRemoveCard={handleRemoveCard}
       onSubmit={handleCreateChunk}
       selectedCards={selectedCards}
       submitError={submitError}
       submitLoading={createChunkLoading}
-      unselectedCards={unselectedCards}
+      totalCardCount={totalCardCount}
     />
   );
 }

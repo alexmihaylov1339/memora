@@ -2,6 +2,7 @@ export interface CreateDeckDto {
   name: string;
   description?: string;
   cardIds?: string[];
+  chunkIds?: string[];
 }
 
 export interface DeckListItem {
@@ -26,6 +27,7 @@ export interface UpdateDeckDto {
   name?: string;
   description?: string;
   cardIds?: string[];
+  chunkIds?: string[];
 }
 
 export interface DeckIdParams {

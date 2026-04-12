@@ -6,5 +6,9 @@ export const DECK_ERROR_MESSAGES = {
   cardIdsMustBeUniqueStrings:
     'cardIds must be an array of unique non-empty strings',
   cardIdsMustReferenceExistingCards: 'cardIds must reference existing cards',
+  chunkIdsMustBeUniqueStrings:
+    'chunkIds must be an array of unique non-empty strings',
+  chunkIdsMustReferenceExistingChunks:
+    'chunkIds must reference existing chunks',
   deckNotFound: 'deck not found',
 } as const;

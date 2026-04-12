@@ -14,8 +14,10 @@ export type ServiceFunctionWithoutParams<TData = unknown> = () => Promise<TData>
  * Result returned by useService hook
  */
 export interface UseServiceResult<TData, TParams> {
-  /** Execute the service with given parameters */
+  /** Execute the service with given parameters, returns a Promise */
   fetch: (params: TParams) => Promise<TData>;
+  /** Execute the service fire-and-forget; success/error handled via callbacks */
+  trigger: (params: TParams) => void;
   /** Whether the service is currently loading */
   isLoading: boolean;
   /** Whether the service has loaded successfully at least once */

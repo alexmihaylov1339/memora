@@ -26,6 +26,15 @@ export function validateCreateDeckInput(body: CreateDeckDto) {
       DECK_ERROR_MESSAGES.cardIdsMustBeUniqueStrings,
     );
   }
+
+  if (
+    !isUndefined(body.chunkIds) &&
+    !hasUniqueTrimmedTextArray(body.chunkIds)
+  ) {
+    throw new BadRequestException(
+      DECK_ERROR_MESSAGES.chunkIdsMustBeUniqueStrings,
+    );
+  }
 }
 
 export function validateUpdateDeckInput(body: UpdateDeckDto) {
@@ -33,7 +42,8 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
     !body ||
     (isUndefined(body.name) &&
       isUndefined(body.description) &&
-      isUndefined(body.cardIds))
+      isUndefined(body.cardIds) &&
+      isUndefined(body.chunkIds))
   ) {
     throw new BadRequestException(DECK_ERROR_MESSAGES.atLeastOneFieldRequired);
   }
@@ -45,6 +55,15 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
   if (!isUndefined(body.cardIds) && !hasUniqueTrimmedTextArray(body.cardIds)) {
     throw new BadRequestException(
       DECK_ERROR_MESSAGES.cardIdsMustBeUniqueStrings,
+    );
+  }
+
+  if (
+    !isUndefined(body.chunkIds) &&
+    !hasUniqueTrimmedTextArray(body.chunkIds)
+  ) {
+    throw new BadRequestException(
+      DECK_ERROR_MESSAGES.chunkIdsMustBeUniqueStrings,
     );
   }
 }
