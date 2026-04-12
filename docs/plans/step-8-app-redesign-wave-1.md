@@ -251,16 +251,26 @@ Verification:
 ### T7 - Search styling pass
 
 Status:
-- Proposed
+- Done
 
 - Apply the approved styling once the search design is ready.
 - Keep this task visual only; do not mix structural behavior changes into it.
 - Align the dropdown, input, empty state, loading state, and focus state with the redesign system when that system is approved.
 
-Acceptance:
-- Search logic from T6 remains unchanged while visual treatment is added cleanly on top.
+Implemented in this task:
+- `EntitySearch` and `GridSearchInput` visually aligned with the `SearchCards` Figma frame.
+- Search input: `h-10`, `rounded-[8px]`, `border border-[#e5e7eb]`, `bg-white`, `pl-9` with a left-aligned search icon SVG.
+- Focus state: `border-[#1d6fa5]` + `ring-1 ring-[#1d6fa5]` (brand blue, matching the Figma hover annotation).
+- Dropdown panel: `absolute`, `rounded-[8px]`, `border border-[#e5e7eb]`, `shadow-[0_4px_16px_rgba(0,0,0,0.08)]`, `max-h-64 overflow-y-auto`.
+- Dropdown rows: `hover:bg-[#f6f8fc]` hover, `border-b border-[#e5e7eb]` row dividers.
+- Loading / empty states: muted `text-[rgba(1,1,1,0.4)]` text.
+- Error state: `text-[#dc2626]`.
+- Multi-select Done button: `bg-[#1d6fa5]` primary style, separated by a top border.
+- Selected-item tags (showSelectedList mode): `bg-[#e8f0f9] text-[#1d6fa5]` with × remove.
+- All search behavior from T6 left unchanged.
 
 Verification:
+- `cd web && npx tsc --noEmit` passed.
 - The same search behavior works after styling is applied.
 
 ### T8 - Build a simple reusable grid component for front pages
