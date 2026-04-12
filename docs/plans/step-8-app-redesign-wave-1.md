@@ -460,17 +460,26 @@ Verification:
 ### T11 - Grid styling pass
 
 Status:
-- Proposed
+- Done
 
 - Add styling for the reusable grid only after the designer finishes the relevant design direction.
 - Keep this as a separate visual-only task.
 - Do not mix behavior changes with styling changes in this task.
 
-Acceptance:
-- The reusable grid behavior from T8 remains unchanged while visual treatment is layered on later.
+Implemented in this task:
+- Grid visually aligned with the `SearchGrid` Figma frame.
+- Outer table wrapped in `overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white` container.
+- Header row: `border-b border-[#e5e7eb]`, each `<th>` styled `text-xs font-semibold uppercase tracking-wide text-[rgba(1,1,1,0.4)]`.
+- Data rows: `border-b border-[#e5e7eb] last:border-b-0 transition-colors`, clickable rows get `cursor-pointer hover:bg-[#f6f8fc] focus:bg-[#f6f8fc] outline-none`.
+- Cells: `px-4 py-2.5 text-sm text-[rgba(1,1,1,0.72)]`.
+- Remove / Actions button: `text-sm text-[#dc2626] hover:text-[#b91c1c]` danger text style; `e.stopPropagation()` prevents row-click from firing when Remove is clicked.
+- Empty state: `rounded-[8px] border border-[#e5e7eb] bg-white px-4 py-8 text-center text-sm text-[rgba(1,1,1,0.4)]`.
+- Grid search input and table separated by `space-y-3` via a wrapping `div`.
+- All T8/T9 grid behavior left unchanged — visual layer only.
 
 Verification:
-- Grid still behaves the same after styling is applied.
+- `cd web && npx tsc --noEmit` passed.
+- Grid behavior (row click, quick filter, remove) unchanged after styling.
 
 ### T12 - Shared auth refinement
 
