@@ -46,19 +46,22 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       className="border-none p-0 m-0 min-w-0"
     >
       {error && (
-        <p className="mb-4 text-sm text-[var(--destructive)]" role="alert">
+        <p
+          className="mb-4 rounded-[8px] border border-[#efb5b5] bg-[#fff5f5] px-4 py-3 text-sm font-medium text-[#c53d3d]"
+          role="alert"
+        >
           {error}
         </p>
       )}
       <FormBuilder<Record<string, string>>
         fields={fields}
         onSubmit={handleSubmit}
-        submitLabel={mutation.isPending ? 'Resetting…' : 'Reset password'}
-        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        submitLabel={mutation.isPending ? 'RESETTING…' : 'RESET PASSWORD'}
+        submitButtonClassName="mt-[2px] h-[47px] w-full rounded-[5px] bg-[#438cd4] px-4 text-center text-[20px] font-bold tracking-[0.01em] text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#337fc9] disabled:cursor-not-allowed disabled:opacity-60"
         translateFields={false}
       />
-      <p className="mt-4 text-sm">
-        <Link href={APP_ROUTES.login} className="text-[var(--primary)] hover:underline">
+      <p className="mt-[31px] text-center text-[18px] font-bold tracking-[0.01em] text-[#1d6fa5]">
+        <Link href={APP_ROUTES.login} className="hover:underline">
           Back to sign in
         </Link>
       </p>

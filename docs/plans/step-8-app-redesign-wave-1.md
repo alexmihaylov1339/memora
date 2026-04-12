@@ -483,9 +483,26 @@ Verification:
 
 ### T12 - Shared auth refinement
 
+Status:
+- Done
+
 - Extract shared auth layout pieces only if reuse is real.
 - Keep implementation aligned with `docs/architecture/frontend-patterns.md`.
 - Avoid over-abstracting early.
+
+Implemented in this task:
+- `reset-password/page.tsx` now uses `AuthShell` + `GuestOnlyRoute`, matching the same pattern as Register, Login, and Forgot Password. Removed the old duplicated centered-card shell.
+- `ResetPasswordForm` error and submit button aligned to the brand auth style (matching Login/Register): card error block with `border-[#efb5b5] bg-[#fff5f5]`, `h-[47px] bg-[#438cd4]` CTA button, "Back to sign in" link styled as `text-[#1d6fa5]`.
+- `account/page.tsx` moved from old centered card layout to the standard authenticated app layout (`main className="p-6"`), matching Decks/Cards/Chunks pages. `LanguageSwitcher` kept in the page header row alongside the `Account` title.
+
+What was NOT extracted:
+- `UpdateAccountForm` button kept as-is — the Account page is an in-app authenticated page, not an auth shell page, so its form controls do not need the large auth CTA treatment.
+- No new shared components added — reuse was achieved by applying the already existing `AuthShell`.
+
+Verification:
+- `cd web && npx tsc --noEmit` passed.
+- Reset password page now renders inside the brand auth shell.
+- Account page now sits in the standard app sidebar layout without a floating card.
 
 ### T13 - Prepare the next redesign queue
 

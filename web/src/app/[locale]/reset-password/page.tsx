@@ -8,45 +8,36 @@ import { useSearchParams } from 'next/navigation';
 import { GuestOnlyRoute } from '@/shared/components/AuthProvider';
 import { APP_ROUTES } from '@/shared/constants';
 
+import { AuthShell } from '@features/auth/components';
 import { ResetPasswordForm } from '@features/auth/reset-password/components';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') ?? '';
 
-  return (
-    <div className="mt-6">
-      {token ? (
-        <ResetPasswordForm token={token} />
-      ) : (
-        <p className="text-sm text-[var(--secondary)]">
-          Invalid or missing reset link. Please{' '}
-          <Link
-            href={APP_ROUTES.forgotPassword}
-            className="text-[var(--primary)] underline"
-          >
-            request a new one
-          </Link>
-          .
-        </p>
-      )}
-    </div>
-  );
+  if (!token) {
+    return (
+      <p className="text-[18px] font-bold tracking-[0.01em] text-[rgba(1,1,1,0.55)]">
+        Invalid or missing reset link. Please{' '}
+        <Link href={APP_ROUTES.forgotPassword} className="text-[#1d6fa5] hover:underline">
+          request a new one
+        </Link>
+        .
+      </p>
+    );
+  }
+
+  return <ResetPasswordForm token={token} />;
 }
 
 export default function ResetPasswordPage() {
   return (
     <GuestOnlyRoute>
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-2xl border p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold">Memora</h1>
-          <p className="mt-1 text-sm text-gray-600">Reset password</p>
-
-          <Suspense fallback={<p className="mt-6 text-sm text-gray-600">Loading…</p>}>
-            <ResetPasswordContent />
-          </Suspense>
-        </div>
-      </div>
+      <AuthShell description="Enter your new password to get back in.">
+        <Suspense fallback={<p className="text-sm text-[rgba(1,1,1,0.4)]">Loading…</p>}>
+          <ResetPasswordContent />
+        </Suspense>
+      </AuthShell>
     </GuestOnlyRoute>
   );
 }
