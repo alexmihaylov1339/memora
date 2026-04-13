@@ -1,6 +1,6 @@
 # Memora: Step 8 Plan - App Redesign Wave 1
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 8
 

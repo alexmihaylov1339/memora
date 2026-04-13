@@ -192,8 +192,9 @@
 **Deliverables**
 - Access control rules:
   - a user can see/edit their own decks, cards, and chunks
+  - a user can see shared decks and the cards/chunks that belong to those shared decks
   - shared decks are visible to invited users with clearly defined permissions
-  - cards/chunks are not globally visible to unrelated users
+  - cards/chunks are not directly shared in v1 and are not globally visible to unrelated users
 - Deck sharing flow:
   - share action on each deck
   - invite by username or email
@@ -207,6 +208,7 @@
 **Exit criteria**
 - A signed-in user only sees decks/cards/chunks they own or that are explicitly shared with them.
 - A deck can be shared intentionally from the UI.
+- Shared cards/chunks inherit their deck's visibility rather than having separate share records.
 
 ---
 
