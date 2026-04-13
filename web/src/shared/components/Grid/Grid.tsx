@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+
+import GridPagination from './GridPagination';
 import GridSearchInput from './GridSearchInput';
-import { resolveCellValue } from './helpers/gridCellValue';
+import GridTable from './GridTable';
 import { matchesGridQuickFilter } from './helpers/gridQuickFilter';
 import useGridQuickFilter from './hooks/useGridQuickFilter';
-import Button from '../Button/Button';
 
 export interface GridColumnDef<TRow> {
   field?: keyof TRow;
@@ -24,7 +25,12 @@ interface GridProps<TRow extends { id: string }> {
   onRemove?: (row: TRow) => void;
   quickFilterPlaceholder?: string;
   showQuickFilter?: boolean;
+  paginate?: boolean;
+  pageSize?: number;
 }
+
+const DEFAULT_PAGE_SIZE = 5;
+const MAX_PAGINATION_BUTTONS = 5;
 
 export default function Grid<TRow extends { id: string }>({
   id,
@@ -35,29 +41,12 @@ export default function Grid<TRow extends { id: string }>({
   onRemove,
   quickFilterPlaceholder = 'Search grid rows',
   showQuickFilter = true,
+  paginate = false,
+  pageSize = DEFAULT_PAGE_SIZE,
 }: GridProps<TRow>) {
   const { quickFilterText, setQuickFilterText, debouncedQuickFilterText } =
     useGridQuickFilter();
-
-  const allColumnDefs = useMemo<GridColumnDef<TRow>[]>(() => {
-    if (!onRemove) return columnDefs;
-    return [
-      ...columnDefs,
-      {
-        headerName: 'Actions',
-        searchable: false,
-        cellRenderer: (row) => (
-          <Button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onRemove(row); }}
-            className="text-sm text-[#dc2626] transition hover:text-[#b91c1c]"
-          >
-            Remove
-          </Button>
-        ),
-      },
-    ];
-  }, [columnDefs, onRemove]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const visibleRows = useMemo(() => {
     if (!debouncedQuickFilterText) {
@@ -65,75 +54,73 @@ export default function Grid<TRow extends { id: string }>({
     }
 
     return rowData.filter((row) =>
-      matchesGridQuickFilter(row, allColumnDefs, debouncedQuickFilterText),
+      matchesGridQuickFilter(row, columnDefs, debouncedQuickFilterText),
     );
-  }, [allColumnDefs, debouncedQuickFilterText, rowData]);
+  }, [columnDefs, debouncedQuickFilterText, rowData]);
+
+  const totalPages = paginate ? Math.max(1, Math.ceil(visibleRows.length / pageSize)) : 1;
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedRows = paginate
+    ? visibleRows.slice((safePage - 1) * pageSize, safePage * pageSize)
+    : visibleRows;
+
+  const paginationStart = Math.max(
+    1,
+    Math.min(
+      safePage - Math.floor(MAX_PAGINATION_BUTTONS / 2),
+      totalPages - MAX_PAGINATION_BUTTONS + 1,
+    ),
+  );
+  const paginationEnd = Math.min(totalPages, paginationStart + MAX_PAGINATION_BUTTONS - 1);
+  const paginationPages = useMemo(
+    () =>
+      Array.from(
+        { length: paginationEnd - paginationStart + 1 },
+        (_, index) => paginationStart + index,
+      ),
+    [paginationEnd, paginationStart],
+  );
 
   return (
-    <div className="w-full space-y-3">
-      {showQuickFilter && (
-        <GridSearchInput
-          value={quickFilterText}
-          onChange={setQuickFilterText}
-          placeholder={quickFilterPlaceholder}
-        />
-      )}
+    <div className="w-full">
+      <div className="overflow-hidden rounded-[5px] border border-[rgba(1,1,1,0.1)] bg-white">
+        {showQuickFilter && (
+          <div className="px-[16px] pt-[16px]">
+            <GridSearchInput
+              value={quickFilterText}
+              onChange={setQuickFilterText}
+              placeholder={quickFilterPlaceholder}
+            />
+          </div>
+        )}
 
-      {visibleRows.length === 0 ? (
-        <p className="rounded-[8px] border border-[#e5e7eb] bg-white px-4 py-8 text-center text-sm text-[rgba(1,1,1,0.4)]">
-          {emptyMessage}
-        </p>
-      ) : (
-        <div className="overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white">
-          <table id={id} className="w-full">
-            <thead>
-              <tr className="border-b border-[#e5e7eb]">
-                {allColumnDefs.map((column) => (
-                  <th
-                    key={column.headerName}
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[rgba(1,1,1,0.4)]"
-                  >
-                    {column.headerName}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map((row) => (
-                <tr
-                  key={row.id}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  onKeyDown={
-                    onRowClick
-                      ? (event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            onRowClick(row);
-                          }
-                        }
-                      : undefined
-                  }
-                  tabIndex={onRowClick ? 0 : undefined}
-                  className={[
-                    'border-b border-[#e5e7eb] last:border-b-0 transition-colors',
-                    onRowClick ? 'cursor-pointer hover:bg-[#f6f8fc] focus:bg-[#f6f8fc] outline-none' : '',
-                  ].join(' ')}
-                >
-                  {allColumnDefs.map((column) => (
-                    <td
-                      key={`${row.id}-${column.headerName}`}
-                      className="px-4 py-2.5 text-sm text-[rgba(1,1,1,0.72)]"
-                    >
-                      {resolveCellValue(row, column)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+        {paginatedRows.length === 0 ? (
+          <p className="px-[16px] py-10 text-sm text-[rgba(1,1,1,0.4)]">
+            {emptyMessage}
+          </p>
+        ) : (
+          <div className="overflow-x-auto px-[16px] pb-0 pt-[14px]">
+            <GridTable
+              id={id}
+              rows={paginatedRows}
+              columnDefs={columnDefs}
+              onRowClick={onRowClick}
+              onRemove={onRemove}
+            />
+          </div>
+        )}
+
+        {paginate && totalPages > 1 && (
+          <GridPagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            pages={paginationPages}
+            onPrev={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            onPage={(page) => setCurrentPage(page)}
+            onNext={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+          />
+        )}
+      </div>
     </div>
   );
 }

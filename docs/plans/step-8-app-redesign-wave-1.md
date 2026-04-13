@@ -468,6 +468,10 @@ Status:
 
 Implemented in this task:
 - Grid visually aligned with the `SearchGrid` Figma frame.
+- Grid split into smaller focused pieces:
+  - `GridTable`
+  - `GridPagination`
+  - `GridSearchInput`
 - Outer table wrapped in `overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white` container.
 - Header row: `border-b border-[#e5e7eb]`, each `<th>` styled `text-xs font-semibold uppercase tracking-wide text-[rgba(1,1,1,0.4)]`.
 - Data rows: `border-b border-[#e5e7eb] last:border-b-0 transition-colors`, clickable rows get `cursor-pointer hover:bg-[#f6f8fc] focus:bg-[#f6f8fc] outline-none`.

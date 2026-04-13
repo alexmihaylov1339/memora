@@ -10,15 +10,15 @@ export default function GridSearchInput({
   placeholder = 'Search grid rows',
 }: GridSearchInputProps) {
   return (
-    <div className="relative w-full">
-      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[rgba(1,1,1,0.38)]">
+    <div className="relative w-full max-w-[602px]">
+      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[rgba(1,1,1,0.2)]">
         <svg
-          width="16"
-          height="16"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
@@ -33,7 +33,7 @@ export default function GridSearchInput({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="h-10 w-full rounded-[8px] border border-[#e5e7eb] bg-white pl-9 pr-3 text-sm text-[rgba(1,1,1,0.72)] placeholder:text-[rgba(1,1,1,0.38)] outline-none transition focus:border-[#1d6fa5] focus:ring-1 focus:ring-[#1d6fa5]"
+        className="h-[45px] w-full rounded-[5px] border border-[rgba(1,1,1,0.2)] bg-white pl-10 pr-3 text-[18px] text-[rgba(1,1,1,0.72)] placeholder:text-[rgba(1,1,1,0.2)] outline-none transition focus:border-[#378ADD] focus:ring-1 focus:ring-[#378ADD]"
       />
     </div>
   );
