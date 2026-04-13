@@ -83,18 +83,29 @@ Out of scope for this step:
 ### T1 - Define the ownership and visibility model
 
 Status:
-- Pending
+- Done
 
 - Document the access rules for decks, cards, chunks, and review access before changing routes.
 - Keep the model simple enough to support the current product while remaining extendable later.
 - Decide which objects are directly shareable and which objects inherit access from their parent deck.
 
-Planned rules for this step:
-- decks are shareable
-- cards and chunks are not directly shareable in v1
-- cards and chunks are only visible through decks the user owns or can access
-- reviews follow the same deck access rules
+Access model for v1:
+- decks are the only directly shareable entity
+- cards and chunks are not directly shareable in this step
+- cards and chunks inherit visibility from the deck they belong to
+- reviews inherit the same access as the deck/chunk/card they are reviewing
+- a user always sees their own private content
+- a user sees shared content only when the parent deck has been explicitly shared with them
 - unrelated users should never see private content in listings or direct routes
+
+Practical visibility matrix:
+- owner -> can view and edit the deck and all cards/chunks inside it
+- shared user -> can view the shared deck and its cards/chunks, and can edit only if a permission later allows it
+- unrelated user -> cannot view the deck, its cards, its chunks, or its review flow
+
+Important implementation note:
+- direct card/chunk share records are intentionally out of scope for v1
+- if a future product needs deeper permissions, the model should expand from deck-based sharing instead of replacing it
 
 Why this matters:
 - If we do not define the visibility model first, the backend and UI can easily drift apart.
@@ -102,6 +113,7 @@ Why this matters:
 
 Exit criteria:
 - We have a written access model that the backend and frontend can both follow.
+- The model clearly states that deck sharing is the source of visibility for cards, chunks, and review access in v1.
 
 ### T2 - Add backend authorization guards for deck-scoped routes
 
