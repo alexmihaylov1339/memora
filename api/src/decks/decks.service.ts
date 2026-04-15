@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import type { CardRecord } from '../cards/cards.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckSharePermission } from './deck-share.types';
 
 export interface DeckListItem {
   id: string;
@@ -18,6 +20,18 @@ export interface DeckRecord {
 
 export interface DeckDetail extends DeckRecord {
   count: number;
+  sharedUsers: DeckShareSummary[];
+}
+
+export interface DeckShareSummary {
+  id: string;
+  deckId: string;
+  userId: string;
+  email: string;
+  name?: string;
+  permission: DeckSharePermission;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 type CreateDeckResult =
@@ -31,9 +45,85 @@ type UpdateDeckResult =
   | { status: 'invalid_cards' }
   | { status: 'invalid_chunks' };
 
+type ShareDeckResult =
+  | { status: 'shared'; share: DeckShareSummary }
+  | { status: 'not_found' }
+  | { status: 'share_target_not_found' }
+  | { status: 'share_target_ambiguous' }
+  | { status: 'already_shared' }
+  | { status: 'cannot_share_with_self' };
+
+type DeckShareWithUser = Prisma.DeckShareGetPayload<{
+  include: {
+    user: {
+      select: {
+        id: true;
+        email: true;
+        name: true;
+        createdAt: true;
+        updatedAt: true;
+      };
+    };
+  };
+}>;
+
+type DeckWithShares = Prisma.DeckGetPayload<{
+  include: {
+    _count: {
+      select: { cards: true };
+    };
+    shares: {
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }];
+      include: {
+        user: {
+          select: {
+            id: true;
+            email: true;
+            name: true;
+            createdAt: true;
+            updatedAt: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+
 @Injectable()
 export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async findOwnedDeck(id: string, userId: string) {
+    return this.prisma.deck.findFirst({
+      where: { id, ownerId: userId },
+      select: { id: true },
+    });
+  }
+
+  private mapDeckShareSummary(share: DeckShareWithUser): DeckShareSummary {
+    return {
+      id: share.id,
+      deckId: share.deckId,
+      userId: share.user.id,
+      email: share.user.email,
+      name: share.user.name ?? undefined,
+      permission: share.permission,
+      createdAt: share.createdAt,
+      updatedAt: share.updatedAt,
+    };
+  }
+
+  private mapDeckDetail(deck: DeckWithShares): DeckDetail {
+    return {
+      id: deck.id,
+      name: deck.name,
+      description: deck.description ?? undefined,
+      count: deck._count.cards,
+      createdAt: deck.createdAt,
+      updatedAt: deck.updatedAt,
+      sharedUsers: deck.shares.map((share) => this.mapDeckShareSummary(share)),
+    };
+  }
 
   private async hasExistingCards(
     cardIds: string[],
@@ -122,27 +212,34 @@ export class DecksService {
   }
 
   async findOne(id: string, userId: string): Promise<DeckDetail | null> {
-    const deck = await this.prisma.deck.findFirst({
+    const deck = (await this.prisma.deck.findFirst({
       where: { id, ownerId: userId },
       include: {
         _count: {
           select: { cards: true },
         },
+        shares: {
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
       },
-    });
+    })) as DeckWithShares | null;
 
     if (!deck) {
       return null;
     }
 
-    return {
-      id: deck.id,
-      name: deck.name,
-      description: deck.description ?? undefined,
-      count: deck._count.cards,
-      createdAt: deck.createdAt,
-      updatedAt: deck.updatedAt,
-    } as DeckDetail;
+    return this.mapDeckDetail(deck);
   }
 
   async update(
@@ -218,34 +315,39 @@ export class DecksService {
         name: data.name,
         description: data.description,
       };
-      const deck = await tx.deck.update({
+      const deck = (await tx.deck.update({
         where: { id },
         data: deckData,
         include: {
           _count: {
             select: { cards: true },
           },
+          shares: {
+            orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
         },
-      });
+      })) as DeckWithShares;
 
       return {
         status: 'updated',
-        deck: {
-          id: deck.id,
-          name: deck.name,
-          description: deck.description ?? undefined,
-          count: deck._count.cards,
-          createdAt: deck.createdAt,
-          updatedAt: deck.updatedAt,
-        } as DeckDetail,
+        deck: this.mapDeckDetail(deck),
       } satisfies UpdateDeckResult;
     });
   }
 
   async remove(id: string, userId: string) {
-    const existing = await this.prisma.deck.findFirst({
-      where: { id, ownerId: userId },
-    });
+    const existing = await this.findOwnedDeck(id, userId);
     if (!existing) {
       return false;
     }
@@ -255,10 +357,7 @@ export class DecksService {
   }
 
   async findCards(id: string, userId: string): Promise<CardRecord[] | null> {
-    const deck = await this.prisma.deck.findFirst({
-      where: { id, ownerId: userId },
-      select: { id: true },
-    });
+    const deck = await this.findOwnedDeck(id, userId);
 
     if (!deck) {
       return null;
@@ -268,5 +367,161 @@ export class DecksService {
       where: { deckId: id },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     })) as CardRecord[];
+  }
+
+  async listShares(
+    deckId: string,
+    userId: string,
+  ): Promise<DeckShareSummary[] | null> {
+    const deck = await this.findOwnedDeck(deckId, userId);
+    if (!deck) {
+      return null;
+    }
+
+    const shares = (await this.prisma.deckShare.findMany({
+      where: { deckId },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    })) as DeckShareWithUser[];
+
+    return shares.map((share) => this.mapDeckShareSummary(share));
+  }
+
+  async shareDeck(
+    deckId: string,
+    identifier: string,
+    permission: DeckSharePermission,
+    userId: string,
+  ): Promise<ShareDeckResult> {
+    const deck = await this.findOwnedDeck(deckId, userId);
+    if (!deck) {
+      return { status: 'not_found' };
+    }
+
+    const target = await this.resolveShareTarget(identifier);
+    if (target.status !== 'found') {
+      return {
+        status:
+          target.status === 'ambiguous'
+            ? 'share_target_ambiguous'
+            : 'share_target_not_found',
+      };
+    }
+
+    if (target.user.id === userId) {
+      return { status: 'cannot_share_with_self' };
+    }
+
+    const existing = await this.prisma.deckShare.findUnique({
+      where: {
+        deckId_userId: {
+          deckId,
+          userId: target.user.id,
+        },
+      },
+    });
+
+    if (existing) {
+      return { status: 'already_shared' };
+    }
+
+    const share = await this.prisma.deckShare.create({
+      data: {
+        deckId,
+        userId: target.user.id,
+        permission,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    return {
+      status: 'shared',
+      share: {
+        id: share.id,
+        deckId: share.deckId,
+        userId: share.user.id,
+        email: share.user.email,
+        name: share.user.name ?? undefined,
+        permission: share.permission,
+        createdAt: share.createdAt,
+        updatedAt: share.updatedAt,
+      },
+    };
+  }
+
+  async removeShare(
+    deckId: string,
+    sharedUserId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const deck = await this.findOwnedDeck(deckId, userId);
+    if (!deck) {
+      return false;
+    }
+
+    const result = await this.prisma.deckShare.deleteMany({
+      where: {
+        deckId,
+        userId: sharedUserId,
+      },
+    });
+
+    return result.count > 0;
+  }
+
+  private async resolveShareTarget(identifier: string): Promise<
+    | {
+        status: 'found';
+        user: { id: string; email: string; name: string | null };
+      }
+    | { status: 'not_found' }
+    | { status: 'ambiguous' }
+  > {
+    const normalized = identifier.trim();
+    const emailCandidate = normalized.toLowerCase();
+
+    const byEmail = await this.prisma.user.findUnique({
+      where: { email: emailCandidate },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (byEmail) {
+      return { status: 'found', user: byEmail };
+    }
+
+    const byName = await this.prisma.user.findMany({
+      where: { name: normalized },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (byName.length === 0) {
+      return { status: 'not_found' };
+    }
+
+    if (byName.length > 1) {
+      return { status: 'ambiguous' };
+    }
+
+    return { status: 'found', user: byName[0] };
   }
 }

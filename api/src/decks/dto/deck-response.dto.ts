@@ -1,4 +1,8 @@
 import type { DeckDetail, DeckListItem, DeckRecord } from '../decks.service';
+import {
+  serializeDeckShareListResponse,
+  type DeckShareDto,
+} from './deck-share.dto';
 
 export interface DeckListItemDto {
   id: string;
@@ -11,6 +15,7 @@ export interface DeckDetailDto {
   name: string;
   description?: string;
   count: number;
+  sharedUsers: DeckShareDto[];
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +48,7 @@ export function serializeDeckDetail(deck: DeckDetail): DeckDetailDto {
     name: deck.name,
     description: deck.description,
     count: deck.count,
+    sharedUsers: serializeDeckShareListResponse(deck.sharedUsers),
     createdAt: deck.createdAt.toISOString(),
     updatedAt: deck.updatedAt.toISOString(),
   };

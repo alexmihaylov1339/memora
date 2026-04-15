@@ -20,6 +20,7 @@ model User {
   updatedAt              DateTime  @updatedAt
 
   decks                  Deck[]
+  sharedDecks            DeckShare[]
 }
 
 /** Basic grading enum for SRS */
@@ -28,6 +29,12 @@ enum Grade {
   hard
   good
   easy
+}
+
+/** Deck sharing permission for invited users */
+enum DeckSharePermission {
+  view
+  edit
 }
 
 /** A deck of cards */
@@ -42,9 +49,27 @@ model Deck {
   owner       User?    @relation(fields: [ownerId], references: [id])
   cards       Card[]
   chunks      Chunk[]
+  shares      DeckShare[]
 
   @@index([createdAt])
   @@index([ownerId])
+}
+
+/** Shared access to a deck for a specific user */
+model DeckShare {
+  id         String              @id @default(cuid())
+  deckId     String
+  userId     String
+  permission DeckSharePermission @default(view)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  deck       Deck                @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([deckId, userId])
+  @@index([deckId])
+  @@index([userId])
 }
 
 /** A chunk groups ordered cards inside a deck */

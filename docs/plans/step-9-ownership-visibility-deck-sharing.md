@@ -144,7 +144,7 @@ Exit criteria:
 ### T3 - Persist and expose deck sharing relationships
 
 Status:
-- Pending
+- Done
 
 - Add the backend data shape needed to represent shared deck access.
 - Support inviting a user by username or email.
@@ -163,6 +163,21 @@ Why this matters:
 
 Exit criteria:
 - A deck can be shared with a user and the access survives reloads.
+
+Implemented in this task:
+- Prisma now has a dedicated `DeckShare` model with a `DeckSharePermission` enum.
+- Deck detail responses now include `sharedUsers` so the owner can see current access state.
+- New deck-share API endpoints exist:
+  - `GET /v1/decks/:id/shares`
+  - `POST /v1/decks/:id/shares`
+  - `DELETE /v1/decks/:id/shares/:sharedUserId`
+- Sharing supports invite resolution by exact email or exact display name, with duplicate/self-share protection and clear error responses.
+- Prisma schema, migration SQL, and Supabase bootstrap SQL were updated to keep the DB model consistent.
+
+Verification:
+- `cd api && npx prisma generate`
+- `cd api && npx tsc --noEmit --pretty false`
+- focused `api` ESLint passed for the deck sharing/auth files
 
 ### T4 - Build the deck sharing UI
 

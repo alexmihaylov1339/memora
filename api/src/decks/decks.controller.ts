@@ -19,6 +19,11 @@ import { DecksService } from './decks.service';
 import { ChunksService } from '../chunks/chunks.service';
 import { serializeCardResponseList } from '../cards/dto/card-response.dto';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
+import {
+  serializeDeckShare,
+  serializeDeckShareListResponse,
+} from './dto/deck-share.dto';
+import type { CreateDeckShareDto } from './dto/create-deck-share.dto';
 import { serializeChunkResponseList } from '../chunks/dto/chunk-response.dto';
 import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
 import type { CreateDeckDto } from './dto/create-deck.dto';
@@ -32,6 +37,7 @@ import type { UpdateDeckDto } from './dto/update-deck.dto';
 import { validateListChunksQuery } from '../chunks/dto/chunk-validation';
 import {
   validateCreateDeckInput,
+  validateCreateDeckShareInput,
   validateDeckId,
   validateUpdateDeckInput,
 } from './dto/deck-validation';
@@ -138,6 +144,75 @@ export class DecksController {
     }
 
     return serializeDeckDetail(deck);
+  }
+
+  @Get(':id/shares')
+  async listShares(
+    @CurrentUser() user: AuthUser,
+    @Param() params: DeckIdParamDto,
+  ) {
+    const id = validateDeckId(params.id);
+
+    const shares = await this.decks.listShares(id, user.id);
+    if (!shares) {
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
+    }
+
+    return serializeDeckShareListResponse(shares);
+  }
+
+  @Post(':id/shares')
+  async shareDeck(
+    @CurrentUser() user: AuthUser,
+    @Param() params: DeckIdParamDto,
+    @Body() body: CreateDeckShareDto,
+  ) {
+    const id = validateDeckId(params.id);
+    const shareInput = validateCreateDeckShareInput(body);
+
+    const result = await this.decks.shareDeck(
+      id,
+      shareInput.identifier,
+      shareInput.permission ?? 'view',
+      user.id,
+    );
+
+    if (result.status === 'not_found') {
+      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
+    }
+
+    if (result.status === 'share_target_not_found') {
+      throw new NotFoundException(DECK_ERROR_MESSAGES.shareTargetNotFound);
+    }
+
+    if (result.status === 'share_target_ambiguous') {
+      throw new BadRequestException(DECK_ERROR_MESSAGES.shareTargetAmbiguous);
+    }
+
+    if (result.status === 'cannot_share_with_self') {
+      throw new BadRequestException(DECK_ERROR_MESSAGES.cannotShareWithSelf);
+    }
+
+    if (result.status === 'already_shared') {
+      throw new BadRequestException(DECK_ERROR_MESSAGES.deckAlreadyShared);
+    }
+
+    return serializeDeckShare(result.share);
+  }
+
+  @Delete(':id/shares/:sharedUserId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeShare(
+    @CurrentUser() user: AuthUser,
+    @Param() params: DeckIdParamDto & { sharedUserId: string },
+  ) {
+    const id = validateDeckId(params.id);
+    const sharedUserId = validateDeckId(params.sharedUserId);
+
+    const removed = await this.decks.removeShare(id, sharedUserId, user.id);
+    if (!removed) {
+      throw new NotFoundException(DECK_ERROR_MESSAGES.sharedUserNotFound);
+    }
   }
 
   @Put(':id')

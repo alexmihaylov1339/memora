@@ -10,5 +10,12 @@ export const DECK_ERROR_MESSAGES = {
     'chunkIds must be an array of unique non-empty strings',
   chunkIdsMustReferenceExistingChunks:
     'chunkIds must reference existing chunks',
+  shareTargetRequired: 'share target is required',
+  shareTargetNotFound: 'share target not found',
+  shareTargetAmbiguous: 'share target matches multiple users',
+  cannotShareWithSelf: 'cannot share a deck with yourself',
+  deckAlreadyShared: 'deck is already shared with this user',
+  sharePermissionInvalid: 'share permission is invalid',
+  sharedUserNotFound: 'shared user not found',
   deckNotFound: 'deck not found',
 } as const;
