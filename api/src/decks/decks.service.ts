@@ -35,26 +35,33 @@ type UpdateDeckResult =
 export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async hasExistingCards(cardIds: string[]): Promise<boolean> {
+  private async hasExistingCards(
+    cardIds: string[],
+    userId: string,
+  ): Promise<boolean> {
     const cards = await this.prisma.card.findMany({
-      where: { id: { in: cardIds } },
+      where: { id: { in: cardIds }, deck: { ownerId: userId } },
       select: { id: true },
     });
 
     return cards.length === cardIds.length;
   }
 
-  private async hasExistingChunks(chunkIds: string[]): Promise<boolean> {
+  private async hasExistingChunks(
+    chunkIds: string[],
+    userId: string,
+  ): Promise<boolean> {
     const chunks = await this.prisma.chunk.findMany({
-      where: { id: { in: chunkIds } },
+      where: { id: { in: chunkIds }, deck: { ownerId: userId } },
       select: { id: true },
     });
 
     return chunks.length === chunkIds.length;
   }
 
-  async findAll(): Promise<DeckListItem[]> {
+  async findAll(userId: string): Promise<DeckListItem[]> {
     const decks = await this.prisma.deck.findMany({
+      where: { ownerId: userId },
       include: {
         _count: {
           select: { cards: true },
@@ -74,18 +81,22 @@ export class DecksService {
     description?: string,
     cardIds: string[] = [],
     chunkIds: string[] = [],
+    userId: string = '',
   ): Promise<CreateDeckResult> {
-    if (cardIds.length > 0 && !(await this.hasExistingCards(cardIds))) {
+    if (cardIds.length > 0 && !(await this.hasExistingCards(cardIds, userId))) {
       return { status: 'invalid_cards' };
     }
 
-    if (chunkIds.length > 0 && !(await this.hasExistingChunks(chunkIds))) {
+    if (
+      chunkIds.length > 0 &&
+      !(await this.hasExistingChunks(chunkIds, userId))
+    ) {
       return { status: 'invalid_chunks' };
     }
 
     return this.prisma.$transaction(async (tx) => {
       const deck = (await tx.deck.create({
-        data: { name, description },
+        data: { name, description, ownerId: userId },
       })) as DeckRecord;
 
       if (cardIds.length > 0) {
@@ -110,9 +121,9 @@ export class DecksService {
     });
   }
 
-  async findOne(id: string): Promise<DeckDetail | null> {
-    const deck = await this.prisma.deck.findUnique({
-      where: { id },
+  async findOne(id: string, userId: string): Promise<DeckDetail | null> {
+    const deck = await this.prisma.deck.findFirst({
+      where: { id, ownerId: userId },
       include: {
         _count: {
           select: { cards: true },
@@ -142,8 +153,11 @@ export class DecksService {
       cardIds?: string[];
       chunkIds?: string[];
     },
+    userId: string,
   ): Promise<UpdateDeckResult> {
-    const existing = await this.prisma.deck.findUnique({ where: { id } });
+    const existing = await this.prisma.deck.findFirst({
+      where: { id, ownerId: userId },
+    });
     if (!existing) {
       return { status: 'not_found' };
     }
@@ -151,7 +165,7 @@ export class DecksService {
     if (
       data.cardIds &&
       data.cardIds.length > 0 &&
-      !(await this.hasExistingCards(data.cardIds))
+      !(await this.hasExistingCards(data.cardIds, userId))
     ) {
       return { status: 'invalid_cards' };
     }
@@ -159,7 +173,7 @@ export class DecksService {
     if (
       data.chunkIds &&
       data.chunkIds.length > 0 &&
-      !(await this.hasExistingChunks(data.chunkIds))
+      !(await this.hasExistingChunks(data.chunkIds, userId))
     ) {
       return { status: 'invalid_chunks' };
     }
@@ -228,8 +242,10 @@ export class DecksService {
     });
   }
 
-  async remove(id: string) {
-    const existing = await this.prisma.deck.findUnique({ where: { id } });
+  async remove(id: string, userId: string) {
+    const existing = await this.prisma.deck.findFirst({
+      where: { id, ownerId: userId },
+    });
     if (!existing) {
       return false;
     }
@@ -238,9 +254,9 @@ export class DecksService {
     return true;
   }
 
-  async findCards(id: string): Promise<CardRecord[] | null> {
-    const deck = await this.prisma.deck.findUnique({
-      where: { id },
+  async findCards(id: string, userId: string): Promise<CardRecord[] | null> {
+    const deck = await this.prisma.deck.findFirst({
+      where: { id, ownerId: userId },
       select: { id: true },
     });
 

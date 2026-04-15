@@ -118,7 +118,7 @@ Exit criteria:
 ### T2 - Add backend authorization guards for deck-scoped routes
 
 Status:
-- Pending
+- Done
 
 - Update deck/card/chunk/review route handling so requests are checked against the current user’s access.
 - Return clear authorization errors when a user tries to read or mutate content they do not own or cannot access.

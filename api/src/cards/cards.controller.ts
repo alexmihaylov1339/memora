@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { CardsService } from './cards.service';
 import type { CreateCardDto } from './dto/create-card.dto';
 import type { CardIdParamDto } from './dto/card-id-param.dto';
@@ -34,21 +35,24 @@ export class CardsController {
   constructor(private readonly cards: CardsService) {}
 
   @Get()
-  async list() {
-    const cards = await this.cards.findAll();
+  async list(@CurrentUser() user: AuthUser) {
+    const cards = await this.cards.findAll(user.id);
 
     return serializeCardResponseList(cards);
   }
 
   @Post()
-  async create(@Body() body: CreateCardDto) {
+  async create(@CurrentUser() user: AuthUser, @Body() body: CreateCardDto) {
     validateCreateCardInput(body);
 
-    const card = await this.cards.create({
-      deckId: body.deckId.trim(),
-      kind: body.kind.trim(),
-      fields: body.fields as Prisma.JsonObject,
-    });
+    const card = await this.cards.create(
+      {
+        deckId: body.deckId.trim(),
+        kind: body.kind.trim(),
+        fields: body.fields as Prisma.JsonObject,
+      },
+      user.id,
+    );
 
     if (!card) {
       throw new NotFoundException(CARD_ERROR_MESSAGES.deckNotFound);
@@ -58,10 +62,13 @@ export class CardsController {
   }
 
   @Get(':id')
-  async getById(@Param() params: CardIdParamDto) {
+  async getById(
+    @CurrentUser() user: AuthUser,
+    @Param() params: CardIdParamDto,
+  ) {
     const id = validateCardId(params.id);
 
-    const card = await this.cards.findOne(id);
+    const card = await this.cards.findOne(id, user.id);
     if (!card) {
       throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }
@@ -70,14 +77,22 @@ export class CardsController {
   }
 
   @Put(':id')
-  async update(@Param() params: CardIdParamDto, @Body() body: UpdateCardDto) {
+  async update(
+    @CurrentUser() user: AuthUser,
+    @Param() params: CardIdParamDto,
+    @Body() body: UpdateCardDto,
+  ) {
     const id = validateCardId(params.id);
     validateUpdateCardInput(body);
 
-    const card = await this.cards.update(id, {
-      kind: body.kind?.trim(),
-      fields: body.fields as Prisma.JsonObject | undefined,
-    });
+    const card = await this.cards.update(
+      id,
+      {
+        kind: body.kind?.trim(),
+        fields: body.fields as Prisma.JsonObject | undefined,
+      },
+      user.id,
+    );
     if (!card) {
       throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }
@@ -87,10 +102,10 @@ export class CardsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param() params: CardIdParamDto) {
+  async remove(@CurrentUser() user: AuthUser, @Param() params: CardIdParamDto) {
     const id = validateCardId(params.id);
 
-    const removed = await this.cards.remove(id);
+    const removed = await this.cards.remove(id, user.id);
     if (!removed) {
       throw new NotFoundException(CARD_ERROR_MESSAGES.cardNotFound);
     }

@@ -9,15 +9,23 @@ import type {
 
 interface ReviewsServiceMock {
   getEligibleQueueItems: jest.Mock<Promise<ReviewQueueItem[]>>;
-  gradeReview: jest.Mock<Promise<GradeChunkReviewResult>, [string, Grade]>;
+  gradeReview: jest.Mock<
+    Promise<GradeChunkReviewResult>,
+    [string, Grade, string]
+  >;
 }
 
 function createReviewsServiceMock(): ReviewsServiceMock {
   return {
     getEligibleQueueItems: jest.fn<Promise<ReviewQueueItem[]>, []>(),
-    gradeReview: jest.fn<Promise<GradeChunkReviewResult>, [string, Grade]>(),
+    gradeReview: jest.fn<
+      Promise<GradeChunkReviewResult>,
+      [string, Grade, string]
+    >(),
   };
 }
+
+const mockUser = { id: 'user-1', email: 'test@test.com' };
 
 describe('ReviewsController', () => {
   let controller: ReviewsController;
@@ -45,7 +53,7 @@ describe('ReviewsController', () => {
       },
     ]);
 
-    await expect(controller.queue()).resolves.toEqual({
+    await expect(controller.queue(mockUser)).resolves.toEqual({
       items: [
         {
           cardId: 'card-1',
@@ -107,7 +115,7 @@ describe('ReviewsController', () => {
     });
 
     await expect(
-      controller.grade({ cardId: ' card-1 ' }, { grade: 'good' }),
+      controller.grade(mockUser, { cardId: ' card-1 ' }, { grade: 'good' }),
     ).resolves.toEqual({
       cardId: 'card-1',
       grade: 'good',
@@ -149,7 +157,11 @@ describe('ReviewsController', () => {
       },
     });
 
-    expect(reviewsService.gradeReview).toHaveBeenCalledWith('card-1', 'good');
+    expect(reviewsService.gradeReview).toHaveBeenCalledWith(
+      'card-1',
+      'good',
+      'user-1',
+    );
   });
 
   it('returns null nextActionableItem when no next review item exists', async () => {
@@ -184,7 +196,7 @@ describe('ReviewsController', () => {
     });
 
     await expect(
-      controller.grade({ cardId: 'card-1' }, { grade: 'again' }),
+      controller.grade(mockUser, { cardId: 'card-1' }, { grade: 'again' }),
     ).resolves.toEqual(
       expect.objectContaining({
         cardId: 'card-1',
@@ -197,6 +209,7 @@ describe('ReviewsController', () => {
   it('rejects invalid grades before calling the service', async () => {
     await expect(
       controller.grade(
+        mockUser,
         { cardId: 'card-1' },
         { grade: 'invalid-grade' as Grade },
       ),
@@ -207,7 +220,7 @@ describe('ReviewsController', () => {
 
   it('rejects invalid card ids before calling the service', async () => {
     await expect(
-      controller.grade({ cardId: '   ' }, { grade: 'good' }),
+      controller.grade(mockUser, { cardId: '   ' }, { grade: 'good' }),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardIdRequired);
 
     expect(reviewsService.gradeReview).not.toHaveBeenCalled();
@@ -223,11 +236,11 @@ describe('ReviewsController', () => {
       );
 
     await expect(
-      controller.grade({ cardId: 'card-missing' }, { grade: 'good' }),
+      controller.grade(mockUser, { cardId: 'card-missing' }, { grade: 'good' }),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotFound);
 
     await expect(
-      controller.grade({ cardId: 'card-1' }, { grade: 'good' }),
+      controller.grade(mockUser, { cardId: 'card-1' }, { grade: 'good' }),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotReviewable);
   });
 });

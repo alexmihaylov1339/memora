@@ -14,19 +14,19 @@ export interface CardRecord {
 export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<CardRecord[]> {
+  async findAll(userId: string): Promise<CardRecord[]> {
     return (await this.prisma.card.findMany({
+      where: { deck: { ownerId: userId } },
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     })) as CardRecord[];
   }
 
-  async create(data: {
-    deckId: string;
-    kind: string;
-    fields: Prisma.JsonObject;
-  }): Promise<CardRecord | null> {
-    const deck = await this.prisma.deck.findUnique({
-      where: { id: data.deckId },
+  async create(
+    data: { deckId: string; kind: string; fields: Prisma.JsonObject },
+    userId: string,
+  ): Promise<CardRecord | null> {
+    const deck = await this.prisma.deck.findFirst({
+      where: { id: data.deckId, ownerId: userId },
     });
     if (!deck) {
       return null;
@@ -41,17 +41,20 @@ export class CardsService {
     }) as Promise<CardRecord>;
   }
 
-  async findOne(id: string): Promise<CardRecord | null> {
-    return (await this.prisma.card.findUnique({
-      where: { id },
+  async findOne(id: string, userId: string): Promise<CardRecord | null> {
+    return (await this.prisma.card.findFirst({
+      where: { id, deck: { ownerId: userId } },
     })) as CardRecord | null;
   }
 
   async update(
     id: string,
     data: { kind?: string; fields?: Prisma.JsonObject },
+    userId: string,
   ): Promise<CardRecord | null> {
-    const existing = await this.prisma.card.findUnique({ where: { id } });
+    const existing = await this.prisma.card.findFirst({
+      where: { id, deck: { ownerId: userId } },
+    });
     if (!existing) {
       return null;
     }
@@ -62,8 +65,10 @@ export class CardsService {
     })) as CardRecord;
   }
 
-  async remove(id: string) {
-    const existing = await this.prisma.card.findUnique({ where: { id } });
+  async remove(id: string, userId: string) {
+    const existing = await this.prisma.card.findFirst({
+      where: { id, deck: { ownerId: userId } },
+    });
     if (!existing) {
       return false;
     }

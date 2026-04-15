@@ -57,8 +57,9 @@ type ChunkPersistenceClient = Pick<
 export class ChunksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<ChunkSummary[]> {
+  async findAll(userId: string): Promise<ChunkSummary[]> {
     const chunks = await this.prisma.chunk.findMany({
+      where: { deck: { ownerId: userId } },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       include: {
         chunkCards: {
@@ -75,9 +76,10 @@ export class ChunksService {
   private async hasExistingCards(
     client: ChunkPersistenceClient,
     cardIds: string[],
+    userId: string,
   ): Promise<boolean> {
     const cards = await client.card.findMany({
-      where: { id: { in: cardIds } },
+      where: { id: { in: cardIds }, deck: { ownerId: userId } },
       select: { id: true },
     });
 
@@ -115,11 +117,14 @@ export class ChunksService {
     };
   }
 
-  async create(data: CreateChunkInput): Promise<CreateChunkResult> {
+  async create(
+    data: CreateChunkInput,
+    userId: string,
+  ): Promise<CreateChunkResult> {
     return this.prisma.$transaction(async (tx) => {
       const client = tx as ChunkPersistenceClient;
-      const deck = await client.deck.findUnique({
-        where: { id: data.deckId },
+      const deck = await client.deck.findFirst({
+        where: { id: data.deckId, ownerId: userId },
       });
       if (!deck) {
         return { status: 'deck_not_found' } satisfies CreateChunkResult;
@@ -128,7 +133,7 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasExistingCards(client, data.cardIds))
+        !(await this.hasExistingCards(client, data.cardIds, userId))
       ) {
         return { status: 'invalid_cards' } satisfies CreateChunkResult;
       }
@@ -162,9 +167,9 @@ export class ChunksService {
     });
   }
 
-  async findOne(id: string): Promise<ChunkSummary | null> {
-    const chunk = await this.prisma.chunk.findUnique({
-      where: { id },
+  async findOne(id: string, userId: string): Promise<ChunkSummary | null> {
+    const chunk = await this.prisma.chunk.findFirst({
+      where: { id, deck: { ownerId: userId } },
       include: {
         chunkCards: {
           orderBy: { sequenceIndex: 'asc' },
@@ -179,12 +184,19 @@ export class ChunksService {
     return this.mapChunkSummary(chunk as PersistedChunkRecord);
   }
 
-  async findByDeck(deckId: string): Promise<ChunkSummary[] | null> {
-    return this.findByDeckWithOptions(deckId, {
-      limit: 50,
-      offset: 0,
-      direction: 'asc',
-    });
+  async findByDeck(
+    deckId: string,
+    userId: string,
+  ): Promise<ChunkSummary[] | null> {
+    return this.findByDeckWithOptions(
+      deckId,
+      {
+        limit: 50,
+        offset: 0,
+        direction: 'asc',
+      },
+      userId,
+    );
   }
 
   async findByDeckWithOptions(
@@ -194,9 +206,10 @@ export class ChunksService {
       offset: number;
       direction: 'asc' | 'desc';
     },
+    userId: string,
   ): Promise<ChunkSummary[] | null> {
-    const deck = await this.prisma.deck.findUnique({
-      where: { id: deckId },
+    const deck = await this.prisma.deck.findFirst({
+      where: { id: deckId, ownerId: userId },
       select: { id: true },
     });
     if (!deck) {
@@ -223,10 +236,16 @@ export class ChunksService {
     );
   }
 
-  async update(id: string, data: UpdateChunkInput): Promise<UpdateChunkResult> {
+  async update(
+    id: string,
+    data: UpdateChunkInput,
+    userId: string,
+  ): Promise<UpdateChunkResult> {
     return this.prisma.$transaction(async (tx) => {
       const client = tx as ChunkPersistenceClient;
-      const existing = await client.chunk.findUnique({ where: { id } });
+      const existing = await client.chunk.findFirst({
+        where: { id, deck: { ownerId: userId } },
+      });
 
       if (!existing) {
         return { status: 'not_found' } satisfies UpdateChunkResult;
@@ -235,7 +254,7 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasExistingCards(client, data.cardIds))
+        !(await this.hasExistingCards(client, data.cardIds, userId))
       ) {
         return { status: 'invalid_cards' } satisfies UpdateChunkResult;
       }
@@ -273,8 +292,10 @@ export class ChunksService {
     });
   }
 
-  async remove(id: string) {
-    const existing = await this.prisma.chunk.findUnique({ where: { id } });
+  async remove(id: string, userId: string) {
+    const existing = await this.prisma.chunk.findFirst({
+      where: { id, deck: { ownerId: userId } },
+    });
     if (!existing) {
       return false;
     }

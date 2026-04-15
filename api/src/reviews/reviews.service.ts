@@ -100,6 +100,15 @@ export class ReviewsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  private async findOwnedDeckIds(userId: string): Promise<string[]> {
+    const decks = await this.prisma.deck.findMany({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+
+    return decks.map((deck) => deck.id);
+  }
+
   private async persistGradeSideEffects(
     client: ReviewPersistenceClient,
     input: {
@@ -199,8 +208,17 @@ export class ReviewsService {
     })) as ChunkWithCards | null;
   }
 
-  private async findChunksWithReviewState(): Promise<ChunkWithCards[]> {
+  private async findChunksWithReviewState(
+    userId: string,
+  ): Promise<ChunkWithCards[]> {
+    const deckIds = await this.findOwnedDeckIds(userId);
+
+    if (deckIds.length === 0) {
+      return [];
+    }
+
     return (await this.prisma.chunk.findMany({
+      where: { deckId: { in: deckIds } },
       select: {
         id: true,
         deckId: true,
@@ -233,17 +251,23 @@ export class ReviewsService {
           },
         },
       },
-    })) as ChunkWithCards[];
+    })) as unknown as ChunkWithCards[];
   }
 
   private async findChunkByCardId(
     cardId: string,
+    userId: string,
   ): Promise<ChunkWithCards | null> {
+    const deckIds = await this.findOwnedDeckIds(userId);
+
+    if (deckIds.length === 0) {
+      return null;
+    }
+
     return (await this.prisma.chunk.findFirst({
       where: {
-        chunkCards: {
-          some: { cardId },
-        },
+        chunkCards: { some: { cardId } },
+        deckId: { in: deckIds },
       },
       select: {
         id: true,
@@ -354,8 +378,11 @@ export class ReviewsService {
     return this.deriveChunkReviewState(chunk, now, state);
   }
 
-  async getEligibleQueueItems(now = new Date()): Promise<ReviewQueueItem[]> {
-    const chunks = await this.findChunksWithReviewState();
+  async getEligibleQueueItems(
+    userId: string,
+    now = new Date(),
+  ): Promise<ReviewQueueItem[]> {
+    const chunks = await this.findChunksWithReviewState(userId);
 
     const items = chunks
       .map((chunk) => {
@@ -411,9 +438,10 @@ export class ReviewsService {
   async applyGradeToCard(
     cardId: string,
     grade: Grade,
+    userId: string,
     now = new Date(),
   ): Promise<GradeChunkReviewResult | null> {
-    const chunk = await this.findChunkByCardId(cardId);
+    const chunk = await this.findChunkByCardId(cardId, userId);
 
     if (!chunk) {
       return null;
@@ -516,15 +544,16 @@ export class ReviewsService {
   async gradeReview(
     cardId: string,
     grade: Grade,
+    userId: string,
     now = new Date(),
   ): Promise<GradeChunkReviewResult> {
-    const result = await this.applyGradeToCard(cardId, grade, now);
+    const result = await this.applyGradeToCard(cardId, grade, userId, now);
 
     if (result) {
       return result;
     }
 
-    const chunk = await this.findChunkByCardId(cardId);
+    const chunk = await this.findChunkByCardId(cardId, userId);
 
     if (!chunk) {
       throw new NotFoundException(REVIEW_ERROR_MESSAGES.cardNotFound);

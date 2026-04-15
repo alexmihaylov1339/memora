@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { ReviewsService } from './reviews.service';
 import type { GradeReviewDto } from './dto/grade-review.dto';
 import { serializeGradeReviewResponse } from './dto/grade-review-response.dto';
@@ -25,8 +26,8 @@ export class ReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Get('queue')
-  async queue() {
-    const items = await this.reviews.getEligibleQueueItems();
+  async queue(@CurrentUser() user: AuthUser) {
+    const items = await this.reviews.getEligibleQueueItems(user.id);
 
     return serializeReviewQueueResponse(items);
   }
@@ -34,12 +35,13 @@ export class ReviewsController {
   @Post(':cardId/grade')
   @HttpCode(HttpStatus.OK)
   async grade(
+    @CurrentUser() user: AuthUser,
     @Param() params: ReviewCardIdParamDto,
     @Body() body: GradeReviewDto,
   ) {
     const cardId = validateReviewCardId(params.cardId);
     const grade = validateGradeReviewInput(body);
-    const result = await this.reviews.gradeReview(cardId, grade);
+    const result = await this.reviews.gradeReview(cardId, grade, user.id);
 
     return serializeGradeReviewResponse(result);
   }

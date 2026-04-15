@@ -23,6 +23,8 @@ function createChunksServiceMock(): ChunksServiceMock {
   };
 }
 
+const mockUser = { id: 'user-1', email: 'test@test.com' };
+
 describe('ChunksController', () => {
   let controller: ChunksController;
   let chunksService: ChunksServiceMock;
@@ -47,7 +49,7 @@ describe('ChunksController', () => {
     });
 
     await expect(
-      controller.create({
+      controller.create(mockUser, {
         deckId: ' deck-1 ',
         title: ' spielen ',
         cardIds: [' card-1 '],
@@ -69,7 +71,7 @@ describe('ChunksController', () => {
     });
 
     await expect(
-      controller.create({
+      controller.create(mockUser, {
         deckId: 'deck-1',
         title: 'spielen',
         cardIds: ['card-missing'],
@@ -84,7 +86,7 @@ describe('ChunksController', () => {
   it('maps missing chunks to not found on getById', async () => {
     chunksService.findOne.mockResolvedValue(null);
 
-    await expect(controller.getById({ id: 'chunk-missing' })).rejects.toThrow(
+    await expect(controller.getById(mockUser, { id: 'chunk-missing' })).rejects.toThrow(
       new NotFoundException(CHUNK_ERROR_MESSAGES.chunkNotFound),
     );
   });
@@ -96,6 +98,7 @@ describe('ChunksController', () => {
 
     await expect(
       controller.update(
+        mockUser,
         { id: 'chunk-1' },
         { cardIds: ['card-missing'], title: 'spielen' },
       ),
@@ -109,7 +112,9 @@ describe('ChunksController', () => {
   it('maps missing chunk removal to not found', async () => {
     chunksService.remove.mockResolvedValue(false);
 
-    await expect(controller.remove({ id: 'chunk-missing' })).rejects.toThrow(
+    await expect(
+      controller.remove(mockUser, { id: 'chunk-missing' }),
+    ).rejects.toThrow(
       new NotFoundException(CHUNK_ERROR_MESSAGES.chunkNotFound),
     );
   });

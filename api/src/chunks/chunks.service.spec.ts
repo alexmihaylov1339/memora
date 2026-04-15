@@ -19,6 +19,7 @@ function createPrismaMock() {
   const prisma = {
     deck: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     card: {
       findMany: jest.fn(),
@@ -27,6 +28,7 @@ function createPrismaMock() {
     chunk: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -57,26 +59,35 @@ describe('ChunksService', () => {
 
   describe('create', () => {
     it('returns null when the deck does not exist', async () => {
-      prisma.deck.findUnique.mockResolvedValue(null);
+      prisma.deck.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.create({
-          deckId: 'deck-1',
-          title: 'Chunk 1',
-        }),
+        service.create(
+          {
+            deckId: 'deck-1',
+            title: 'Chunk 1',
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({ status: 'deck_not_found' });
     });
 
     it('returns invalid_cards when referenced cards are missing', async () => {
-      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.deck.findFirst.mockResolvedValue({
+        id: 'deck-1',
+        ownerId: 'user-1',
+      });
       prisma.card.findMany.mockResolvedValue([{ id: 'card-1' }]);
 
       await expect(
-        service.create({
-          deckId: 'deck-1',
-          title: 'Chunk 1',
-          cardIds: ['card-1', 'card-2'],
-        }),
+        service.create(
+          {
+            deckId: 'deck-1',
+            title: 'Chunk 1',
+            cardIds: ['card-1', 'card-2'],
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({ status: 'invalid_cards' });
     });
 
@@ -91,14 +102,20 @@ describe('ChunksService', () => {
         chunkCards: [],
       };
 
-      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.deck.findFirst.mockResolvedValue({
+        id: 'deck-1',
+        ownerId: 'user-1',
+      });
       prisma.chunk.create.mockResolvedValue(createdChunk);
 
       await expect(
-        service.create({
-          deckId: 'deck-1',
-          title: 'Chunk 1',
-        }),
+        service.create(
+          {
+            deckId: 'deck-1',
+            title: 'Chunk 1',
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({
         status: 'created',
         chunk: {
@@ -147,15 +164,21 @@ describe('ChunksService', () => {
         ],
       };
 
-      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.deck.findFirst.mockResolvedValue({
+        id: 'deck-1',
+        ownerId: 'user-1',
+      });
       prisma.card.findMany.mockResolvedValue([{ id: 'card-2' }]);
       prisma.chunk.create.mockResolvedValue(createdChunk);
 
-      await service.create({
-        deckId: 'deck-1',
-        title: 'Chunk 1',
-        cardIds: ['card-2'],
-      });
+      await service.create(
+        {
+          deckId: 'deck-1',
+          title: 'Chunk 1',
+          cardIds: ['card-2'],
+        },
+        'user-1',
+      );
 
       expect(prisma.chunkCard.deleteMany).toHaveBeenCalledWith({
         where: { cardId: { in: ['card-2'] } },
@@ -169,9 +192,9 @@ describe('ChunksService', () => {
 
   describe('findByDeck', () => {
     it('returns null when the deck does not exist', async () => {
-      prisma.deck.findUnique.mockResolvedValue(null);
+      prisma.deck.findFirst.mockResolvedValue(null);
 
-      await expect(service.findByDeck('deck-1')).resolves.toBeNull();
+      await expect(service.findByDeck('deck-1', 'user-1')).resolves.toBeNull();
     });
 
     it('returns chunks ordered by position and createdAt for an existing deck', async () => {
@@ -193,10 +216,13 @@ describe('ChunksService', () => {
         },
       ];
 
-      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.deck.findFirst.mockResolvedValue({
+        id: 'deck-1',
+        ownerId: 'user-1',
+      });
       prisma.chunk.findMany.mockResolvedValue(chunks);
 
-      await expect(service.findByDeck('deck-1')).resolves.toEqual([
+      await expect(service.findByDeck('deck-1', 'user-1')).resolves.toEqual([
         {
           id: 'chunk-1',
           deckId: 'deck-1',
@@ -222,15 +248,22 @@ describe('ChunksService', () => {
     });
 
     it('supports pagination and descending ordering', async () => {
-      prisma.deck.findUnique.mockResolvedValue({ id: 'deck-1' });
+      prisma.deck.findFirst.mockResolvedValue({
+        id: 'deck-1',
+        ownerId: 'user-1',
+      });
       prisma.chunk.findMany.mockResolvedValue([]);
 
       await expect(
-        service.findByDeckWithOptions('deck-1', {
-          limit: 10,
-          offset: 5,
-          direction: 'desc',
-        }),
+        service.findByDeckWithOptions(
+          'deck-1',
+          {
+            limit: 10,
+            offset: 5,
+            direction: 'desc',
+          },
+          'user-1',
+        ),
       ).resolves.toEqual([]);
 
       expect(prisma.chunk.findMany).toHaveBeenCalledWith({
@@ -249,9 +282,9 @@ describe('ChunksService', () => {
 
   describe('findOne', () => {
     it('returns null when the chunk does not exist', async () => {
-      prisma.chunk.findUnique.mockResolvedValue(null);
+      prisma.chunk.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('chunk-1')).resolves.toBeNull();
+      await expect(service.findOne('chunk-1', 'user-1')).resolves.toBeNull();
     });
 
     it('returns a serialized chunk when the chunk exists', async () => {
@@ -276,9 +309,9 @@ describe('ChunksService', () => {
         ],
       };
 
-      prisma.chunk.findUnique.mockResolvedValue(chunk);
+      prisma.chunk.findFirst.mockResolvedValue(chunk);
 
-      await expect(service.findOne('chunk-1')).resolves.toEqual({
+      await expect(service.findOne('chunk-1', 'user-1')).resolves.toEqual({
         id: 'chunk-1',
         deckId: 'deck-1',
         title: 'Chunk 1',
@@ -288,8 +321,8 @@ describe('ChunksService', () => {
         updatedAt: chunk.updatedAt,
       });
 
-      expect(prisma.chunk.findUnique).toHaveBeenCalledWith({
-        where: { id: 'chunk-1' },
+      expect(prisma.chunk.findFirst).toHaveBeenCalledWith({
+        where: { id: 'chunk-1', deck: { ownerId: 'user-1' } },
         include: {
           chunkCards: {
             orderBy: { sequenceIndex: 'asc' },
@@ -301,26 +334,34 @@ describe('ChunksService', () => {
 
   describe('update', () => {
     it('returns null when the chunk does not exist', async () => {
-      prisma.chunk.findUnique.mockResolvedValue(null);
+      prisma.chunk.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update('chunk-1', {
-          title: 'Updated Chunk',
-        }),
+        service.update(
+          'chunk-1',
+          {
+            title: 'Updated Chunk',
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({ status: 'not_found' });
     });
 
     it('returns invalid_cards when updated card references are missing', async () => {
-      prisma.chunk.findUnique.mockResolvedValue({
+      prisma.chunk.findFirst.mockResolvedValue({
         id: 'chunk-1',
         deckId: 'deck-1',
       });
       prisma.card.findMany.mockResolvedValue([{ id: 'card-1' }]);
 
       await expect(
-        service.update('chunk-1', {
-          cardIds: ['card-1', 'card-2'],
-        }),
+        service.update(
+          'chunk-1',
+          {
+            cardIds: ['card-1', 'card-2'],
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({ status: 'invalid_cards' });
     });
 
@@ -341,7 +382,7 @@ describe('ChunksService', () => {
         ],
       };
 
-      prisma.chunk.findUnique.mockResolvedValue({
+      prisma.chunk.findFirst.mockResolvedValue({
         id: 'chunk-1',
         deckId: 'deck-1',
       });
@@ -351,11 +392,15 @@ describe('ChunksService', () => {
       prisma.chunk.update.mockResolvedValue(updatedChunk);
 
       await expect(
-        service.update('chunk-1', {
-          title: 'Updated Chunk',
-          cardIds: ['card-3'],
-          position: 3,
-        }),
+        service.update(
+          'chunk-1',
+          {
+            title: 'Updated Chunk',
+            cardIds: ['card-3'],
+            position: 3,
+          },
+          'user-1',
+        ),
       ).resolves.toEqual({
         status: 'updated',
         chunk: {
@@ -398,15 +443,15 @@ describe('ChunksService', () => {
 
   describe('remove', () => {
     it('returns false when the chunk does not exist', async () => {
-      prisma.chunk.findUnique.mockResolvedValue(null);
+      prisma.chunk.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove('chunk-1')).resolves.toBe(false);
+      await expect(service.remove('chunk-1', 'user-1')).resolves.toBe(false);
     });
 
     it('deletes an existing chunk', async () => {
-      prisma.chunk.findUnique.mockResolvedValue({ id: 'chunk-1' });
+      prisma.chunk.findFirst.mockResolvedValue({ id: 'chunk-1' });
 
-      await expect(service.remove('chunk-1')).resolves.toBe(true);
+      await expect(service.remove('chunk-1', 'user-1')).resolves.toBe(true);
 
       expect(prisma.chunk.delete).toHaveBeenCalledWith({
         where: { id: 'chunk-1' },

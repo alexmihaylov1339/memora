@@ -18,6 +18,8 @@ model User {
   passwordResetExpiresAt DateTime?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+
+  decks                  Deck[]
 }
 
 /** Basic grading enum for SRS */
@@ -30,16 +32,19 @@ enum Grade {
 
 /** A deck of cards */
 model Deck {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
+  ownerId     String?
   name        String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  owner       User?    @relation(fields: [ownerId], references: [id])
   cards       Card[]
   chunks      Chunk[]
 
   @@index([createdAt])
+  @@index([ownerId])
 }
 
 /** A chunk groups ordered cards inside a deck */

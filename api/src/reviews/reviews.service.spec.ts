@@ -255,7 +255,9 @@ describe('ReviewsService', () => {
         },
       ]);
 
-      await expect(service.getEligibleQueueItems(now)).resolves.toEqual([
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
         expect.objectContaining({
           cardId: 'card-3',
           chunkId: 'chunk-2',
@@ -339,7 +341,9 @@ describe('ReviewsService', () => {
         },
       ]);
 
-      await expect(service.getEligibleQueueItems(now)).resolves.toEqual([]);
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([]);
     });
 
     it('treats chunks without persisted state as immediately due and sorts deterministically', async () => {
@@ -386,7 +390,9 @@ describe('ReviewsService', () => {
         },
       ]);
 
-      await expect(service.getEligibleQueueItems(now)).resolves.toEqual([
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
         expect.objectContaining({
           cardId: 'card-a',
           chunkId: 'chunk-1',
@@ -463,6 +469,7 @@ describe('ReviewsService', () => {
       const successfulResult = await service.applyGradeToCard(
         'card-1',
         'good',
+        'user-1',
         now,
       );
 
@@ -635,6 +642,7 @@ describe('ReviewsService', () => {
       const resetResult = await service.applyGradeToCard(
         'card-4',
         'again',
+        'user-1',
         now,
       );
 
@@ -752,7 +760,7 @@ describe('ReviewsService', () => {
       });
 
       await expect(
-        service.applyGradeToCard('card-1', 'good', now),
+        service.applyGradeToCard('card-1', 'good', 'user-1', now),
       ).resolves.toBeNull();
 
       expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
