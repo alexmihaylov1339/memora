@@ -13,3 +13,7 @@ export function isNumber(value: unknown): value is number {
 export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean';
 }
+
+export function isBrowserEnvironment(): boolean {
+  return typeof window !== 'undefined' && typeof document !== 'undefined';
+}

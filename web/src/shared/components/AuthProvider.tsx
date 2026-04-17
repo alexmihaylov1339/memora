@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 
 import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
 import { PageLoader } from '@/shared/components/PageLoader';
+import { isBrowserEnvironment } from '@shared/utils';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!isBrowserEnvironment()) return;
     const token = !!localStorage.getItem(AUTH_TOKEN_KEY);
     queueMicrotask(() => {
       setAuthenticated(token);

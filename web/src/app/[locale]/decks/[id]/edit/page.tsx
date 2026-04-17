@@ -14,7 +14,12 @@ import {
 } from '@features/decks';
 import { useDeckChunksQuery, useDeleteChunkMutation } from '@features/chunks';
 import { resolveSingleParam } from '@/shared/utils';
-import { DeckEditForm, DeckWorkspacePanels, EditDeckHeader } from './components';
+import {
+  DeckEditForm,
+  DeckSharePanel,
+  DeckWorkspacePanels,
+  EditDeckHeader,
+} from './components';
 import {
   cardToSearchResultItem,
   chunkToSearchResultItem,
@@ -99,6 +104,12 @@ export default function EditDeckPage() {
               isDeleting={deleteDeck.isLoading}
               updateError={updateDeck.error?.message}
               deleteError={deleteDeck.error?.message}
+            />
+
+            <DeckSharePanel
+              deckId={deck.id}
+              sharedUsers={deck.sharedUsers ?? []}
+              onChanged={() => void deckQuery.refetch()}
             />
 
             <DeckWorkspacePanels

@@ -1,2 +1,8 @@
 export { resolveSingleParam } from './routeParams';
-export { isBoolean, isString, isNumber, isUndefined } from './typeGuards';
+export {
+  isBoolean,
+  isBrowserEnvironment,
+  isNumber,
+  isString,
+  isUndefined,
+} from './typeGuards';

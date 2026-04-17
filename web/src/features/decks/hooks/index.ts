@@ -8,6 +8,10 @@ export {
   useDeleteDeckMutation,
 } from './useDeckMutations';
 export {
+  useCreateDeckShareMutation,
+  useRemoveDeckShareMutation,
+} from './useDeckShareMutations';
+export {
   useCardsListQuery,
   useCardDetailQuery,
   useDeckCardsQuery,

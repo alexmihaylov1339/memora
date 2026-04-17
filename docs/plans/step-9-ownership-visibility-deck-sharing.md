@@ -182,7 +182,7 @@ Verification:
 ### T4 - Build the deck sharing UI
 
 Status:
-- Pending
+- Done
 
 - Add a share action to each deck where sharing is supported.
 - Create a share panel or modal that lets the owner invite by username or email.
@@ -201,6 +201,17 @@ Why this matters:
 
 Exit criteria:
 - A deck owner can share the deck with another user from the UI and see that access reflected immediately.
+
+Implemented in this task:
+- Added a dedicated `DeckSharePanel` on the deck edit page.
+- The panel lets the owner invite by username or email and choose `view` or `edit`.
+- Current shared users are listed in the same panel with visible permission badges.
+- Owners can remove shared users from the same UI.
+- The panel reuses the existing deck detail payload and refreshes the deck data after share/remove actions.
+
+Verification:
+- `cd web && npx tsc --noEmit`
+- focused `web` ESLint passed for the deck feature and deck edit workspace files
 
 ### T5 - Verify access boundaries and edge cases
 

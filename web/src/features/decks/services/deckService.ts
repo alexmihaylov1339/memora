@@ -1,10 +1,15 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import type {
+  CreateDeckShareDto,
+  CreateDeckShareResponse,
   CreateDeckDto,
   CreateDeckResponse,
   Deck,
   DeckIdParams,
+  DeckShareParams,
   GetDeckByIdResponse,
+  ListDeckSharesResponse,
+  RemoveDeckShareParams,
   UpdateDeckDto,
   UpdateDeckResponse,
 } from '../types';
@@ -49,6 +54,13 @@ export const deckService = {
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
       .execRequest<GetDeckByIdResponse>();
+  },
+
+  listShares(params: DeckShareParams) {
+    return api
+      .prepareRequest(DECK_ENDPOINTS.SHARES(params.deckId), HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<ListDeckSharesResponse>();
   },
 
   /**
@@ -111,5 +123,24 @@ export const deckService = {
         limit: params.limit,
       })
       .execRequest<SearchResultItem[]>();
+  },
+
+  share(params: DeckShareParams & CreateDeckShareDto) {
+    const { deckId, ...body } = params;
+    return api
+      .prepareRequest(DECK_ENDPOINTS.SHARES(deckId), HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .setBody(body)
+      .execRequest<CreateDeckShareResponse>();
+  },
+
+  removeShare(params: RemoveDeckShareParams) {
+    return api
+      .prepareRequest(
+        DECK_ENDPOINTS.SHARE(params.deckId, params.sharedUserId),
+        HTTP_METHODS.DELETE,
+      )
+      .setHeaders(getAuthHeaders())
+      .execRequest<void>();
   },
 };
