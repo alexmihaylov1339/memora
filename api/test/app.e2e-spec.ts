@@ -521,6 +521,234 @@ describe('AppController (e2e)', () => {
       .expect(404);
   });
 
+  it('shared deck access is visible to shared users and hidden from unrelated users', async () => {
+    const server = app.getHttpServer();
+    const ownerSuffix = `${uniqueSuffix}-owner`;
+    const sharedSuffix = `${uniqueSuffix}-shared`;
+    const outsiderSuffix = `${uniqueSuffix}-outsider`;
+
+    const ownerCredentials = {
+      email: `memora-e2e-owner-${ownerSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora Owner',
+    };
+    const sharedCredentials = {
+      email: `memora-e2e-shared-${sharedSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora Shared',
+    };
+    const outsiderCredentials = {
+      email: `memora-e2e-outsider-${outsiderSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora Outsider',
+    };
+
+    const ownerLogin = await request(server)
+      .post('/v1/auth/register')
+      .send(ownerCredentials)
+      .expect(201);
+    const ownerToken = getStringField(
+      asRecord(parseJson(ownerLogin.text)),
+      'accessToken',
+    );
+
+    const sharedLogin = await request(server)
+      .post('/v1/auth/register')
+      .send(sharedCredentials)
+      .expect(201);
+    const sharedToken = getStringField(
+      asRecord(parseJson(sharedLogin.text)),
+      'accessToken',
+    );
+
+    await request(server)
+      .post('/v1/auth/register')
+      .send(outsiderCredentials)
+      .expect(201);
+    const outsiderLogin = await request(server)
+      .post('/v1/auth/login')
+      .send(outsiderCredentials)
+      .expect(201);
+    const outsiderToken = getStringField(
+      asRecord(parseJson(outsiderLogin.text)),
+      'accessToken',
+    );
+
+    const ownerAuthHeader = { Authorization: `Bearer ${ownerToken}` };
+    const sharedAuthHeader = { Authorization: `Bearer ${sharedToken}` };
+    const outsiderAuthHeader = { Authorization: `Bearer ${outsiderToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(ownerAuthHeader)
+      .send({ name: `Shared Access Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    const cardRes = await request(server)
+      .post('/v1/cards')
+      .set(ownerAuthHeader)
+      .send({
+        deckId,
+        kind: 'basic',
+        fields: { front: 'Shared front', back: 'Shared back' },
+      })
+      .expect(201);
+    const cardId = getStringField(asRecord(parseJson(cardRes.text)), 'id');
+
+    const chunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(ownerAuthHeader)
+      .send({
+        deckId,
+        title: 'Shared chunk',
+        cardIds: [cardId],
+      })
+      .expect(201);
+    const chunkId = getStringField(asRecord(parseJson(chunkRes.text)), 'id');
+
+    await request(server)
+      .post(`/v1/decks/${deckId}/shares`)
+      .set(ownerAuthHeader)
+      .send({
+        identifier: sharedCredentials.email,
+        permission: 'view',
+      })
+      .expect(201);
+
+    await request(server)
+      .get('/v1/decks')
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: deckId,
+              name: `Shared Access Deck ${uniqueSuffix}`,
+              count: expect.any(Number),
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${deckId}`)
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: deckId,
+            name: `Shared Access Deck ${uniqueSuffix}`,
+            sharedUsers: expect.arrayContaining([
+              expect.objectContaining({
+                email: sharedCredentials.email.toLowerCase(),
+              }),
+            ]),
+          }),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${deckId}/cards`)
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: cardId,
+              deckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${deckId}/chunks`)
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get('/v1/cards')
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: cardId,
+              deckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get('/v1/chunks')
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get('/v1/reviews/queue')
+      .set(sharedAuthHeader)
+      .expect(200)
+      .expect((res) => {
+        const body = asRecord(res.body);
+        const items = getReviewItemsForDeck(body, deckId);
+        expect(items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              cardId,
+              deckId,
+              chunkId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${deckId}`)
+      .set(outsiderAuthHeader)
+      .expect(404)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 404,
+            message: DECK_ERROR_MESSAGES.deckNotFound,
+            error: 'Not Found',
+          }),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/decks/${deckId}`)
+      .set(ownerAuthHeader)
+      .expect(204);
+  });
+
   it('reviews queue -> grade -> next due card -> reset flow', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };

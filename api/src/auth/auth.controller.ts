@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { CurrentUser, type AuthUser } from './current-user.decorator';
 import type { DevLoginDto } from './dto/dev-login.dto';
 import type { ForgotPasswordDto } from './dto/forgot-password.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -55,21 +48,21 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async me(@Req() req: { user: { id: string } }) {
-    const user = await this.auth.getMe(req.user.id);
-    return { user };
+  async me(@CurrentUser() user: AuthUser) {
+    const me = await this.auth.getMe(user.id);
+    return { user: me };
   }
 
   @UseGuards(AuthGuard)
   @Patch('me')
   async updateAccount(
-    @Req() req: { user: { id: string } },
+    @CurrentUser() user: AuthUser,
     @Body() body: UpdateAccountDto,
   ) {
-    const user = await this.auth.updateAccount(
-      req.user.id,
+    const updated = await this.auth.updateAccount(
+      user.id,
       validateUpdateAccountInput(body),
     );
-    return { user };
+    return { user: updated };
   }
 }

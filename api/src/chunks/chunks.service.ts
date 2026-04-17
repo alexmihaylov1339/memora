@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-
-interface PersistedChunkRecord {
-  id: string;
-  deckId: string;
-  title: string;
-  position: number;
-  createdAt: Date;
-  updatedAt: Date;
-  chunkCards: Array<{
-    cardId: string;
-    sequenceIndex: number;
-    offsetDays: number | null;
-  }>;
-}
+import { getAccessibleDeckIds } from '../decks/deck-access';
+import {
+  assignCardsToDeck,
+  hasExistingCards,
+  mapChunkSummary,
+  type ChunkPersistenceClient,
+  type ChunkSummary,
+  type PersistedChunkRecord,
+} from './chunks.helpers';
+export type { ChunkSummary } from './chunks.helpers';
 
 interface CreateChunkInput {
   deckId: string;
@@ -28,16 +24,6 @@ interface UpdateChunkInput {
   position?: number;
 }
 
-export interface ChunkSummary {
-  id: string;
-  deckId: string;
-  title: string;
-  cardIds: string[];
-  position: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export type CreateChunkResult =
   | { status: 'created'; chunk: ChunkSummary }
   | { status: 'deck_not_found' }
@@ -48,18 +34,18 @@ export type UpdateChunkResult =
   | { status: 'not_found' }
   | { status: 'invalid_cards' };
 
-type ChunkPersistenceClient = Pick<
-  PrismaService,
-  'card' | 'chunk' | 'chunkCard' | 'deck'
->;
-
 @Injectable()
 export class ChunksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string): Promise<ChunkSummary[]> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+    if (deckIds.length === 0) {
+      return [];
+    }
+
     const chunks = await this.prisma.chunk.findMany({
-      where: { deck: { ownerId: userId } },
+      where: { deckId: { in: deckIds } },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       include: {
         chunkCards: {
@@ -69,52 +55,8 @@ export class ChunksService {
     });
 
     return chunks.map((chunk) =>
-      this.mapChunkSummary(chunk as PersistedChunkRecord),
+      mapChunkSummary(chunk as PersistedChunkRecord),
     );
-  }
-
-  private async hasExistingCards(
-    client: ChunkPersistenceClient,
-    cardIds: string[],
-    userId: string,
-  ): Promise<boolean> {
-    const cards = await client.card.findMany({
-      where: { id: { in: cardIds }, deck: { ownerId: userId } },
-      select: { id: true },
-    });
-
-    return cards.length === cardIds.length;
-  }
-
-  private async assignCardsToDeck(
-    client: ChunkPersistenceClient,
-    deckId: string,
-    cardIds: string[],
-  ) {
-    if (cardIds.length === 0) {
-      return;
-    }
-
-    await client.chunkCard.deleteMany({
-      where: { cardId: { in: cardIds } },
-    });
-
-    await client.card.updateMany({
-      where: { id: { in: cardIds } },
-      data: { deckId },
-    });
-  }
-
-  private mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
-    return {
-      id: chunk.id,
-      deckId: chunk.deckId,
-      title: chunk.title,
-      cardIds: chunk.chunkCards.map((chunkCard) => chunkCard.cardId),
-      position: chunk.position,
-      createdAt: chunk.createdAt,
-      updatedAt: chunk.updatedAt,
-    };
   }
 
   async create(
@@ -133,12 +75,12 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasExistingCards(client, data.cardIds, userId))
+        !(await hasExistingCards(client, data.cardIds, userId))
       ) {
         return { status: 'invalid_cards' } satisfies CreateChunkResult;
       }
 
-      await this.assignCardsToDeck(client, data.deckId, data.cardIds ?? []);
+      await assignCardsToDeck(client, data.deckId, data.cardIds ?? []);
 
       const chunk = await client.chunk.create({
         data: {
@@ -162,14 +104,20 @@ export class ChunksService {
 
       return {
         status: 'created',
-        chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
+        chunk: mapChunkSummary(chunk as PersistedChunkRecord),
       } satisfies CreateChunkResult;
     });
   }
 
   async findOne(id: string, userId: string): Promise<ChunkSummary | null> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+
+    if (deckIds.length === 0) {
+      return null;
+    }
+
     const chunk = await this.prisma.chunk.findFirst({
-      where: { id, deck: { ownerId: userId } },
+      where: { id, deckId: { in: deckIds } },
       include: {
         chunkCards: {
           orderBy: { sequenceIndex: 'asc' },
@@ -181,7 +129,7 @@ export class ChunksService {
       return null;
     }
 
-    return this.mapChunkSummary(chunk as PersistedChunkRecord);
+    return mapChunkSummary(chunk as PersistedChunkRecord);
   }
 
   async findByDeck(
@@ -208,11 +156,8 @@ export class ChunksService {
     },
     userId: string,
   ): Promise<ChunkSummary[] | null> {
-    const deck = await this.prisma.deck.findFirst({
-      where: { id: deckId, ownerId: userId },
-      select: { id: true },
-    });
-    if (!deck) {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+    if (!deckIds.includes(deckId)) {
       return null;
     }
 
@@ -232,7 +177,7 @@ export class ChunksService {
     });
 
     return chunks.map((chunk) =>
-      this.mapChunkSummary(chunk as PersistedChunkRecord),
+      mapChunkSummary(chunk as PersistedChunkRecord),
     );
   }
 
@@ -254,12 +199,12 @@ export class ChunksService {
       if (
         data.cardIds &&
         data.cardIds.length > 0 &&
-        !(await this.hasExistingCards(client, data.cardIds, userId))
+        !(await hasExistingCards(client, data.cardIds, userId))
       ) {
         return { status: 'invalid_cards' } satisfies UpdateChunkResult;
       }
 
-      await this.assignCardsToDeck(client, existing.deckId, data.cardIds ?? []);
+      await assignCardsToDeck(client, existing.deckId, data.cardIds ?? []);
 
       const chunk = await client.chunk.update({
         where: { id },
@@ -287,7 +232,7 @@ export class ChunksService {
 
       return {
         status: 'updated',
-        chunk: this.mapChunkSummary(chunk as PersistedChunkRecord),
+        chunk: mapChunkSummary(chunk as PersistedChunkRecord),
       } satisfies UpdateChunkResult;
     });
   }

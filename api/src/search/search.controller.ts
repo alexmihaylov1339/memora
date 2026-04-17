@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { SearchService } from './search.service';
 
 type SearchQueryType = 'deck' | 'card' | 'chunk';
@@ -19,7 +20,7 @@ export class SearchController {
   constructor(private readonly search: SearchService) {}
 
   @Get()
-  async list(@Query() query: SearchQueryDto) {
+  async list(@CurrentUser() user: AuthUser, @Query() query: SearchQueryDto) {
     const q = query.q?.trim() ?? '';
     const type = query.type ?? 'deck';
     const rawLimit =
@@ -34,10 +35,13 @@ export class SearchController {
       return [];
     }
 
-    return this.search.search({
-      q,
-      type,
-      limit,
-    });
+    return this.search.search(
+      {
+        q,
+        type,
+        limit,
+      },
+      user.id,
+    );
   }
 }

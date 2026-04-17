@@ -10,11 +10,10 @@ import { randomBytes } from 'crypto';
 import { EmailService } from '../email/email.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AUTH_ERROR_MESSAGES } from './auth-errors';
+import { normalizeEmail, publicUser } from './auth.helpers';
 
 const SALT_ROUNDS = 10;
 const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-
 interface RegisterInput {
   email: string;
   password: string;
@@ -45,9 +44,7 @@ interface UpdateAccountInput {
   email?: string;
 }
 
-function publicUser(u: { id: string; email: string; name: string | null }) {
-  return { id: u.id, email: u.email, name: u.name ?? undefined };
-}
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 @Injectable()
 export class AuthService {
@@ -58,9 +55,10 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput) {
-    const email = input.email?.trim().toLowerCase();
-    if (!email)
+    const email = normalizeEmail(input.email);
+    if (!email) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+    }
     if (!input.password || input.password.length < 6) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordMinLength);
     }
@@ -86,9 +84,10 @@ export class AuthService {
   }
 
   async login(input: LoginInput) {
-    const email = input.email?.trim().toLowerCase();
-    if (!email)
+    const email = normalizeEmail(input.email);
+    if (!email) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+    }
     if (!input.password) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.passwordRequired);
     }
@@ -114,9 +113,10 @@ export class AuthService {
   }
 
   async devLogin(input: DevLoginInput) {
-    const email = input.email?.trim().toLowerCase();
-    if (!email)
+    const email = normalizeEmail(input.email);
+    if (!email) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+    }
 
     let user = await this.prisma.user.findUnique({ where: { email } });
 
@@ -141,9 +141,10 @@ export class AuthService {
   }
 
   async forgotPassword(input: ForgotPasswordInput) {
-    const email = input.email?.trim().toLowerCase();
-    if (!email)
+    const email = normalizeEmail(input.email);
+    if (!email) {
       throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
+    }
 
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -231,7 +232,7 @@ export class AuthService {
     const data: { name?: string | null; email?: string } = {};
 
     if (input.email !== undefined) {
-      const email = input.email.trim().toLowerCase();
+      const email = normalizeEmail(input.email);
       if (!email) {
         throw new BadRequestException(AUTH_ERROR_MESSAGES.emailRequired);
       }

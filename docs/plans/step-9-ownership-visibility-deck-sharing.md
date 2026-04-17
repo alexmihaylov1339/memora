@@ -216,7 +216,7 @@ Verification:
 ### T5 - Verify access boundaries and edge cases
 
 Status:
-- Pending
+- Done
 
 - Add tests for the most important permission paths.
 - Validate the expected error states for invalid user lookup, duplicate sharing, and unauthorized access.
@@ -234,6 +234,18 @@ Why this matters:
 
 Exit criteria:
 - The ownership model is covered by tests and the shared-access flow behaves consistently.
+
+Implemented in this task:
+- Added deck-sharing controller and service unit coverage for the share happy path and the main error mappings.
+- Added deck-service coverage for shared deck listing and detail access, plus duplicate/missing/ambiguous/self-share handling.
+- Updated chunk and review service specs to use the shared-deck access helper in their read paths.
+- Added an e2e shared-access scenario that verifies an invited user can see the shared deck, its cards/chunks, and the review queue, while an unrelated user receives a 404.
+
+Verification:
+- `cd api && npx tsc --noEmit --pretty false`
+- `cd api && npx jest --runInBand src/decks/decks.controller.spec.ts src/decks/decks.service.spec.ts src/chunks/chunks.service.spec.ts src/reviews/reviews.service.spec.ts`
+- `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand`
+- `cd api && npx eslint 'src/decks/deck-access.ts' 'src/decks/decks.service.ts' 'src/chunks/chunks.service.ts' 'src/cards/cards.service.ts' 'src/search/search.service.ts' 'src/search/search.controller.ts' 'src/reviews/reviews.service.ts' 'src/decks/decks.controller.spec.ts' 'src/decks/decks.service.spec.ts' 'src/chunks/chunks.service.spec.ts' 'src/reviews/reviews.service.spec.ts' 'test/app.e2e-spec.ts'`
 
 ---
 

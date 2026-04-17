@@ -1,38 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
 import type { CardRecord } from '../cards/cards.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
-
-export interface DeckListItem {
-  id: string;
-  name: string;
-  count: number;
-}
-
-export interface DeckRecord {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface DeckDetail extends DeckRecord {
-  count: number;
-  sharedUsers: DeckShareSummary[];
-}
-
-export interface DeckShareSummary {
-  id: string;
-  deckId: string;
-  userId: string;
-  email: string;
-  name?: string;
-  permission: DeckSharePermission;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { getAccessibleDeckIds } from './deck-access';
+import {
+  attachCardsToDeck,
+  attachChunksToDeck,
+  findOwnedDeck,
+  hasExistingCards,
+  hasExistingChunks,
+  mapDeckDetail,
+  mapDeckShareSummary,
+  replaceDeckCards,
+  replaceDeckChunks,
+  resolveShareTarget,
+  type DeckDetail,
+  type DeckListItem,
+  type DeckRecord,
+  type DeckShareSummary,
+  type DeckShareWithUser,
+  type DeckWithShares,
+} from './decks.helpers';
+export type {
+  DeckDetail,
+  DeckListItem,
+  DeckRecord,
+  DeckShareSummary,
+} from './decks.helpers';
 
 type CreateDeckResult =
   | { status: 'created'; deck: DeckRecord }
@@ -53,105 +47,19 @@ type ShareDeckResult =
   | { status: 'already_shared' }
   | { status: 'cannot_share_with_self' };
 
-type DeckShareWithUser = Prisma.DeckShareGetPayload<{
-  include: {
-    user: {
-      select: {
-        id: true;
-        email: true;
-        name: true;
-        createdAt: true;
-        updatedAt: true;
-      };
-    };
-  };
-}>;
-
-type DeckWithShares = Prisma.DeckGetPayload<{
-  include: {
-    _count: {
-      select: { cards: true };
-    };
-    shares: {
-      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }];
-      include: {
-        user: {
-          select: {
-            id: true;
-            email: true;
-            name: true;
-            createdAt: true;
-            updatedAt: true;
-          };
-        };
-      };
-    };
-  };
-}>;
-
 @Injectable()
 export class DecksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async findOwnedDeck(id: string, userId: string) {
-    return this.prisma.deck.findFirst({
-      where: { id, ownerId: userId },
-      select: { id: true },
-    });
-  }
-
-  private mapDeckShareSummary(share: DeckShareWithUser): DeckShareSummary {
-    return {
-      id: share.id,
-      deckId: share.deckId,
-      userId: share.user.id,
-      email: share.user.email,
-      name: share.user.name ?? undefined,
-      permission: share.permission,
-      createdAt: share.createdAt,
-      updatedAt: share.updatedAt,
-    };
-  }
-
-  private mapDeckDetail(deck: DeckWithShares): DeckDetail {
-    return {
-      id: deck.id,
-      name: deck.name,
-      description: deck.description ?? undefined,
-      count: deck._count.cards,
-      createdAt: deck.createdAt,
-      updatedAt: deck.updatedAt,
-      sharedUsers: deck.shares.map((share) => this.mapDeckShareSummary(share)),
-    };
-  }
-
-  private async hasExistingCards(
-    cardIds: string[],
-    userId: string,
-  ): Promise<boolean> {
-    const cards = await this.prisma.card.findMany({
-      where: { id: { in: cardIds }, deck: { ownerId: userId } },
-      select: { id: true },
-    });
-
-    return cards.length === cardIds.length;
-  }
-
-  private async hasExistingChunks(
-    chunkIds: string[],
-    userId: string,
-  ): Promise<boolean> {
-    const chunks = await this.prisma.chunk.findMany({
-      where: { id: { in: chunkIds }, deck: { ownerId: userId } },
-      select: { id: true },
-    });
-
-    return chunks.length === chunkIds.length;
-  }
-
   async findAll(userId: string): Promise<DeckListItem[]> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+
+    if (deckIds.length === 0) {
+      return [];
+    }
+
     const decks = await this.prisma.deck.findMany({
-      where: { ownerId: userId },
+      where: { id: { in: deckIds } },
       include: {
         _count: {
           select: { cards: true },
@@ -173,13 +81,16 @@ export class DecksService {
     chunkIds: string[] = [],
     userId: string = '',
   ): Promise<CreateDeckResult> {
-    if (cardIds.length > 0 && !(await this.hasExistingCards(cardIds, userId))) {
+    if (
+      cardIds.length > 0 &&
+      !(await hasExistingCards(this.prisma, cardIds, userId))
+    ) {
       return { status: 'invalid_cards' };
     }
 
     if (
       chunkIds.length > 0 &&
-      !(await this.hasExistingChunks(chunkIds, userId))
+      !(await hasExistingChunks(this.prisma, chunkIds, userId))
     ) {
       return { status: 'invalid_chunks' };
     }
@@ -189,31 +100,22 @@ export class DecksService {
         data: { name, description, ownerId: userId },
       })) as DeckRecord;
 
-      if (cardIds.length > 0) {
-        await tx.chunkCard.deleteMany({
-          where: { cardId: { in: cardIds } },
-        });
-
-        await tx.card.updateMany({
-          where: { id: { in: cardIds } },
-          data: { deckId: deck.id },
-        });
-      }
-
-      if (chunkIds.length > 0) {
-        await tx.chunk.updateMany({
-          where: { id: { in: chunkIds } },
-          data: { deckId: deck.id },
-        });
-      }
+      await attachCardsToDeck(tx, deck.id, cardIds);
+      await attachChunksToDeck(tx, deck.id, chunkIds);
 
       return { status: 'created', deck } satisfies CreateDeckResult;
     });
   }
 
   async findOne(id: string, userId: string): Promise<DeckDetail | null> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+
+    if (!deckIds.includes(id)) {
+      return null;
+    }
+
     const deck = (await this.prisma.deck.findFirst({
-      where: { id, ownerId: userId },
+      where: { id },
       include: {
         _count: {
           select: { cards: true },
@@ -239,7 +141,7 @@ export class DecksService {
       return null;
     }
 
-    return this.mapDeckDetail(deck);
+    return mapDeckDetail(deck);
   }
 
   async update(
@@ -262,7 +164,7 @@ export class DecksService {
     if (
       data.cardIds &&
       data.cardIds.length > 0 &&
-      !(await this.hasExistingCards(data.cardIds, userId))
+      !(await hasExistingCards(this.prisma, data.cardIds, userId))
     ) {
       return { status: 'invalid_cards' };
     }
@@ -270,45 +172,18 @@ export class DecksService {
     if (
       data.chunkIds &&
       data.chunkIds.length > 0 &&
-      !(await this.hasExistingChunks(data.chunkIds, userId))
+      !(await hasExistingChunks(this.prisma, data.chunkIds, userId))
     ) {
       return { status: 'invalid_chunks' };
     }
 
     return this.prisma.$transaction(async (tx) => {
       if (data.cardIds !== undefined) {
-        // Delete cards in this deck that are no longer in the selection
-        await tx.card.deleteMany({
-          where: { deckId: id, id: { notIn: data.cardIds } },
-        });
-
-        if (data.cardIds.length > 0) {
-          // Remove newly-added cards from any existing chunk associations
-          await tx.chunkCard.deleteMany({
-            where: { cardId: { in: data.cardIds } },
-          });
-
-          // Move newly-added cards into this deck
-          await tx.card.updateMany({
-            where: { id: { in: data.cardIds } },
-            data: { deckId: id },
-          });
-        }
+        await replaceDeckCards(tx, id, data.cardIds);
       }
 
       if (data.chunkIds !== undefined) {
-        // Delete chunks in this deck that are no longer in the selection
-        await tx.chunk.deleteMany({
-          where: { deckId: id, id: { notIn: data.chunkIds } },
-        });
-
-        if (data.chunkIds.length > 0) {
-          // Move newly-added chunks into this deck
-          await tx.chunk.updateMany({
-            where: { id: { in: data.chunkIds } },
-            data: { deckId: id },
-          });
-        }
+        await replaceDeckChunks(tx, id, data.chunkIds);
       }
 
       const deckData = {
@@ -341,13 +216,13 @@ export class DecksService {
 
       return {
         status: 'updated',
-        deck: this.mapDeckDetail(deck),
+        deck: mapDeckDetail(deck),
       } satisfies UpdateDeckResult;
     });
   }
 
   async remove(id: string, userId: string) {
-    const existing = await this.findOwnedDeck(id, userId);
+    const existing = await findOwnedDeck(this.prisma, id, userId);
     if (!existing) {
       return false;
     }
@@ -357,9 +232,8 @@ export class DecksService {
   }
 
   async findCards(id: string, userId: string): Promise<CardRecord[] | null> {
-    const deck = await this.findOwnedDeck(id, userId);
-
-    if (!deck) {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+    if (!deckIds.includes(id)) {
       return null;
     }
 
@@ -373,7 +247,7 @@ export class DecksService {
     deckId: string,
     userId: string,
   ): Promise<DeckShareSummary[] | null> {
-    const deck = await this.findOwnedDeck(deckId, userId);
+    const deck = await findOwnedDeck(this.prisma, deckId, userId);
     if (!deck) {
       return null;
     }
@@ -394,7 +268,7 @@ export class DecksService {
       },
     })) as DeckShareWithUser[];
 
-    return shares.map((share) => this.mapDeckShareSummary(share));
+    return shares.map((share) => mapDeckShareSummary(share));
   }
 
   async shareDeck(
@@ -403,12 +277,12 @@ export class DecksService {
     permission: DeckSharePermission,
     userId: string,
   ): Promise<ShareDeckResult> {
-    const deck = await this.findOwnedDeck(deckId, userId);
+    const deck = await findOwnedDeck(this.prisma, deckId, userId);
     if (!deck) {
       return { status: 'not_found' };
     }
 
-    const target = await this.resolveShareTarget(identifier);
+    const target = await resolveShareTarget(this.prisma, identifier);
     if (target.status !== 'found') {
       return {
         status:
@@ -474,7 +348,7 @@ export class DecksService {
     sharedUserId: string,
     userId: string,
   ): Promise<boolean> {
-    const deck = await this.findOwnedDeck(deckId, userId);
+    const deck = await findOwnedDeck(this.prisma, deckId, userId);
     if (!deck) {
       return false;
     }
@@ -487,41 +361,5 @@ export class DecksService {
     });
 
     return result.count > 0;
-  }
-
-  private async resolveShareTarget(identifier: string): Promise<
-    | {
-        status: 'found';
-        user: { id: string; email: string; name: string | null };
-      }
-    | { status: 'not_found' }
-    | { status: 'ambiguous' }
-  > {
-    const normalized = identifier.trim();
-    const emailCandidate = normalized.toLowerCase();
-
-    const byEmail = await this.prisma.user.findUnique({
-      where: { email: emailCandidate },
-      select: { id: true, email: true, name: true },
-    });
-
-    if (byEmail) {
-      return { status: 'found', user: byEmail };
-    }
-
-    const byName = await this.prisma.user.findMany({
-      where: { name: normalized },
-      select: { id: true, email: true, name: true },
-    });
-
-    if (byName.length === 0) {
-      return { status: 'not_found' };
-    }
-
-    if (byName.length > 1) {
-      return { status: 'ambiguous' };
-    }
-
-    return { status: 'found', user: byName[0] };
   }
 }

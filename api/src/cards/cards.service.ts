@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getAccessibleDeckIds } from '../decks/deck-access';
 
 export interface CardRecord {
   id: string;
@@ -15,8 +16,14 @@ export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string): Promise<CardRecord[]> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+
+    if (deckIds.length === 0) {
+      return [];
+    }
+
     return (await this.prisma.card.findMany({
-      where: { deck: { ownerId: userId } },
+      where: { deckId: { in: deckIds } },
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     })) as CardRecord[];
   }
@@ -42,8 +49,13 @@ export class CardsService {
   }
 
   async findOne(id: string, userId: string): Promise<CardRecord | null> {
+    const deckIds = await getAccessibleDeckIds(this.prisma, userId);
+    if (deckIds.length === 0) {
+      return null;
+    }
+
     return (await this.prisma.card.findFirst({
-      where: { id, deck: { ownerId: userId } },
+      where: { id, deckId: { in: deckIds } },
     })) as CardRecord | null;
   }
 

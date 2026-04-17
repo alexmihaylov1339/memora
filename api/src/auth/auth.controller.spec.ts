@@ -77,7 +77,7 @@ describe('AuthController', () => {
 
     await expect(
       controller.updateAccount(
-        { user: { id: 'user-1' } },
+        { id: 'user-1', email: 'user@example.com' },
         { email: ' updated@example.com ', name: ' Updated User ' },
       ),
     ).resolves.toEqual({

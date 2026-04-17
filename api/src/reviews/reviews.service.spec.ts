@@ -5,6 +5,12 @@ import { ReviewsService } from './reviews.service';
 
 function createPrismaMock() {
   const prisma = {
+    deck: {
+      findMany: jest.fn(),
+    },
+    deckShare: {
+      findMany: jest.fn(),
+    },
     chunk: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -40,6 +46,11 @@ describe('ReviewsService', () => {
   beforeEach(() => {
     prisma = createPrismaMock();
     service = new ReviewsService(prisma as unknown as PrismaService);
+    prisma.deck.findMany.mockResolvedValue([
+      { id: 'deck-1' },
+      { id: 'deck-2' },
+    ]);
+    prisma.deckShare.findMany.mockResolvedValue([]);
   });
 
   describe('getChunkProgress', () => {

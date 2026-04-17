@@ -18,8 +18,12 @@ type ChunkRecord = {
 function createPrismaMock() {
   const prisma = {
     deck: {
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+    },
+    deckShare: {
+      findMany: jest.fn(),
     },
     card: {
       findMany: jest.fn(),
@@ -192,7 +196,8 @@ describe('ChunksService', () => {
 
   describe('findByDeck', () => {
     it('returns null when the deck does not exist', async () => {
-      prisma.deck.findFirst.mockResolvedValue(null);
+      prisma.deck.findMany.mockResolvedValueOnce([]);
+      prisma.deckShare.findMany.mockResolvedValueOnce([]);
 
       await expect(service.findByDeck('deck-1', 'user-1')).resolves.toBeNull();
     });
@@ -216,10 +221,8 @@ describe('ChunksService', () => {
         },
       ];
 
-      prisma.deck.findFirst.mockResolvedValue({
-        id: 'deck-1',
-        ownerId: 'user-1',
-      });
+      prisma.deck.findMany.mockResolvedValueOnce([{ id: 'deck-1' }]);
+      prisma.deckShare.findMany.mockResolvedValueOnce([]);
       prisma.chunk.findMany.mockResolvedValue(chunks);
 
       await expect(service.findByDeck('deck-1', 'user-1')).resolves.toEqual([
@@ -248,10 +251,8 @@ describe('ChunksService', () => {
     });
 
     it('supports pagination and descending ordering', async () => {
-      prisma.deck.findFirst.mockResolvedValue({
-        id: 'deck-1',
-        ownerId: 'user-1',
-      });
+      prisma.deck.findMany.mockResolvedValueOnce([{ id: 'deck-1' }]);
+      prisma.deckShare.findMany.mockResolvedValueOnce([]);
       prisma.chunk.findMany.mockResolvedValue([]);
 
       await expect(
@@ -282,6 +283,8 @@ describe('ChunksService', () => {
 
   describe('findOne', () => {
     it('returns null when the chunk does not exist', async () => {
+      prisma.deck.findMany.mockResolvedValueOnce([]);
+      prisma.deckShare.findMany.mockResolvedValueOnce([]);
       prisma.chunk.findFirst.mockResolvedValue(null);
 
       await expect(service.findOne('chunk-1', 'user-1')).resolves.toBeNull();
@@ -309,6 +312,8 @@ describe('ChunksService', () => {
         ],
       };
 
+      prisma.deck.findMany.mockResolvedValueOnce([{ id: 'deck-1' }]);
+      prisma.deckShare.findMany.mockResolvedValueOnce([]);
       prisma.chunk.findFirst.mockResolvedValue(chunk);
 
       await expect(service.findOne('chunk-1', 'user-1')).resolves.toEqual({
@@ -322,7 +327,7 @@ describe('ChunksService', () => {
       });
 
       expect(prisma.chunk.findFirst).toHaveBeenCalledWith({
-        where: { id: 'chunk-1', deck: { ownerId: 'user-1' } },
+        where: { id: 'chunk-1', deckId: { in: ['deck-1'] } },
         include: {
           chunkCards: {
             orderBy: { sequenceIndex: 'asc' },
