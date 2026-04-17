@@ -12,15 +12,11 @@ import {
 } from './chunk-scheduling';
 import { REVIEW_ERROR_MESSAGES } from './review-errors';
 import {
-  deriveChunkReviewState,
+  getChunkProgress as loadChunkProgress,
+  getEligibleQueueItems as loadEligibleQueueItems,
   type ChunkProgressSnapshot,
-} from './chunk-progress';
-import {
-  findChunkByCardId,
-  findChunkWithCards,
-  findChunksWithReviewState,
-} from './review-access';
-import { buildEligibleQueueItems, type ReviewQueueItem } from './review-queue';
+  type ReviewQueueItem,
+} from './review-queries';
 import {
   buildGradeChunkReviewResult,
   buildNextActionableItem,
@@ -29,10 +25,10 @@ import {
   type GradeChunkReviewResult,
   type ReviewPersistenceClient,
 } from './review-grade';
-export type { ChunkProgressSnapshot } from './chunk-progress';
-export type { ReviewQueueItem } from './review-queue';
+import { deriveChunkReviewState } from './chunk-progress';
+import { findChunkByCardId } from './review-access';
+export type { ChunkProgressSnapshot, ReviewQueueItem } from './review-queries';
 export type { GradeChunkReviewResult } from './review-grade';
-
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -41,22 +37,14 @@ export class ReviewsService {
     chunkId: string,
     now = new Date(),
   ): Promise<ChunkProgressSnapshot | null> {
-    const chunk = await findChunkWithCards(this.prisma, chunkId);
-
-    if (!chunk) {
-      return null;
-    }
-
-    const state = await ensureChunkReviewState(this.prisma, chunkId, now);
-    return deriveChunkReviewState(chunk, now, state);
+    return loadChunkProgress(this.prisma, chunkId, now);
   }
 
   async getEligibleQueueItems(
     userId: string,
     now = new Date(),
   ): Promise<ReviewQueueItem[]> {
-    const chunks = await findChunksWithReviewState(this.prisma, userId);
-    return buildEligibleQueueItems(chunks, now);
+    return loadEligibleQueueItems(this.prisma, userId, now);
   }
 
   async applyGradeToCard(
