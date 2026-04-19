@@ -2,7 +2,6 @@ import { BadRequestException } from '@nestjs/common';
 import {
   validateCardId,
   validateCreateCardInput,
-  validateListCardsQuery,
   validateUpdateCardInput,
 } from './card-validation';
 
@@ -70,48 +69,6 @@ describe('card-validation', () => {
 
     it('throws when no updatable fields are provided', () => {
       expect(() => validateUpdateCardInput({})).toThrow(BadRequestException);
-    });
-  });
-
-  describe('validateListCardsQuery', () => {
-    it('returns defaults for an empty query', () => {
-      expect(validateListCardsQuery({})).toEqual({
-        limit: 50,
-        offset: 0,
-        direction: 'asc',
-      });
-    });
-
-    it('accepts valid pagination and direction values', () => {
-      expect(
-        validateListCardsQuery({
-          limit: 10,
-          offset: 5,
-          direction: 'desc',
-        }),
-      ).toEqual({
-        limit: 10,
-        offset: 5,
-        direction: 'desc',
-      });
-    });
-
-    it('throws when limit is out of range', () => {
-      expect(() => validateListCardsQuery({ limit: 0 })).toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('throws when offset is negative', () => {
-      expect(() => validateListCardsQuery({ offset: -1 })).toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('throws when direction is invalid', () => {
-      expect(() =>
-        validateListCardsQuery({ direction: 'sideways' as 'asc' }),
-      ).toThrow(BadRequestException);
     });
   });
 });

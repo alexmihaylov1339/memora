@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DeckContentController } from './decks/deck-content.controller';
 import { DeckSharingController } from './decks/deck-sharing.controller';
 import { DecksController } from './decks/decks.controller';
 import { DecksService } from './decks/decks.service';
@@ -18,7 +17,6 @@ import { SearchService } from './search/search.service';
   controllers: [
     AppController,
     DecksController,
-    DeckContentController,
     DeckSharingController,
     SearchController,
   ],
