@@ -677,6 +677,152 @@ describe('AppController (e2e)', () => {
       .expect(204);
   });
 
+  it('global cards/chunks responses support deck edit workspace deckId filtering', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const alphaDeckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `Workspace Alpha ${uniqueSuffix}` })
+      .expect(201);
+    const alphaDeckId = getStringField(
+      asRecord(parseJson(alphaDeckRes.text)),
+      'id',
+    );
+
+    const betaDeckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `Workspace Beta ${uniqueSuffix}` })
+      .expect(201);
+    const betaDeckId = getStringField(
+      asRecord(parseJson(betaDeckRes.text)),
+      'id',
+    );
+
+    const alphaCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId: alphaDeckId,
+        kind: 'basic',
+        fields: { front: 'Alpha front', back: 'Alpha back' },
+      })
+      .expect(201);
+    const alphaCardId = getStringField(
+      asRecord(parseJson(alphaCardRes.text)),
+      'id',
+    );
+
+    const betaCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId: betaDeckId,
+        kind: 'basic',
+        fields: { front: 'Beta front', back: 'Beta back' },
+      })
+      .expect(201);
+    const betaCardId = getStringField(asRecord(parseJson(betaCardRes.text)), 'id');
+
+    const alphaChunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        deckId: alphaDeckId,
+        title: 'Alpha chunk',
+        cardIds: [alphaCardId],
+      })
+      .expect(201);
+    const alphaChunkId = getStringField(
+      asRecord(parseJson(alphaChunkRes.text)),
+      'id',
+    );
+
+    const betaChunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        deckId: betaDeckId,
+        title: 'Beta chunk',
+        cardIds: [betaCardId],
+      })
+      .expect(201);
+    const betaChunkId = getStringField(asRecord(parseJson(betaChunkRes.text)), 'id');
+
+    await request(server)
+      .get('/v1/cards')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(Array.isArray(res.body)).toBe(true);
+        const cardRecords = (res.body as unknown[]).map((card) => asRecord(card));
+        expect(cardRecords.length).toBeGreaterThanOrEqual(2);
+        expect(cardRecords).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: alphaCardId,
+              deckId: alphaDeckId,
+            }),
+            expect.objectContaining({
+              id: betaCardId,
+              deckId: betaDeckId,
+            }),
+          ]),
+        );
+
+        const alphaCards = cardRecords.filter((card) => card.deckId === alphaDeckId);
+        const betaCards = cardRecords.filter((card) => card.deckId === betaDeckId);
+        expect(alphaCards).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: alphaCardId })]),
+        );
+        expect(betaCards).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: betaCardId })]),
+        );
+      });
+
+    await request(server)
+      .get('/v1/chunks')
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        const chunks = (res.body as unknown[]).map((chunk) => asRecord(chunk));
+        expect(chunks).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: alphaChunkId,
+              deckId: alphaDeckId,
+              cardIds: [alphaCardId],
+            }),
+            expect.objectContaining({
+              id: betaChunkId,
+              deckId: betaDeckId,
+              cardIds: [betaCardId],
+            }),
+          ]),
+        );
+
+        const alphaChunks = chunks.filter((chunk) => chunk.deckId === alphaDeckId);
+        const betaChunks = chunks.filter((chunk) => chunk.deckId === betaDeckId);
+        expect(alphaChunks).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: alphaChunkId })]),
+        );
+        expect(betaChunks).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: betaChunkId })]),
+        );
+      });
+
+    await request(server)
+      .delete(`/v1/decks/${alphaDeckId}`)
+      .set(authHeader)
+      .expect(204);
+    await request(server)
+      .delete(`/v1/decks/${betaDeckId}`)
+      .set(authHeader)
+      .expect(204);
+  });
+
   it('reviews queue -> grade -> next due card -> reset flow', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };

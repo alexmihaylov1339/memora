@@ -123,7 +123,7 @@ Verification completed:
 ### T6 - Add focused regression coverage for simplified IA
 
 Status:
-- Proposed
+- Done
 
 - Add/adjust tests for:
   - removed route/endpoint surface
@@ -132,6 +132,11 @@ Status:
 
 Exit criteria:
 - Test coverage protects the simplified deck IA from reintroducing redundant routes.
+
+Verification completed:
+- Existing e2e coverage keeps removed deck-scoped endpoints locked down (`/v1/decks/:id/cards`, `/v1/decks/:id/chunks` -> `404`).
+- Shared-access e2e coverage continues to protect ownership/share boundaries for decks, cards, chunks, and review queue.
+- Added e2e regression test `global cards/chunks responses support deck edit workspace deckId filtering` in `api/test/app.e2e-spec.ts` to guard the edit workspace contract of filtering global `/v1/cards` and `/v1/chunks` data by `deckId`.
 
 ---
 
