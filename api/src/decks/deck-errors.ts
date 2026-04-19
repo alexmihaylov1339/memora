@@ -10,6 +10,14 @@ export const DECK_ERROR_MESSAGES = {
     'chunkIds must be an array of unique non-empty strings',
   chunkIdsMustReferenceExistingChunks:
     'chunkIds must reference existing chunks',
+  moveCardIdsMustBeUniqueStrings:
+    'cardIds must be an array of unique non-empty strings',
+  moveChunkIdsMustBeUniqueStrings:
+    'chunkIds must be an array of unique non-empty strings',
+  cardIdsMustReferenceDeckCards:
+    'cardIds must reference cards in this deck',
+  chunkIdsMustReferenceDeckChunks:
+    'chunkIds must reference chunks in this deck',
   shareTargetRequired: 'share target is required',
   shareTargetNotFound: 'share target not found',
   shareTargetAmbiguous: 'share target matches multiple users',

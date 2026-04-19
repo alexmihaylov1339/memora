@@ -823,6 +823,182 @@ describe('AppController (e2e)', () => {
       .expect(204);
   });
 
+  it('deck move membership endpoints list candidates and support move/detach actions', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const sourceDeckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `Move Source Deck ${uniqueSuffix}` })
+      .expect(201);
+    const sourceDeckId = getStringField(
+      asRecord(parseJson(sourceDeckRes.text)),
+      'id',
+    );
+
+    const targetDeckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `Move Target Deck ${uniqueSuffix}` })
+      .expect(201);
+    const targetDeckId = getStringField(
+      asRecord(parseJson(targetDeckRes.text)),
+      'id',
+    );
+
+    const cardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        deckId: sourceDeckId,
+        kind: 'basic',
+        fields: { front: 'Move front', back: 'Move back' },
+      })
+      .expect(201);
+    const cardId = getStringField(asRecord(parseJson(cardRes.text)), 'id');
+
+    const chunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        deckId: sourceDeckId,
+        title: 'Move chunk',
+        cardIds: [cardId],
+      })
+      .expect(201);
+    const chunkId = getStringField(asRecord(parseJson(chunkRes.text)), 'id');
+
+    await request(server)
+      .get(`/v1/decks/${targetDeckId}/move-candidates/cards`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: cardId,
+              deckId: sourceDeckId,
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/decks/${targetDeckId}/move-candidates/chunks`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: chunkId,
+              deckId: sourceDeckId,
+              cardIds: [cardId],
+            }),
+          ]),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/move/cards`)
+      .set(authHeader)
+      .send({ cardIds: [cardId] })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          deckId: targetDeckId,
+          cardIds: [cardId],
+          count: 1,
+        });
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/move/chunks`)
+      .set(authHeader)
+      .send({ chunkIds: [chunkId] })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          deckId: targetDeckId,
+          chunkIds: [chunkId],
+          count: 1,
+        });
+      });
+
+    await request(server)
+      .get(`/v1/cards/${cardId}`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: cardId,
+            deckId: targetDeckId,
+          }),
+        );
+      });
+
+    await request(server)
+      .get(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: chunkId,
+            deckId: targetDeckId,
+          }),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/detach/cards`)
+      .set(authHeader)
+      .send({ cardIds: [cardId] })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          deckId: targetDeckId,
+          cardIds: [cardId],
+          count: 1,
+        });
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/detach/chunks`)
+      .set(authHeader)
+      .send({ chunkIds: [chunkId] })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({
+          deckId: targetDeckId,
+          chunkIds: [chunkId],
+          count: 1,
+        });
+      });
+
+    await request(server)
+      .get(`/v1/cards/${cardId}`)
+      .set(authHeader)
+      .expect(404);
+
+    await request(server)
+      .get(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(404);
+
+    await request(server)
+      .delete(`/v1/decks/${sourceDeckId}`)
+      .set(authHeader)
+      .expect(204);
+
+    await request(server)
+      .delete(`/v1/decks/${targetDeckId}`)
+      .set(authHeader)
+      .expect(204);
+  });
+
   it('reviews queue -> grade -> next due card -> reset flow', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };

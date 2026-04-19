@@ -1,6 +1,12 @@
 export {
   createDeck,
   createDeckShare,
+  detachDeckCards,
+  detachDeckChunks,
+  listMovableCardsForDeck,
+  listMovableChunksForDeck,
+  moveDeckCards,
+  moveDeckChunks,
   removeDeck,
   removeDeckShare,
   updateDeck,

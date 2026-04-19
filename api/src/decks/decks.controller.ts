@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
-import { DecksService } from './decks.service';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
@@ -29,6 +28,7 @@ import {
   validateDeckId,
   validateUpdateDeckInput,
 } from './dto/deck-validation';
+import { DecksService } from './decks.service';
 
 /**
  * Deck API contract (Step 1 lock):
@@ -42,7 +42,7 @@ import {
 @Controller('decks')
 @UseGuards(AuthGuard)
 export class DecksController {
-  constructor(private decks: DecksService) {}
+  constructor(private readonly decks: DecksService) {}
 
   @Get()
   list(@CurrentUser() user: AuthUser) {
@@ -84,8 +84,8 @@ export class DecksController {
     @Param() params: DeckIdParamDto,
   ) {
     const id = validateDeckId(params.id);
-
     const deck = await this.decks.findOne(id, user.id);
+
     if (!deck) {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
@@ -104,7 +104,7 @@ export class DecksController {
     const normalizedCardIds = normalizeDeckIds(body.cardIds);
     const normalizedChunkIds = normalizeDeckIds(body.chunkIds);
 
-    const deck = await this.decks.update(
+    const result = await this.decks.update(
       id,
       {
         name: body.name?.trim(),
@@ -114,31 +114,32 @@ export class DecksController {
       },
       user.id,
     );
-    if (deck.status === 'not_found') {
+
+    if (result.status === 'not_found') {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }
 
-    if (deck.status === 'invalid_cards') {
+    if (result.status === 'invalid_cards') {
       throw new BadRequestException(
         DECK_ERROR_MESSAGES.cardIdsMustReferenceExistingCards,
       );
     }
 
-    if (deck.status === 'invalid_chunks') {
+    if (result.status === 'invalid_chunks') {
       throw new BadRequestException(
         DECK_ERROR_MESSAGES.chunkIdsMustReferenceExistingChunks,
       );
     }
 
-    return serializeDeckDetail(deck.deck);
+    return serializeDeckDetail(result.deck);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@CurrentUser() user: AuthUser, @Param() params: DeckIdParamDto) {
     const id = validateDeckId(params.id);
-
     const removed = await this.decks.remove(id, user.id);
+
     if (!removed) {
       throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
     }

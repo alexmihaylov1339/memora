@@ -104,17 +104,29 @@ Exit criteria:
 ### T2 - Add explicit deck membership API surface
 
 Status:
-- Proposed
+- Done
 
-- Add explicit endpoints for deck-context library operations:
-  - list movable cards/chunks for deck context
-  - move selected cards/chunks into target deck
-  - detach selected cards/chunks from target deck
+- Added explicit endpoints for deck-context library operations:
+  - `GET /v1/decks/:id/move-candidates/cards`
+  - `GET /v1/decks/:id/move-candidates/chunks`
+  - `POST /v1/decks/:id/move/cards`
+  - `POST /v1/decks/:id/move/chunks`
+  - `POST /v1/decks/:id/detach/cards`
+  - `POST /v1/decks/:id/detach/chunks`
 - Keep access checks aligned with Step 9 sharing rules.
 - Ensure response contracts are DTO-backed and stable for frontend integration.
 
+Behavior locked in this implementation:
+- move operations are owner-only and only accept IDs from the owner's library
+- detach operations are owner-only and currently remove selected records from the target deck (hard delete with current single-deck model)
+
 Exit criteria:
 - Backend supports deck-context library operations without reusing ambiguous update flows.
+
+Verification completed:
+- `cd api && npx tsc --noEmit --pretty false` passes.
+- `api/test/app.e2e-spec.ts` includes `deck move membership endpoints list candidates and support move/detach actions`.
+- Full e2e run confirms the new T2 test passes; one unrelated existing failure remains in `reviews queue -> grade -> next due card -> reset flow`.
 
 ### T3 - Global cards library: deck-context move flow
 

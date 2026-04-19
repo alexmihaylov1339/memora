@@ -74,6 +74,14 @@ interface CreateDeckShareValidationInput {
   permission?: unknown;
 }
 
+interface DeckMembershipCardsValidationInput {
+  cardIds?: unknown;
+}
+
+interface DeckMembershipChunksValidationInput {
+  chunkIds?: unknown;
+}
+
 export function validateCreateDeckShareInput(
   body: CreateDeckShareValidationInput | undefined,
 ): {
@@ -98,6 +106,37 @@ export function validateCreateDeckShareInput(
   return {
     identifier: body.identifier.trim(),
     permission,
+  };
+}
+
+export function validateDeckMoveCardsInput(
+  body: DeckMembershipCardsValidationInput | undefined,
+): { cardIds: string[] } {
+  if (!hasUniqueTrimmedTextArray(body?.cardIds) || body.cardIds.length === 0) {
+    throw new BadRequestException(
+      DECK_ERROR_MESSAGES.moveCardIdsMustBeUniqueStrings,
+    );
+  }
+
+  return {
+    cardIds: body.cardIds.map((id) => id.trim()),
+  };
+}
+
+export function validateDeckMoveChunksInput(
+  body: DeckMembershipChunksValidationInput | undefined,
+): { chunkIds: string[] } {
+  if (
+    !hasUniqueTrimmedTextArray(body?.chunkIds) ||
+    body.chunkIds.length === 0
+  ) {
+    throw new BadRequestException(
+      DECK_ERROR_MESSAGES.moveChunkIdsMustBeUniqueStrings,
+    );
+  }
+
+  return {
+    chunkIds: body.chunkIds.map((id) => id.trim()),
   };
 }
 

@@ -4,9 +4,15 @@ import type { DeckSharePermission } from './deck-share.types';
 import {
   createDeck,
   createDeckShare,
+  detachDeckCards,
+  detachDeckChunks,
   getDeckDetail,
+  listMovableCardsForDeck,
+  listMovableChunksForDeck,
   listDeckShares,
   listDecks,
+  moveDeckCards,
+  moveDeckChunks,
   removeDeck,
   removeDeckShare,
   updateDeck,
@@ -17,9 +23,15 @@ export type {
   DeckRecord,
   DeckShareSummary,
   CreateDeckResult,
+  DetachDeckCardsResult,
+  DetachDeckChunksResult,
+  MoveDeckCardsResult,
+  MoveDeckChunksResult,
   UpdateDeckResult,
   ShareDeckResult,
 } from './decks.types';
+export type { DeckMembershipCardRecord } from './deck-membership';
+export type { ChunkSummary } from '../chunks/chunks.helpers';
 
 @Injectable()
 export class DecksService {
@@ -81,5 +93,29 @@ export class DecksService {
 
   removeShare(deckId: string, sharedUserId: string, userId: string) {
     return removeDeckShare(this.prisma, deckId, sharedUserId, userId);
+  }
+
+  listMovableCards(deckId: string, userId: string) {
+    return listMovableCardsForDeck(this.prisma, deckId, userId);
+  }
+
+  listMovableChunks(deckId: string, userId: string) {
+    return listMovableChunksForDeck(this.prisma, deckId, userId);
+  }
+
+  moveCards(deckId: string, cardIds: string[], userId: string) {
+    return moveDeckCards(this.prisma, deckId, cardIds, userId);
+  }
+
+  moveChunks(deckId: string, chunkIds: string[], userId: string) {
+    return moveDeckChunks(this.prisma, deckId, chunkIds, userId);
+  }
+
+  detachCards(deckId: string, cardIds: string[], userId: string) {
+    return detachDeckCards(this.prisma, deckId, cardIds, userId);
+  }
+
+  detachChunks(deckId: string, chunkIds: string[], userId: string) {
+    return detachDeckChunks(this.prisma, deckId, chunkIds, userId);
   }
 }
