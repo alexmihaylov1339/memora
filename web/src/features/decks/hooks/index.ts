@@ -13,10 +13,12 @@ export {
 } from './useDeckShareMutations';
 export {
   useCardsListQuery,
+  useDeckMovableCardsQuery,
   useCardDetailQuery,
 } from './useCardQueries';
 export {
   useCreateCardMutation,
+  useMoveDeckCardsMutation,
   useUpdateCardMutation,
   useDeleteCardMutation,
 } from './useCardMutations';

@@ -1,6 +1,10 @@
 import { useService, type UseServiceOptions } from '@shared/hooks';
 import { cardService } from '../services';
-import type { CardRecord } from '../types';
+import type {
+  CardRecord,
+  DeckCardMembershipMutationResult,
+  MoveDeckCardsParams,
+} from '../types';
 
 interface CreateCardParams {
   deckId: string;
@@ -28,4 +32,13 @@ export function useUpdateCardMutation(options?: UseServiceOptions<CardRecord>) {
 
 export function useDeleteCardMutation(options?: UseServiceOptions<void>) {
   return useService<CardIdParams, void>(cardService.delete, options);
+}
+
+export function useMoveDeckCardsMutation(
+  options?: UseServiceOptions<DeckCardMembershipMutationResult>,
+) {
+  return useService<MoveDeckCardsParams, DeckCardMembershipMutationResult>(
+    cardService.moveToDeck,
+    options,
+  );
 }

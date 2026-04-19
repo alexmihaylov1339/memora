@@ -92,7 +92,7 @@ Future options intentionally deferred:
 ### T1 - Lock semantic contract for move flows
 
 Status:
-- Done
+- Ready
 
 - Step 11 now explicitly uses `move` semantics for existing cards/chunks.
 - User-facing and API naming guidance is locked to `move` terminology.
@@ -104,7 +104,7 @@ Exit criteria:
 ### T2 - Add explicit deck membership API surface
 
 Status:
-- Done
+- Ready
 
 - Added explicit endpoints for deck-context library operations:
   - `GET /v1/decks/:id/move-candidates/cards`
@@ -131,7 +131,7 @@ Verification completed:
 ### T3 - Global cards library: deck-context move flow
 
 Status:
-- Proposed
+- Ready
 
 - Support opening `/cards` in deck context (for example via query params).
 - Provide selection UI + primary action for moving into the target deck.
@@ -139,6 +139,13 @@ Status:
 
 Exit criteria:
 - From deck workspace, user can open cards library and perform the Step 11 move action explicitly.
+
+Verification completed:
+- `/cards` now supports deck-context mode via `deckId` query param.
+- Deck-context mode fetches `GET /v1/decks/:id/move-candidates/cards` instead of global cards.
+- Each card row exposes a `Move to Deck` action using `POST /v1/decks/:id/move/cards`.
+- Non-context `/cards` behavior remains unchanged (search + row click to card edit).
+- `cd web && npx tsc --noEmit` passes.
 
 ### T4 - Global chunks library: deck-context move flow
 

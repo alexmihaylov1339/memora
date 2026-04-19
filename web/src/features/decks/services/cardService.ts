@@ -1,5 +1,10 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
-import type { CardRecord } from '../types';
+import type {
+  CardRecord,
+  DeckCardMembershipMutationResult,
+  DeckMoveCandidatesParams,
+  MoveDeckCardsParams,
+} from '../types';
 import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
@@ -26,6 +31,8 @@ const api = ManageService(API_URL);
 const CARD_ENDPOINTS = {
   BASE: '/v1/cards',
   DETAIL: (id: string) => `/v1/cards/${id}`,
+  MOVE_CANDIDATES: (deckId: string) => `/v1/decks/${deckId}/move-candidates/cards`,
+  MOVE: (deckId: string) => `/v1/decks/${deckId}/move/cards`,
 } as const;
 const SEARCH_ENDPOINTS = {
   BASE: '/v1/search',
@@ -52,6 +59,21 @@ export const cardService = {
       .prepareRequest(CARD_ENDPOINTS.BASE, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
       .execRequest<CardRecord[]>();
+  },
+
+  getMoveCandidates(params: DeckMoveCandidatesParams) {
+    return api
+      .prepareRequest(CARD_ENDPOINTS.MOVE_CANDIDATES(params.deckId), HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<CardRecord[]>();
+  },
+
+  moveToDeck(params: MoveDeckCardsParams) {
+    return api
+      .prepareRequest(CARD_ENDPOINTS.MOVE(params.deckId), HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .setBody({ cardIds: params.cardIds })
+      .execRequest<DeckCardMembershipMutationResult>();
   },
 
   update(params: UpdateCardPayload) {

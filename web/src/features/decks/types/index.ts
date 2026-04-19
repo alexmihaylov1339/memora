@@ -56,6 +56,22 @@ export interface CardRecord {
   createdAt: string;
 }
 
+export interface DeckMoveCandidatesParams {
+  deckId: string;
+}
+
+export interface MoveDeckCardsDto {
+  cardIds: string[];
+}
+
+export interface MoveDeckCardsParams extends DeckMoveCandidatesParams, MoveDeckCardsDto {}
+
+export interface DeckCardMembershipMutationResult {
+  deckId: string;
+  cardIds: string[];
+  count: number;
+}
+
 export interface DeckShareParams {
   deckId: string;
 }
