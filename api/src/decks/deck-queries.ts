@@ -67,6 +67,11 @@ export async function getDeckDetail(
 export async function listDeckCards(
   prisma: PrismaService,
   id: string,
+  options: {
+    limit: number;
+    offset: number;
+    direction: 'asc' | 'desc';
+  },
   userId: string,
 ): Promise<CardRecord[] | null> {
   const deckIds = await getAccessibleDeckIds(prisma, userId);
@@ -76,7 +81,9 @@ export async function listDeckCards(
 
   return (await prisma.card.findMany({
     where: { deckId: id },
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: [{ createdAt: options.direction }, { id: options.direction }],
+    skip: options.offset,
+    take: options.limit,
   })) as CardRecord[];
 }
 

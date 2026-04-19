@@ -1,6 +1,6 @@
 import {
-  Body,
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -10,22 +10,12 @@ import {
   Param,
   Post,
   Put,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { DecksService } from './decks.service';
-import { ChunksService } from '../chunks/chunks.service';
-import { serializeCardResponseList } from '../cards/dto/card-response.dto';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
-import {
-  serializeDeckShare,
-  serializeDeckShareListResponse,
-} from './dto/deck-share.dto';
-import type { CreateDeckShareDto } from './dto/create-deck-share.dto';
-import { serializeChunkResponseList } from '../chunks/dto/chunk-response.dto';
-import type { ListChunksQueryDto } from '../chunks/dto/list-chunks-query.dto';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
 import {
@@ -34,10 +24,8 @@ import {
   serializeDeckRecord,
 } from './dto/deck-response.dto';
 import type { UpdateDeckDto } from './dto/update-deck.dto';
-import { validateListChunksQuery } from '../chunks/dto/chunk-validation';
 import {
   validateCreateDeckInput,
-  validateCreateDeckShareInput,
   validateDeckId,
   validateUpdateDeckInput,
 } from './dto/deck-validation';
@@ -54,10 +42,7 @@ import {
 @Controller('decks')
 @UseGuards(AuthGuard)
 export class DecksController {
-  constructor(
-    private decks: DecksService,
-    private chunks: ChunksService,
-  ) {}
+  constructor(private decks: DecksService) {}
 
   @Get()
   list(@CurrentUser() user: AuthUser) {
@@ -67,12 +52,14 @@ export class DecksController {
   @Post()
   async create(@CurrentUser() user: AuthUser, @Body() body: CreateDeckDto) {
     validateCreateDeckInput(body);
+    const normalizedCardIds = normalizeDeckIds(body.cardIds);
+    const normalizedChunkIds = normalizeDeckIds(body.chunkIds);
 
     const result = await this.decks.create(
       body.name.trim(),
       body.description?.trim(),
-      normalizeIds(body.cardIds),
-      normalizeIds(body.chunkIds),
+      normalizedCardIds,
+      normalizedChunkIds,
       user.id,
     );
 
@@ -91,46 +78,6 @@ export class DecksController {
     return serializeDeckRecord(result.deck);
   }
 
-  @Get(':id/chunks')
-  async listChunks(
-    @CurrentUser() user: AuthUser,
-    @Param() params: DeckIdParamDto,
-    @Query() query: ListChunksQueryDto,
-  ) {
-    const id = validateDeckId(params.id);
-    const normalizedQuery = validateListChunksQuery({
-      limit: query.limit !== undefined ? Number(query.limit) : undefined,
-      offset: query.offset !== undefined ? Number(query.offset) : undefined,
-      direction: query.direction,
-    });
-
-    const chunks = await this.chunks.findByDeckWithOptions(
-      id,
-      normalizedQuery,
-      user.id,
-    );
-    if (!chunks) {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
-    }
-
-    return serializeChunkResponseList(chunks);
-  }
-
-  @Get(':id/cards')
-  async listCards(
-    @CurrentUser() user: AuthUser,
-    @Param() params: DeckIdParamDto,
-  ) {
-    const id = validateDeckId(params.id);
-
-    const cards = await this.decks.findCards(id, user.id);
-    if (!cards) {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
-    }
-
-    return serializeCardResponseList(cards);
-  }
-
   @Get(':id')
   async getById(
     @CurrentUser() user: AuthUser,
@@ -146,75 +93,6 @@ export class DecksController {
     return serializeDeckDetail(deck);
   }
 
-  @Get(':id/shares')
-  async listShares(
-    @CurrentUser() user: AuthUser,
-    @Param() params: DeckIdParamDto,
-  ) {
-    const id = validateDeckId(params.id);
-
-    const shares = await this.decks.listShares(id, user.id);
-    if (!shares) {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
-    }
-
-    return serializeDeckShareListResponse(shares);
-  }
-
-  @Post(':id/shares')
-  async shareDeck(
-    @CurrentUser() user: AuthUser,
-    @Param() params: DeckIdParamDto,
-    @Body() body: CreateDeckShareDto,
-  ) {
-    const id = validateDeckId(params.id);
-    const shareInput = validateCreateDeckShareInput(body);
-
-    const result = await this.decks.shareDeck(
-      id,
-      shareInput.identifier,
-      shareInput.permission ?? 'view',
-      user.id,
-    );
-
-    if (result.status === 'not_found') {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound);
-    }
-
-    if (result.status === 'share_target_not_found') {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.shareTargetNotFound);
-    }
-
-    if (result.status === 'share_target_ambiguous') {
-      throw new BadRequestException(DECK_ERROR_MESSAGES.shareTargetAmbiguous);
-    }
-
-    if (result.status === 'cannot_share_with_self') {
-      throw new BadRequestException(DECK_ERROR_MESSAGES.cannotShareWithSelf);
-    }
-
-    if (result.status === 'already_shared') {
-      throw new BadRequestException(DECK_ERROR_MESSAGES.deckAlreadyShared);
-    }
-
-    return serializeDeckShare(result.share);
-  }
-
-  @Delete(':id/shares/:sharedUserId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeShare(
-    @CurrentUser() user: AuthUser,
-    @Param() params: DeckIdParamDto & { sharedUserId: string },
-  ) {
-    const id = validateDeckId(params.id);
-    const sharedUserId = validateDeckId(params.sharedUserId);
-
-    const removed = await this.decks.removeShare(id, sharedUserId, user.id);
-    if (!removed) {
-      throw new NotFoundException(DECK_ERROR_MESSAGES.sharedUserNotFound);
-    }
-  }
-
   @Put(':id')
   async update(
     @CurrentUser() user: AuthUser,
@@ -223,14 +101,16 @@ export class DecksController {
   ) {
     const id = validateDeckId(params.id);
     validateUpdateDeckInput(body);
+    const normalizedCardIds = normalizeDeckIds(body.cardIds);
+    const normalizedChunkIds = normalizeDeckIds(body.chunkIds);
 
     const deck = await this.decks.update(
       id,
       {
         name: body.name?.trim(),
         description: body.description?.trim(),
-        cardIds: normalizeIds(body.cardIds),
-        chunkIds: normalizeIds(body.chunkIds),
+        cardIds: normalizedCardIds,
+        chunkIds: normalizedChunkIds,
       },
       user.id,
     );
@@ -265,6 +145,6 @@ export class DecksController {
   }
 }
 
-function normalizeIds(ids?: string[]) {
+function normalizeDeckIds(ids?: string[]): string[] {
   return ids?.map((id) => id.trim()) ?? [];
 }

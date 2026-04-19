@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { DeckSharingController } from './deck-sharing.controller';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
-import { DecksController } from './decks.controller';
 import type { DeckShareSummary } from './decks.service';
 import type { DeckShareDto } from './dto/deck-share.dto';
 
@@ -8,13 +8,6 @@ interface DecksServiceMock {
   listShares: jest.Mock<Promise<DeckShareSummary[] | null>, [string, string]>;
   shareDeck: jest.Mock<Promise<unknown>, [string, string, string, string]>;
   removeShare: jest.Mock<Promise<boolean>, [string, string, string]>;
-}
-
-interface ChunksServiceMock {
-  findByDeckWithOptions: jest.Mock<
-    Promise<unknown[] | null>,
-    [string, unknown, string]
-  >;
 }
 
 function createDecksServiceMock(): DecksServiceMock {
@@ -25,27 +18,15 @@ function createDecksServiceMock(): DecksServiceMock {
   };
 }
 
-function createChunksServiceMock(): ChunksServiceMock {
-  return {
-    findByDeckWithOptions: jest.fn<
-      Promise<unknown[] | null>,
-      [string, unknown, string]
-    >(),
-  };
-}
-
 const mockUser = { id: 'user-1', email: 'test@test.com' };
 
-describe('DecksController', () => {
-  let controller: DecksController;
+describe('DeckSharingController', () => {
+  let controller: DeckSharingController;
   let decksService: DecksServiceMock;
 
   beforeEach(() => {
     decksService = createDecksServiceMock();
-    controller = new DecksController(
-      decksService as never,
-      createChunksServiceMock() as never,
-    );
+    controller = new DeckSharingController(decksService as never);
   });
 
   it('serializes shared deck users on listShares', async () => {
