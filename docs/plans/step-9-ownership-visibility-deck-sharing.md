@@ -1,6 +1,6 @@
 # Memora: Step 9 Plan - Ownership, Visibility, and Deck Sharing
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-13  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 9
 
@@ -46,7 +46,7 @@ Deck sharing is the user-facing mechanism that makes this possible.
 ## Why this step exists
 
 - The next IA steps depend on the real visibility model.
-- Global browsing, deck-scoped workspaces, and future attach flows all become much clearer when access control is no longer implicit.
+- Global browsing, deck-scoped workspaces, and future move flows all become much clearer when access control is no longer implicit.
 - Sharing needs to be intentional, simple, and visible in the UI before we can safely expand browsing surfaces.
 
 ---

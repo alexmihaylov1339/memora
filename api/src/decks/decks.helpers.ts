@@ -137,7 +137,7 @@ export async function hasExistingChunks(
   return chunks.length === chunkIds.length;
 }
 
-export async function attachCardsToDeck(
+export async function moveCardsToDeck(
   client: DeckPersistenceClient,
   deckId: string,
   cardIds: string[],
@@ -165,10 +165,10 @@ export async function replaceDeckCards(
     where: { deckId, id: { notIn: cardIds } },
   });
 
-  await attachCardsToDeck(client, deckId, cardIds);
+  await moveCardsToDeck(client, deckId, cardIds);
 }
 
-export async function attachChunksToDeck(
+export async function moveChunksToDeck(
   client: DeckPersistenceClient,
   deckId: string,
   chunkIds: string[],
@@ -192,7 +192,7 @@ export async function replaceDeckChunks(
     where: { deckId, id: { notIn: chunkIds } },
   });
 
-  await attachChunksToDeck(client, deckId, chunkIds);
+  await moveChunksToDeck(client, deckId, chunkIds);
 }
 
 export async function resolveShareTarget(

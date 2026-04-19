@@ -238,9 +238,14 @@
 
 ---
 
-## Step 11: Add global card/chunk libraries and deck attach flows
+## Step 11: Add global card/chunk libraries and deck move flows
 
 **Objective:** Separate “items already in this deck” from “all items I own”.
+
+Critical planning note before implementation:
+- cards and chunks currently have single-deck ownership (`Card.deckId`, `Chunk.deckId`)
+- Step 11 must first lock attach semantics so we do not accidentally treat a move as a non-destructive attach
+- choose one explicit rule for v1 and keep API/UI wording aligned with that rule (`move`, `copy`, or true multi-deck membership)
 
 **Deliverables**
 - Global navigation entries:
@@ -250,10 +255,10 @@
 - Global library pages:
   - `/cards` for all cards the user owns/can access
   - `/chunks` for all chunks the user owns/can access
-- Deck attach flows:
-  - from a deck, `Add Card` opens a global card picker scoped to attaching into the current deck
-  - from a deck, `Add Chunk` opens a global chunk picker scoped to attaching into the current deck
-- Supporting backend/API contracts for deck membership browsing and attach/detach actions.
+- Deck move flows:
+  - from a deck, `Add Card` opens a global card picker scoped to moving into the current deck
+  - from a deck, `Add Chunk` opens a global chunk picker scoped to moving into the current deck
+- Supporting backend/API contracts for deck membership browsing and move/detach actions.
 
 **Why now**
 - Users need two different mental models:
@@ -263,7 +268,7 @@
 
 **Exit criteria**
 - Users can browse their whole card/chunk library from global navigation.
-- Users can attach existing cards/chunks into a deck from dedicated selection flows.
+- Users can move existing cards/chunks into a deck from dedicated selection flows.
 
 ---
 

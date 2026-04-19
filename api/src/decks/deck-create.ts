@@ -1,7 +1,7 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  attachCardsToDeck,
-  attachChunksToDeck,
+  moveCardsToDeck,
+  moveChunksToDeck,
   hasExistingCards,
   hasExistingChunks,
 } from './decks.helpers';
@@ -40,8 +40,8 @@ export async function createDeck(
       },
     })) as DeckRecord;
 
-    await attachCardsToDeck(tx, deck.id, input.cardIds);
-    await attachChunksToDeck(tx, deck.id, input.chunkIds);
+    await moveCardsToDeck(tx, deck.id, input.cardIds);
+    await moveChunksToDeck(tx, deck.id, input.chunkIds);
 
     return { status: 'created', deck } satisfies CreateDeckResult;
   });

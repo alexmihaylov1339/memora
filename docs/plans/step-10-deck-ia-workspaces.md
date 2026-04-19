@@ -1,6 +1,6 @@
 # Memora: Step 10 Plan - Deck IA and Edit-Form Workspace
 
-**Status:** In Progress  
+**Status:** Done  
 **Date:** 2026-04-19  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 10
 
