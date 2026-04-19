@@ -198,7 +198,7 @@ Verification:
 ### T3 - Build deck-scoped cards page (`/decks/:id/cards`)
 
 Status:
-- Proposed
+- Done
 
 - Implement a dedicated page for cards within one deck.
 - Show cards relevant to the deck only, with proper loading/empty/error states.
@@ -212,6 +212,23 @@ Why this matters:
 
 Exit criteria:
 - Users can browse and manage cards for a specific deck from `/decks/:id/cards`.
+
+Implemented in this task:
+- Added dedicated deck-scoped cards route:
+  - `web/src/app/[locale]/decks/[id]/cards/page.tsx`
+- Added deck-cards grid column hook for focused deck card presentation:
+  - `web/src/app/[locale]/decks/[id]/cards/components/useDeckCardsGridColumns.tsx`
+- The page now includes:
+  - deck-context heading with deck name
+  - back navigation to the current deck workspace route
+  - add-card action pre-scoped with `deckId`
+  - loading/error/empty states
+  - shared `Grid` usage with row click -> card edit
+- Aligned frontend deck-card service contract with backend query support (`limit`, `offset`, `direction`) for deck-scoped list calls.
+
+Verification:
+- `cd web && npx tsc --noEmit`
+- `cd web && npx eslint 'src/app/[locale]/decks/[id]/cards/page.tsx' 'src/app/[locale]/decks/[id]/cards/components/useDeckCardsGridColumns.tsx' 'src/features/decks/services/cardService.ts' 'src/features/decks/types/index.ts' 'src/shared/constants/routes.ts'`
 
 ### T4 - Build deck-scoped chunks page (`/decks/:id/chunks`)
 

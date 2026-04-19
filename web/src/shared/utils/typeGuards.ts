@@ -2,6 +2,10 @@ export function isUndefined(value: unknown): value is undefined {
   return value === undefined;
 }
 
+export function isDefined<T>(value: T | undefined): value is T {
+  return !isUndefined(value);
+}
+
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }

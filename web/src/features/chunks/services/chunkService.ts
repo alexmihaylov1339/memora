@@ -1,4 +1,5 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
+import { setQueryParamIfDefined } from '@shared/utils';
 import type {
   ChunkIdParams,
   ChunkRecord,
@@ -64,15 +65,9 @@ export const chunkService = {
     const { deckId, limit, offset, direction } = params;
     const queryParams: Record<string, string | number | boolean> = {};
 
-    if (limit !== undefined) {
-      queryParams.limit = limit;
-    }
-    if (offset !== undefined) {
-      queryParams.offset = offset;
-    }
-    if (direction !== undefined) {
-      queryParams.direction = direction;
-    }
+    setQueryParamIfDefined(queryParams, 'limit', limit);
+    setQueryParamIfDefined(queryParams, 'offset', offset);
+    setQueryParamIfDefined(queryParams, 'direction', direction);
 
     return api
       .prepareRequest(CHUNK_ENDPOINTS.LIST_BY_DECK(deckId), HTTP_METHODS.GET)
