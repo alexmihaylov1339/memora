@@ -13,8 +13,6 @@ export const APP_ROUTES = {
   newCard: '/cards/new',
   newChunk: '/chunks/new',
   deckEdit: (id: string) => `/decks/${id}/edit`,
-  deckCards: (id: string) => `/decks/${id}/cards`,
-  deckChunks: (id: string) => `/decks/${id}/chunks`,
   cardEdit: (id: string) => `/cards/${id}/edit`,
   chunkEdit: (id: string) => `/chunks/${id}/edit`,
   resetPasswordWithToken: (token: string) =>

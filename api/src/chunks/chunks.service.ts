@@ -10,12 +10,7 @@ import {
   type UpdateChunkResult,
   updateChunk,
 } from './chunk-mutations';
-import {
-  findChunkById,
-  findChunksByDeck,
-  findChunksByDeckWithOptions,
-  listChunks,
-} from './chunk-queries';
+import { findChunkById, listChunks } from './chunk-queries';
 export type { ChunkSummary } from './chunks.helpers';
 export type {
   CreateChunkInput,
@@ -38,22 +33,6 @@ export class ChunksService {
 
   findOne(id: string, userId: string): Promise<ChunkSummary | null> {
     return findChunkById(this.prisma, id, userId);
-  }
-
-  findByDeck(deckId: string, userId: string): Promise<ChunkSummary[] | null> {
-    return findChunksByDeck(this.prisma, deckId, userId);
-  }
-
-  findByDeckWithOptions(
-    deckId: string,
-    options: {
-      limit: number;
-      offset: number;
-      direction: 'asc' | 'desc';
-    },
-    userId: string,
-  ): Promise<ChunkSummary[] | null> {
-    return findChunksByDeckWithOptions(this.prisma, deckId, options, userId);
   }
 
   update(

@@ -1,11 +1,10 @@
 import { useServiceQuery, type UseServiceQueryOptions } from '@shared/hooks';
 import { chunkService } from '../services';
-import type { ChunkRecord, DeckChunkListParams } from '../types';
+import type { ChunkRecord } from '../types';
 
 export const CHUNK_QUERY_KEYS = {
   all: ['chunks'],
   detail: (id: string) => ['chunks', 'detail', id],
-  listByDeck: (deckId: string) => ['chunks', 'deck', deckId],
 };
 
 export function useChunksListQuery(
@@ -24,21 +23,6 @@ export function useChunkDetailQuery(
     { id },
     {
       enabled: Boolean(id),
-      ...options,
-    },
-  );
-}
-
-export function useDeckChunksQuery(
-  deckId: string,
-  options?: UseServiceQueryOptions<ChunkRecord[]>,
-) {
-  return useServiceQuery<DeckChunkListParams, ChunkRecord[]>(
-    CHUNK_QUERY_KEYS.listByDeck(deckId),
-    chunkService.listByDeck,
-    { deckId },
-    {
-      enabled: Boolean(deckId),
       ...options,
     },
   );

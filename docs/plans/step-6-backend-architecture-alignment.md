@@ -225,7 +225,7 @@ Module review:
   - no explicit response DTO layer exists even though Step 7 will likely consume these endpoints more directly
 - `decks` is partially aligned:
   - return shapes are already somewhat intentional in the service
-  - controller still depends directly on `ChunksService` for `/decks/:id/chunks`, which may be acceptable but needs to be treated as an explicit architectural choice
+  - controller previously depended directly on `ChunksService` for deck-specific routes; this should stay removed to avoid redundant API surfaces
   - deck-specific automated unit coverage is currently missing
 - `auth` is the oldest-looking boundary:
   - controller still uses inline body object types instead of feature DTO files

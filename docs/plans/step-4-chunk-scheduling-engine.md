@@ -50,7 +50,7 @@ Step 4 fills that gap.
 ## Current state checkpoint (after Step 3)
 
 - `Chunk` and `ChunkCard` persistence exists.
-- Chunk CRUD and deck-scoped listing are implemented.
+- Chunk CRUD and chunk listing are implemented.
 - Review endpoints still return `501`.
 - Review-related Prisma models (`ReviewState`, `ReviewLog`) already exist, but their behavior is still generic/non-final.
 - Frontend chunk/review UX is still intentionally incomplete.

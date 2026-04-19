@@ -12,7 +12,6 @@ export {
   useChunkCreateScreen,
   useChunkDeckSelectionFields,
   useChunkDetailQuery,
-  useDeckChunksQuery,
   useCreateChunkMutation,
   useUpdateChunkMutation,
   useDeleteChunkMutation,
@@ -21,6 +20,5 @@ export type {
   ChunkIdParams,
   ChunkRecord,
   CreateChunkDto,
-  DeckChunkListParams,
   UpdateChunkDto,
 } from './types';

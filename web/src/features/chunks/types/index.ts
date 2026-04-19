@@ -24,10 +24,3 @@ export interface UpdateChunkDto {
 export interface ChunkIdParams {
   id: string;
 }
-
-export interface DeckChunkListParams {
-  deckId: string;
-  limit?: number;
-  offset?: number;
-  direction?: 'asc' | 'desc';
-}

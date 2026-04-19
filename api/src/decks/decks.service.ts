@@ -5,7 +5,6 @@ import {
   createDeck,
   createDeckShare,
   getDeckDetail,
-  listDeckCards,
   listDeckShares,
   listDecks,
   removeDeck,
@@ -65,18 +64,6 @@ export class DecksService {
 
   remove(id: string, userId: string) {
     return removeDeck(this.prisma, id, userId);
-  }
-
-  findCards(
-    id: string,
-    options: {
-      limit: number;
-      offset: number;
-      direction: 'asc' | 'desc';
-    },
-    userId: string,
-  ) {
-    return listDeckCards(this.prisma, id, options, userId);
   }
 
   listShares(deckId: string, userId: string) {

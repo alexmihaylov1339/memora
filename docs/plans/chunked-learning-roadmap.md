@@ -212,33 +212,29 @@
 
 ---
 
-## Step 10: Rework deck information architecture and deck-scoped workspaces
+## Step 10: Rework deck information architecture around one edit workspace
 
-**Objective:** Turn deck pages into scalable hubs instead of long mixed-content pages.
+**Objective:** Make `/decks/:id/edit` the single deck management workspace.
 
 **Deliverables**
-- Deck page becomes an overview/workspace hub instead of showing every card and chunk inline.
+- Deck edit workspace is the canonical place to manage deck cards/chunks.
 - Clear deck actions:
-  - `Open Chunks`
-  - `Open Cards`
   - `Start Review`
   - `Add Card`
   - `Add Chunk`
-- Dedicated deck-scoped pages:
-  - `/decks/:id/cards`
-  - `/decks/:id/chunks`
+- Remove redundant deck-specific pages and endpoints:
+  - no separate deck-specific cards/chunks pages
+  - no separate deck-specific cards/chunks list endpoints
 - User-facing cleanup:
-  - remove raw ids from deck overview
-  - show chunks before cards where both are previewed
-  - keep only small summary previews on the deck page
+  - avoid mixed long lists outside the edit workspace
+  - keep routing simple and predictable
 
 **Why now**
-- The current mixed deck page will become cluttered as content grows.
-- We should fix the content architecture before adding global libraries and heavier design work.
+- The product works better with one clear deck-management surface.
+- We should reduce route/API duplication before broader library work.
 
 **Exit criteria**
-- Opening a deck feels like entering a hub with clear next actions.
-- Cards and chunks inside a deck are browsed through dedicated deck-scoped views.
+- Deck content management happens through `/decks/:id/edit` without redundant deck-specific pages.
 
 ---
 
@@ -266,7 +262,7 @@
 - Those flows should be explicit instead of overloaded into one page.
 
 **Exit criteria**
-- Users can browse deck contents in deck context and browse their whole card/chunk library from global navigation.
+- Users can browse their whole card/chunk library from global navigation.
 - Users can attach existing cards/chunks into a deck from dedicated selection flows.
 
 ---
@@ -276,8 +272,7 @@
 **Objective:** Introduce a cleaner visual system and scalable browsing patterns for the new IA.
 
 **Deliverables**
-- Redesigned deck overview page with stronger hierarchy and actions.
-- Redesigned deck cards/chunks pages for scalable browsing.
+- Redesigned deck overview/edit workspace with stronger hierarchy and actions.
 - Redesigned global cards/chunks library pages.
 - Scalable management patterns:
   - list-first layouts by default

@@ -1,4 +1,3 @@
-import type { CardRecord } from '../cards/cards.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
 import {
@@ -62,29 +61,6 @@ export async function getDeckDetail(
   })) as DeckWithShares | null;
 
   return deck ? mapDeckDetail(deck) : null;
-}
-
-export async function listDeckCards(
-  prisma: PrismaService,
-  id: string,
-  options: {
-    limit: number;
-    offset: number;
-    direction: 'asc' | 'desc';
-  },
-  userId: string,
-): Promise<CardRecord[] | null> {
-  const deckIds = await getAccessibleDeckIds(prisma, userId);
-  if (!deckIds.includes(id)) {
-    return null;
-  }
-
-  return (await prisma.card.findMany({
-    where: { deckId: id },
-    orderBy: [{ createdAt: options.direction }, { id: options.direction }],
-    skip: options.offset,
-    take: options.limit,
-  })) as CardRecord[];
 }
 
 export async function listDeckShares(

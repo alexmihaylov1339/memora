@@ -1,7 +1,5 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
-import { setQueryParamIfDefined } from '@shared/utils';
-import { DECK_ENDPOINTS } from '../constants';
-import type { CardRecord, DeckCardsParams } from '../types';
+import type { CardRecord } from '../types';
 import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
@@ -53,21 +51,6 @@ export const cardService = {
     return api
       .prepareRequest(CARD_ENDPOINTS.BASE, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
-      .execRequest<CardRecord[]>();
-  },
-
-  listByDeck(params: DeckCardsParams) {
-    const { deckId, limit, offset, direction } = params;
-    const queryParams: Record<string, string | number | boolean> = {};
-
-    setQueryParamIfDefined(queryParams, 'limit', limit);
-    setQueryParamIfDefined(queryParams, 'offset', offset);
-    setQueryParamIfDefined(queryParams, 'direction', direction);
-
-    return api
-      .prepareRequest(DECK_ENDPOINTS.CARDS(deckId), HTTP_METHODS.GET)
-      .setHeaders(getAuthHeaders())
-      .setQueryParams(queryParams)
       .execRequest<CardRecord[]>();
   },
 

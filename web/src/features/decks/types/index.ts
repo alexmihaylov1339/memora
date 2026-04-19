@@ -56,13 +56,6 @@ export interface CardRecord {
   createdAt: string;
 }
 
-export interface DeckCardsParams {
-  deckId: string;
-  limit?: number;
-  offset?: number;
-  direction?: 'asc' | 'desc';
-}
-
 export interface DeckShareParams {
   deckId: string;
 }

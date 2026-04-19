@@ -14,7 +14,6 @@ export {
 export {
   useCardsListQuery,
   useCardDetailQuery,
-  useDeckCardsQuery,
 } from './useCardQueries';
 export {
   useCreateCardMutation,

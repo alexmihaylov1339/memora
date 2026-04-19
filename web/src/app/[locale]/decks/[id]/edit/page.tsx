@@ -7,12 +7,15 @@ import { useRouter } from '@/i18n/navigation';
 import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {
-  useDeckCardsQuery,
+  useCardsListQuery,
   useDeckDetailQuery,
   useDeleteDeckMutation,
   useUpdateDeckMutation,
 } from '@features/decks';
-import { useDeckChunksQuery, useDeleteChunkMutation } from '@features/chunks';
+import {
+  useChunksListQuery,
+  useDeleteChunkMutation,
+} from '@features/chunks';
 import { resolveSingleParam } from '@/shared/utils';
 import {
   DeckEditForm,
@@ -31,8 +34,8 @@ export default function EditDeckPage() {
   const id = resolveSingleParam(params?.id as string | string[] | undefined);
 
   const deckQuery = useDeckDetailQuery(id);
-  const cardsQuery = useDeckCardsQuery(id);
-  const chunksQuery = useDeckChunksQuery(id);
+  const cardsQuery = useCardsListQuery();
+  const chunksQuery = useChunksListQuery();
   const [deletingChunkId, setDeletingChunkId] = useState<string>();
 
   const updateDeck = useUpdateDeckMutation({
@@ -79,8 +82,8 @@ export default function EditDeckPage() {
     cardsQuery.result !== undefined &&
     chunksQuery.result !== undefined;
   const deck = deckQuery.result;
-  const cards = cardsQuery.result ?? [];
-  const chunks = chunksQuery.result ?? [];
+  const cards = (cardsQuery.result ?? []).filter((card) => card.deckId === id);
+  const chunks = (chunksQuery.result ?? []).filter((chunk) => chunk.deckId === id);
 
   return (
     <ProtectedRoute>

@@ -50,7 +50,7 @@ What is already in good shape:
   - `GET /v1/chunks/:id`
   - `PUT /v1/chunks/:id`
   - `DELETE /v1/chunks/:id`
-  - `GET /v1/decks/:id/chunks`
+  - `GET /v1/chunks`
 - backend review API exists:
   - `GET /v1/reviews/queue`
   - `POST /v1/reviews/:cardId/grade`
@@ -61,12 +61,12 @@ What is still missing:
 - there is no web review route or review feature module yet
 - there is no web chunk service/hook layer yet
 - there is no web review service/hook layer yet
-- the current backend does not expose a deck-scoped card listing endpoint, which is required for practical chunk authoring from the UI
+- the current backend card/chunk listing contracts still need to stay aligned with authoring UX
 - deck edit currently links to add-card and add-chunk pages but does not act as a real deck workspace showing cards/chunks together
 
 Important constraint:
 - Step 7 cannot be treated as purely frontend work unless we accept a broken chunk-authoring experience
-- the minimal missing backend support is deck-scoped card listing for authoring and display
+- the minimal missing backend support is stable card listing for authoring and display
 
 ---
 
@@ -170,7 +170,7 @@ Current chunk APIs:
 - `GET /v1/chunks/:id`
 - `PUT /v1/chunks/:id`
 - `DELETE /v1/chunks/:id`
-- `GET /v1/decks/:id/chunks`
+- `GET /v1/chunks`
 
 Chunk responses already include:
 - `id`
@@ -183,10 +183,10 @@ Chunk responses already include:
 
 ### Gap that still needs to be closed
 
-For authoring UI, we still need a card-list source for a specific deck.
+For authoring UI, we still need a stable card-list source.
 
 Preferred minimal contract:
-- `GET /v1/decks/:id/cards`
+- `GET /v1/cards`
 
 Recommended response shape:
 - list of frontend-safe card records including:
@@ -303,7 +303,7 @@ Subtasks:
   - deck chunk list
   - deck card list
 - Explicitly document the required backend support gap:
-  - `GET /v1/decks/:id/cards`
+  - stable card listing contract for authoring
 - Decide the MVP schedule preview strategy:
   - preferred: display a stable explanatory cadence preview from a frontend constant mirroring the current backend default schedule
   - fallback: add a tiny backend-read contract only if drift feels too risky
@@ -320,7 +320,7 @@ Verification:
   - review UI will ship as a global queue route at `web/src/app/[locale]/review/page.tsx`
   - chunk authoring will replace the current placeholder at `web/src/app/[locale]/chunks/new/components/ChunkCreatePlaceholder.tsx`
   - deck edit remains the authoring workspace anchor and will be expanded rather than replaced
-  - Step 7 needs one companion backend support contract: `GET /v1/decks/:id/cards`
+  - Step 7 needs one companion backend support contract: stable card listing for authoring
   - the current backend already provides the chunk and review contracts Step 7 will consume directly
 - MVP UX decisions locked for implementation:
   - chunk authoring is based on existing deck cards, not inline card creation inside the chunk form
@@ -341,19 +341,19 @@ Status:
 - Done
 
 Tasks:
-- Add minimal backend support for deck-scoped card listing.
+- Add minimal backend support for card listing used by chunk authoring.
 - Add web service and hook layers for chunks and reviews.
 - Extend deck-related frontend data hooks so the deck workspace can load all authoring context.
 
 Subtasks:
 - Backend:
-  - add `GET /v1/decks/:id/cards`
+  - add/align card listing support for authoring
   - keep controller thin and response serialization frontend-safe
   - use existing card response DTO shape
   - return `404` when the deck does not exist
 - Backend tests:
   - add focused controller/service coverage if needed
-  - extend e2e coverage for deck-scoped card listing
+  - extend e2e coverage for card listing used in authoring
 - Frontend:
   - add `chunkService` with:
     - `create`
@@ -383,12 +383,12 @@ Verification:
 - Backend tests and e2e confirm the new listing endpoint works.
 - Web typecheck passes with the new service/hook layer in place.
 - Implemented backend support contract:
-  - `GET /v1/decks/:id/cards` now returns frontend-safe card records using the existing card response serializer
-  - missing decks return the existing stable deck `404` semantics
+  - card listing supports frontend-safe card records using the existing card response serializer
+  - missing deck access returns stable `404` semantics
 - Implemented frontend data layer:
   - `features/chunks` now provides typed chunk services, query hooks, and mutation hooks
   - `features/reviews` now provides typed review queue and grade services plus hooks
-  - `features/decks` now includes deck-scoped card listing support via `cardService.listByDeck(...)` and `useDeckCardsQuery(...)`
+  - `features/decks` now includes typed card listing support for deck authoring workflows
 - Verification completed:
   - `cd api && npx tsc --noEmit --pretty false` passes
   - `cd api && npx jest --runInBand` passes
@@ -703,7 +703,7 @@ Subtasks:
   - review page empty/loading/error states
   - grade action UI state transitions where practical
 - Backend/API tests:
-  - deck-scoped card listing e2e coverage if that endpoint is added
+  - card listing e2e coverage if companion endpoint changes are added
 - Type/lint verification:
   - `web` typecheck
   - `web` lint
@@ -762,8 +762,8 @@ Why this order:
 
 ## Decision points to keep explicit during implementation
 
-1. Deck-scoped card list endpoint shape
-- Prefer `GET /v1/decks/:id/cards` over inventing a more generic query API unless we need broader card browsing immediately.
+1. Card list endpoint shape
+- Prefer the existing stable card listing contract over introducing redundant deck-specific routes.
 
 2. Chunk edit scope
 - Preferred MVP: creation plus visibility, with deletion if easy.
@@ -793,7 +793,7 @@ Risk:
 - Step 7 quietly expands into backend product redesign because of one missing endpoint.
 
 Mitigation:
-- Limit backend additions to the minimum support needed for deck-scoped card listing and keep the API shape aligned with Step 6 patterns.
+- Limit backend additions to the minimum support needed for authoring card listing and keep the API shape aligned with Step 6 patterns.
 
 Risk:
 - We overbuild chunk management and delay the core review UI.
@@ -826,7 +826,7 @@ Mitigation:
 Before marking Step 7 done, we should be able to verify:
 
 - Backend:
-  - deck-scoped card listing exists if needed
+  - card listing needed for authoring exists
   - chunk and review endpoints still pass their existing tests
   - any new API support endpoints are e2e-covered
 - Frontend:

@@ -5,9 +5,4 @@ export {
   removeDeckShare,
   updateDeck,
 } from './deck-mutations';
-export {
-  getDeckDetail,
-  listDeckCards,
-  listDeckShares,
-  listDecks,
-} from './deck-queries';
+export { getDeckDetail, listDeckShares, listDecks } from './deck-queries';

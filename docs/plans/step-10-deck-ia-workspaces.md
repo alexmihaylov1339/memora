@@ -1,6 +1,6 @@
-# Memora: Step 10 Plan - Deck IA and Deck-Scoped Workspaces
+# Memora: Step 10 Plan - Deck IA and Edit-Form Workspace
 
-**Status:** Proposed  
+**Status:** In Progress  
 **Date:** 2026-04-19  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 10
 
@@ -17,290 +17,128 @@ Alternative shorter option:
 
 ## Objective
 
-Turn deck pages into scalable workspaces instead of long mixed-content pages, and make deck-scoped cards/chunks the default way to work inside a deck.
+Make `/decks/:id/edit` the single workspace for deck content management.
 
 This step should:
-- make the deck page a true hub
-- move detailed card/chunk browsing into dedicated deck-scoped pages
-- preserve ownership/share visibility behavior from Step 9
-
----
-
-## Core product rule
-
-Opening a deck should feel like entering a workspace:
-- the overview page shows high-signal summary and clear actions
-- detailed card/chunk browsing happens in dedicated deck-scoped routes
-- no long mixed list of all deck items on the overview page
-
----
-
-## Why this step exists
-
-- The current mixed deck page becomes noisy as deck content grows.
-- Step 9 privacy/sharing is complete, so IA can now be built on real visibility rules.
-- Clear workspace structure reduces future UI and API churn before global libraries (Step 11).
+- keep deck editing, add/remove cards, and add/remove chunks in one place
+- remove redundant deck-specific subpages
+- keep ownership/share visibility behavior from Step 9
 
 ---
 
 ## Scope
 
 In scope for this step:
-- deck overview/hub restructuring
-- deck action surface (`Open Chunks`, `Open Cards`, `Start Review`, `Add Card`, `Add Chunk`)
-- dedicated deck-scoped pages:
-  - `/decks/:id/cards`
-  - `/decks/:id/chunks`
-- deck-overview cleanup (remove low-value raw fields and mixed lists)
-- backend/API adjustments required to support deck-scoped browsing cleanly
+- deck edit workspace IA cleanup
+- action surface (`Start Review`, `Add Card`, `Add Chunk`) from deck edit workspace
+- card/chunk selection and management only inside edit deck form/workspace
+- remove redundant routes/endpoints/docs tied to deck-specific cards/chunks pages
 
 Out of scope for this step:
-- global cards/chunks libraries (`/cards`, `/chunks`) as primary browsing surfaces
+- global cards/chunks libraries (`/cards`, `/chunks`) redesign
 - direct card/chunk share models (still deck-inherited from Step 9)
-- chunk scheduling logic changes
-- card type extensibility changes
+- scheduling/review algorithm changes
 
 ---
 
 ## Recommended execution order
 
-1. define deck hub information architecture contract
-2. implement backend support for deck-scoped browsing and summaries
-3. build `/decks/:id/cards` page
-4. build `/decks/:id/chunks` page
-5. rework `/decks/:id` into a workspace hub
-6. validate behavior, access boundaries, and routing consistency
+1. lock IA contract around a single deck edit workspace
+2. remove redundant FE routes and BE endpoints for deck-specific cards/chunks pages
+3. ensure edit workspace still supports all deck content operations
+4. validate routing/access behavior and update docs
 
 ---
 
 ## Tasks
 
-### T1 - Define the deck workspace IA contract
+### T1 - Define single-workspace contract for deck management
 
 Status:
 - Done
 
-- Define what belongs on the deck overview page versus deck-scoped subpages.
-- Freeze the deck hub sections so implementation does not drift:
-  - deck identity block
-  - concise progress/volume summary
-  - action block
-  - optional small previews (not full lists)
-- Define action behavior and destination routes for each hub action.
-- Document how this IA respects Step 9 access semantics.
-
-Why this matters:
-- Without a fixed IA contract, the overview page can regress into mixed-content sprawl.
-- Frontend and backend need one shared expectation for summary vs full-list data.
+- `/decks/:id/edit` is the canonical workspace for deck content operations.
+- Card/chunk management happens in the edit form panels and related add/edit flows.
+- No dedicated deck-specific cards/chunks routes.
 
 Exit criteria:
-- The deck hub contract is written and accepted before UI rebuild starts.
+- Workspace contract is documented and accepted.
 
-IA contract locked in this task:
-
-Deck hub route:
-- `/decks/:id`
-
-Deck hub contains only:
-- deck identity:
-  - deck name
-  - optional deck description
-  - ownership/share badge (`Owner` or `Shared`)
-- concise summary:
-  - total cards in deck
-  - total chunks in deck
-  - due review count (or next due indicator, depending on available data)
-- action surface:
-  - `Open Cards`
-  - `Open Chunks`
-  - `Start Review`
-  - `Add Card`
-  - `Add Chunk`
-- optional small previews:
-  - up to 5 latest/important cards
-  - up to 5 latest/important chunks
-  - previews are read-only and link out to dedicated pages
-
-Deck hub explicitly does not contain:
-- full cards table/grid for the deck
-- full chunks table/grid for the deck
-- mixed long lists combining cards and chunks
-- raw technical ids in primary user-facing summary blocks
-
-Deck-scoped dedicated routes:
-- `/decks/:id/cards` -> full deck card browsing and card-focused actions
-- `/decks/:id/chunks` -> full deck chunk browsing and chunk-focused actions
-
-Action routing contract:
-- `Open Cards` -> `/decks/:id/cards`
-- `Open Chunks` -> `/decks/:id/chunks`
-- `Start Review` -> current deck review entry route (existing review flow, no scheduling logic changes in this step)
-- `Add Card` -> current add-card flow scoped to this deck
-- `Add Chunk` -> current add-chunk flow scoped to this deck
-
-Data contract boundary:
-- hub endpoints should return summary-oriented payloads suitable for quick decision-making
-- deck-scoped pages consume paginated list payloads for cards/chunks
-- no endpoint should force the hub to load full deck card/chunk datasets by default
-
-Access/visibility contract (inherits Step 9):
-- owner can access deck hub + deck cards/chunks pages
-- shared user can access deck hub + deck cards/chunks pages for shared decks
-- unrelated user cannot access any of these routes and should receive not-found/unauthorized behavior consistent with Step 9
-- cards/chunks visibility remains deck-inherited (no direct card/chunk sharing introduced)
-
-### T2 - Add and align backend support for deck-scoped browsing
+### T2 - Remove redundant deck-specific pages and API routes
 
 Status:
 - Done
 
-- Ensure backend routes provide clean, paginated, deck-scoped card/chunk retrieval.
-- Keep access checks explicit using Step 9 visibility rules (owner + shared access).
-- Standardize response shape for deck-scoped list views so frontend pages can share table/grid behavior.
-- Keep controllers thin and service/query boundaries aligned with backend patterns.
-
-Likely files to touch:
-- `api/src/decks/*`
-- `api/src/cards/*`
-- `api/src/chunks/*`
-- shared access helpers (`api/src/decks/deck-access.ts`)
-
-Why this matters:
-- Deck-scoped pages should not depend on mixed or ad-hoc response contracts.
-- Stable route contracts reduce rework in Step 11 global library flows.
+- Remove FE deck-specific cards/chunks pages.
+- Remove FE hooks/services/routes used only by those pages.
+- Remove BE endpoints used only by those pages.
+- Remove controller/service/query wiring that exists only for those endpoints.
 
 Exit criteria:
-- Deck-scoped cards/chunks routes are stable, access-safe, and paginated.
+- No runtime route or endpoint remains for removed deck-specific pages.
 
-Implemented in this task:
-- Deck-scoped cards listing now uses the same query contract shape as deck-scoped chunks:
-  - `limit`
-  - `offset`
-  - `direction` (`asc` | `desc`)
-- Added card list query DTO and validation:
-  - `api/src/cards/dto/list-cards-query.dto.ts`
-  - `validateListCardsQuery` in `api/src/cards/dto/card-validation.ts`
-- Added card pagination/direction validation messages in `api/src/cards/card-errors.ts`.
-- Updated deck cards controller path (`GET /v1/decks/:id/cards`) to parse and validate query params before service execution.
-- Updated service/repository query path so deck-scoped card listing applies:
-  - explicit access check via deck visibility (Step 9 rule still enforced)
-  - paginated query execution (`skip`/`take`)
-  - consistent direction sorting (`createdAt`, `id`)
-- Added focused tests:
-  - card query validation spec coverage
-  - deck controller coverage for query normalization and not-found mapping on deck cards listing
-
-Verification:
-- `cd api && npx tsc --noEmit --pretty false`
-- `cd api && npx eslint 'src/decks/decks.controller.ts' 'src/decks/decks.service.ts' 'src/decks/deck-queries.ts' 'src/decks/decks.controller.spec.ts' 'src/cards/card-errors.ts' 'src/cards/dto/list-cards-query.dto.ts' 'src/cards/dto/card-validation.ts' 'src/cards/dto/card-validation.spec.ts'`
-- `cd api && npx jest --runInBand src/cards/dto/card-validation.spec.ts src/decks/decks.controller.spec.ts`
-
-### T3 - Build deck-scoped cards page (`/decks/:id/cards`)
+### T3 - Keep edit deck workspace fully functional after removals
 
 Status:
 - Done
 
-- Implement a dedicated page for cards within one deck.
-- Show cards relevant to the deck only, with proper loading/empty/error states.
-- Include appropriate deck-context navigation back to the deck hub.
-- Wire add/edit/open actions according to current product flows.
-- Reuse shared search/grid primitives where appropriate.
-
-Why this matters:
-- Card workflows inside a deck should not compete with chunk workflows on one mixed page.
-- Dedicated pages improve clarity and reduce cognitive load.
+- Ensure `/decks/:id/edit` still shows deck cards/chunks and supports add/remove flows.
+- Ensure card/chunk panels are deck-filtered in workspace context.
+- Keep delete/update/share operations intact.
 
 Exit criteria:
-- Users can browse and manage cards for a specific deck from `/decks/:id/cards`.
+- Users can manage deck content only from the edit deck workspace without regressions.
 
-Implemented in this task:
-- Added dedicated deck-scoped cards route:
-  - `web/src/app/[locale]/decks/[id]/cards/page.tsx`
-- Added deck-cards grid column hook for focused deck card presentation:
-  - `web/src/app/[locale]/decks/[id]/cards/components/useDeckCardsGridColumns.tsx`
-- The page now includes:
-  - deck-context heading with deck name
-  - back navigation to the current deck workspace route
-  - add-card action pre-scoped with `deckId`
-  - loading/error/empty states
-  - shared `Grid` usage with row click -> card edit
-- Aligned frontend deck-card service contract with backend query support (`limit`, `offset`, `direction`) for deck-scoped list calls.
+### T4 - Docs and plan cleanup
 
-Verification:
-- `cd web && npx tsc --noEmit`
-- `cd web && npx eslint 'src/app/[locale]/decks/[id]/cards/page.tsx' 'src/app/[locale]/decks/[id]/cards/components/useDeckCardsGridColumns.tsx' 'src/features/decks/services/cardService.ts' 'src/features/decks/types/index.ts' 'src/shared/constants/routes.ts'`
+Status:
+- Done
 
-### T4 - Build deck-scoped chunks page (`/decks/:id/chunks`)
+- Remove references to removed pages/endpoints from active plan docs.
+- Update Step 10 wording to reflect the single-workspace strategy.
+
+Exit criteria:
+- Planning docs align with implementation and no longer prescribe removed routes.
+
+### T5 - Verify behavior and access guardrails
+
+Status:
+- Done
+
+- Verify owner/shared access remains correct in deck edit workspace flows.
+- Verify unrelated users cannot access deck data.
+- Verify navigation consistency to add/edit/review flows.
+
+Exit criteria:
+- Access and navigation behavior remain stable after IA simplification.
+
+Verification completed:
+- Backend e2e assertions confirm shared users can access shared deck data through current endpoints (`/v1/decks/:id`, `/v1/cards`, `/v1/chunks`, `/v1/reviews/queue`).
+- Backend e2e assertions confirm unrelated users still receive not-found semantics for protected deck resources.
+- Removed redundant route surface is enforced: `/v1/decks/:id/cards` and `/v1/decks/:id/chunks` now return `404`.
+- Deck edit workspace wiring remains intact after route removals:
+  - `web/src/app/[locale]/decks/[id]/edit/page.tsx` uses deck-filtered global cards/chunks queries
+  - workspace actions still route to add card, add chunk, and review flows
+
+### T6 - Add focused regression coverage for simplified IA
 
 Status:
 - Proposed
 
-- Implement a dedicated page for chunks within one deck.
-- Show chunks relevant to the deck only, with loading/empty/error states.
-- Include deck-context navigation and chunk-focused actions.
-- Reuse shared search/grid behavior to keep interaction patterns consistent.
-
-Why this matters:
-- Chunks are a first-class learning unit and need their own focused workspace.
-- Separating chunks from cards clarifies authoring and review preparation flows.
+- Add/adjust tests for:
+  - removed route/endpoint surface
+  - preserved deck edit workspace behavior
+  - ownership/share access boundaries
 
 Exit criteria:
-- Users can browse and manage chunks for a specific deck from `/decks/:id/chunks`.
-
-### T5 - Rework deck overview page into a workspace hub
-
-Status:
-- Proposed
-
-- Replace full inline deck content lists with:
-  - deck summary
-  - clear next actions
-  - optional lightweight previews only
-- Remove low-signal raw technical fields from the overview.
-- Ensure actions route to:
-  - `/decks/:id/cards`
-  - `/decks/:id/chunks`
-  - review entry flow
-  - add card/chunk entry flows
-- Preserve share/ownership behavior established in Step 9.
-
-Why this matters:
-- The deck overview should be a decision surface, not a dense data dump.
-- This is the IA pivot that enables Step 11 to add global libraries cleanly.
-
-Exit criteria:
-- `/decks/:id` behaves as a hub with clear actions and concise summary.
-
-### T6 - Validate end-to-end behavior and guardrails
-
-Status:
-- Proposed
-
-- Verify route-level access boundaries remain correct for:
-  - owner
-  - shared user
-  - unrelated user
-- Add/update tests for deck-scoped route behavior and not-found/unauthorized cases.
-- Confirm navigation consistency:
-  - from deck list -> deck hub
-  - from hub -> deck cards/chunks
-  - back-navigation preserves deck context
-- Validate empty states and pagination UX for both deck-scoped pages.
-
-Why this matters:
-- IA changes often regress access, routing, and edge-case behavior.
-- Test coverage keeps Step 10 stable before Step 11 expands browsing surfaces.
-
-Exit criteria:
-- Deck workspace IA changes are access-safe, test-backed, and production-ready.
+- Test coverage protects the simplified deck IA from reintroducing redundant routes.
 
 ---
 
 ## Definition of done
 
-- Deck overview is a workspace hub, not a mixed-content page.
-- Dedicated deck-scoped pages exist for cards and chunks.
-- Deck actions route users to the correct focused surfaces.
-- Backend contracts for deck-scoped browsing are stable and access-safe.
-- Step 9 ownership/share rules remain enforced across all Step 10 routes.
-- The app is ready for Step 11 global library and attach flows.
+- `/decks/:id/edit` is the single deck management workspace.
+- No dedicated deck-specific cards/chunks pages exist.
+- No dedicated deck-specific cards/chunks endpoints exist.
+- Deck content add/remove flows still work from edit workspace.
+- Docs and plans reflect the simplified IA.

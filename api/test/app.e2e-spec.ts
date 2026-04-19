@@ -241,22 +241,7 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get(`/v1/decks/${deckId}/cards`)
       .set(authHeader)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: cardId,
-              deckId,
-              kind: 'basic',
-              fields: {
-                front: 'Hallo',
-                back: 'Hello',
-              },
-            }),
-          ]),
-        );
-      });
+      .expect(404);
 
     const createChunkRes = await request(server)
       .post('/v1/chunks')
@@ -296,35 +281,7 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get(`/v1/decks/${deckId}/chunks`)
       .set(authHeader)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: chunkId,
-              deckId,
-              title: 'German word chunk',
-              cardIds: [cardId],
-            }),
-          ]),
-        );
-      });
-
-    await request(server)
-      .get(`/v1/decks/${deckId}/chunks?limit=1&offset=0&direction=desc`)
-      .set(authHeader)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).toHaveLength(1);
-        expect(res.body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: chunkId,
-              deckId,
-            }),
-          ]),
-        );
-      });
+      .expect(404);
 
     await request(server)
       .get('/v1/cards')
@@ -383,16 +340,7 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get('/v1/decks/deck-missing/cards')
       .set(authHeader)
-      .expect(404)
-      .expect((res) => {
-        expect(res.body).toEqual(
-          expect.objectContaining({
-            statusCode: 404,
-            message: DECK_ERROR_MESSAGES.deckNotFound,
-            error: 'Not Found',
-          }),
-        );
-      });
+      .expect(404);
 
     await request(server)
       .get(`/v1/chunks/${chunkId}`)
@@ -654,32 +602,12 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get(`/v1/decks/${deckId}/cards`)
       .set(sharedAuthHeader)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: cardId,
-              deckId,
-            }),
-          ]),
-        );
-      });
+      .expect(404);
 
     await request(server)
       .get(`/v1/decks/${deckId}/chunks`)
       .set(sharedAuthHeader)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: chunkId,
-              deckId,
-            }),
-          ]),
-        );
-      });
+      .expect(404);
 
     await request(server)
       .get('/v1/cards')
