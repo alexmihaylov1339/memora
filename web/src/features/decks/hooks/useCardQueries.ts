@@ -2,7 +2,7 @@ import { useServiceQuery, type UseServiceQueryOptions } from '@shared/hooks';
 import { cardService } from '../services';
 import type { CardRecord } from '../types';
 
-const CARD_QUERY_KEYS = {
+export const CARD_QUERY_KEYS = {
   all: ['cards'],
   moveCandidates: (deckId: string) => ['cards', 'move-candidates', deckId],
   detail: (id: string) => ['cards', 'detail', id],

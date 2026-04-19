@@ -187,6 +187,10 @@ Known bug to fix in this step:
 - Likely fix direction:
   - ensure card list query invalidation/refetch on create/move flows, or force a fresh query on navigation into `/cards`.
 
+Resolution status:
+- Fixed in this step by invalidating cards/decks query keys on successful card mutations (`create`, `update`, `delete`, `move`).
+- Applied the same cache-invalidation pattern to chunk mutations for consistency and to prevent analogous stale-list behavior on `/chunks`.
+
 Verification completed:
 - Deck workspace action surfaces now explicitly separate move and create paths for cards/chunks.
 - Deck-context move actions route to:
