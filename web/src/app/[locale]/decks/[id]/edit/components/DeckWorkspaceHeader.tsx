@@ -14,20 +14,31 @@ export default function DeckWorkspaceHeader({
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Workspace</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Create cards, assemble chunks, and keep this deck ready for the review flow.
+            Move existing cards/chunks into this deck or create new ones directly from the workspace.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <DeckActionLink
-            href={{ pathname: '/cards/new', query: { deckId } }}
+            href={{ pathname: '/cards', query: { deckId } }}
             variant="primary"
           >
-            Add Card
+            Move Existing Card
+          </DeckActionLink>
+
+          <DeckActionLink href={{ pathname: '/cards/new', query: { deckId } }}>
+            Create New Card
+          </DeckActionLink>
+
+          <DeckActionLink
+            href={{ pathname: '/chunks', query: { deckId } }}
+            variant="primary"
+          >
+            Move Existing Chunk
           </DeckActionLink>
 
           <DeckActionLink href={{ pathname: '/chunks/new', query: { deckId } }}>
-            Add Chunk
+            Create New Chunk
           </DeckActionLink>
 
           <DeckActionLink href={APP_ROUTES.review}>

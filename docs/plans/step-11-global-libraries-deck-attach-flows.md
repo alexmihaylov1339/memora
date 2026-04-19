@@ -167,7 +167,7 @@ Verification completed:
 ### T5 - Update deck workspace actions to use move flows
 
 Status:
-- Proposed
+- Ready
 
 - Update workspace actions so `Add Card` / `Add Chunk` navigate to dedicated deck-context library move flows.
 - Preserve direct "create new" paths, but as explicit secondary actions.
@@ -186,6 +186,16 @@ Known bug to fix in this step:
   - `/cards` should reflect latest card mutations immediately after navigation without hard reload.
 - Likely fix direction:
   - ensure card list query invalidation/refetch on create/move flows, or force a fresh query on navigation into `/cards`.
+
+Verification completed:
+- Deck workspace action surfaces now explicitly separate move and create paths for cards/chunks.
+- Deck-context move actions route to:
+  - `/cards?deckId=<deckId>`
+  - `/chunks?deckId=<deckId>`
+- Create actions remain available as secondary paths:
+  - `/cards/new?deckId=<deckId>`
+  - `/chunks/new?deckId=<deckId>`
+- `Start Review` action remains unchanged.
 
 ### T6 - Regression coverage for membership and access boundaries
 

@@ -75,12 +75,20 @@ export default function DeckEditForm({
       {deleteError && <p className="text-sm text-[var(--destructive)]">{deleteError}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
+        <DeckActionLink href={{ pathname: '/cards', query: { deckId: id } }}>
+          Move Card
+        </DeckActionLink>
+
         <DeckActionLink href={{ pathname: '/cards/new', query: { deckId: id } }}>
-          Add Card
+          Create Card
+        </DeckActionLink>
+
+        <DeckActionLink href={{ pathname: '/chunks', query: { deckId: id } }}>
+          Move Chunk
         </DeckActionLink>
 
         <DeckActionLink href={{ pathname: '/chunks/new', query: { deckId: id } }}>
-          Add Chunk
+          Create Chunk
         </DeckActionLink>
 
         <Button
