@@ -1,10 +1,12 @@
 export {
   CHUNK_QUERY_KEYS,
+  useDeckMovableChunksQuery,
   useChunksListQuery,
   useChunkDetailQuery,
 } from './useChunkQueries';
 export {
   useCreateChunkMutation,
+  useMoveDeckChunksMutation,
   useUpdateChunkMutation,
   useDeleteChunkMutation,
 } from './useChunkMutations';

@@ -1,8 +1,11 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import type {
+  DeckChunkMembershipMutationResult,
+  DeckMoveChunkCandidatesParams,
   ChunkIdParams,
   ChunkRecord,
   CreateChunkDto,
+  MoveDeckChunksParams,
   UpdateChunkDto,
 } from '../types';
 import type { SearchRequest, SearchResultItem } from '../../search/types';
@@ -13,6 +16,8 @@ const api = ManageService(API_URL);
 const CHUNK_ENDPOINTS = {
   BASE: '/v1/chunks',
   DETAIL: (id: string) => `/v1/chunks/${id}`,
+  MOVE_CANDIDATES: (deckId: string) => `/v1/decks/${deckId}/move-candidates/chunks`,
+  MOVE: (deckId: string) => `/v1/decks/${deckId}/move/chunks`,
 } as const;
 const SEARCH_ENDPOINTS = {
   BASE: '/v1/search',
@@ -24,6 +29,21 @@ export const chunkService = {
       .prepareRequest(CHUNK_ENDPOINTS.BASE, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
       .execRequest<ChunkRecord[]>();
+  },
+
+  getMoveCandidates(params: DeckMoveChunkCandidatesParams) {
+    return api
+      .prepareRequest(CHUNK_ENDPOINTS.MOVE_CANDIDATES(params.deckId), HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<ChunkRecord[]>();
+  },
+
+  moveToDeck(params: MoveDeckChunksParams) {
+    return api
+      .prepareRequest(CHUNK_ENDPOINTS.MOVE(params.deckId), HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .setBody({ chunkIds: params.chunkIds })
+      .execRequest<DeckChunkMembershipMutationResult>();
   },
 
   create(params: CreateChunkDto) {

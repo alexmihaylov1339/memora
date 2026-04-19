@@ -24,3 +24,21 @@ export interface UpdateChunkDto {
 export interface ChunkIdParams {
   id: string;
 }
+
+export interface DeckMoveChunkCandidatesParams {
+  deckId: string;
+}
+
+export interface MoveDeckChunksDto {
+  chunkIds: string[];
+}
+
+export interface MoveDeckChunksParams
+  extends DeckMoveChunkCandidatesParams,
+    MoveDeckChunksDto {}
+
+export interface DeckChunkMembershipMutationResult {
+  deckId: string;
+  chunkIds: string[];
+  count: number;
+}

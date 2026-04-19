@@ -4,6 +4,7 @@ import type { ChunkRecord } from '../types';
 
 export const CHUNK_QUERY_KEYS = {
   all: ['chunks'],
+  moveCandidates: (deckId: string) => ['chunks', 'move-candidates', deckId],
   detail: (id: string) => ['chunks', 'detail', id],
 };
 
@@ -11,6 +12,21 @@ export function useChunksListQuery(
   options?: UseServiceQueryOptions<ChunkRecord[]>,
 ) {
   return useServiceQuery(CHUNK_QUERY_KEYS.all, chunkService.listAll, options);
+}
+
+export function useDeckMovableChunksQuery(
+  deckId: string,
+  options?: UseServiceQueryOptions<ChunkRecord[]>,
+) {
+  return useServiceQuery(
+    CHUNK_QUERY_KEYS.moveCandidates(deckId),
+    chunkService.getMoveCandidates,
+    { deckId },
+    {
+      enabled: Boolean(deckId),
+      ...options,
+    },
+  );
 }
 
 export function useChunkDetailQuery(

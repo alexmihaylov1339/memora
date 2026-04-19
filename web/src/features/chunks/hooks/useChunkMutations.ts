@@ -1,6 +1,8 @@
 import { useService, type UseServiceOptions } from '@shared/hooks';
 import { chunkService } from '../services';
 import type {
+  DeckChunkMembershipMutationResult,
+  MoveDeckChunksParams,
   ChunkIdParams,
   ChunkRecord,
   CreateChunkDto,
@@ -22,4 +24,13 @@ export function useUpdateChunkMutation(
 
 export function useDeleteChunkMutation(options?: UseServiceOptions<void>) {
   return useService<ChunkIdParams, void>(chunkService.delete, options);
+}
+
+export function useMoveDeckChunksMutation(
+  options?: UseServiceOptions<DeckChunkMembershipMutationResult>,
+) {
+  return useService<MoveDeckChunksParams, DeckChunkMembershipMutationResult>(
+    chunkService.moveToDeck,
+    options,
+  );
 }

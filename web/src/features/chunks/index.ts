@@ -7,16 +7,22 @@ export {
 } from './constants/reviewSchedule';
 export {
   CHUNK_QUERY_KEYS,
+  useDeckMovableChunksQuery,
   useChunksListQuery,
   useChunkCreateFormFields,
   useChunkCreateScreen,
   useChunkDeckSelectionFields,
   useChunkDetailQuery,
   useCreateChunkMutation,
+  useMoveDeckChunksMutation,
   useUpdateChunkMutation,
   useDeleteChunkMutation,
 } from './hooks';
 export type {
+  DeckChunkMembershipMutationResult,
+  DeckMoveChunkCandidatesParams,
+  MoveDeckChunksDto,
+  MoveDeckChunksParams,
   ChunkIdParams,
   ChunkRecord,
   CreateChunkDto,

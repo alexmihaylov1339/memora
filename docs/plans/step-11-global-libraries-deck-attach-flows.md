@@ -150,13 +150,19 @@ Verification completed:
 ### T4 - Global chunks library: deck-context move flow
 
 Status:
-- Proposed
+- Ready
 
 - Mirror T3 behavior for `/chunks`.
 - Ensure chunk move behavior is consistent with card move semantics from T1.
 
 Exit criteria:
 - From deck workspace, user can open chunks library and perform the Step 11 move action explicitly.
+
+Verification completed:
+- `/chunks` now supports deck-context mode via `deckId` query param.
+- Deck-context mode fetches `GET /v1/decks/:id/move-candidates/chunks` instead of global chunks.
+- Each chunk row exposes a `Move to Deck` action using `POST /v1/decks/:id/move/chunks`.
+- Non-context `/chunks` behavior remains unchanged (search + row click to chunk edit).
 
 ### T5 - Update deck workspace actions to use move flows
 
@@ -169,6 +175,17 @@ Status:
 
 Exit criteria:
 - Deck workspace clearly separates `move existing` vs `create new`.
+
+Known bug to fix in this step:
+- After creating a card, navigating to `http://localhost:3000/cards` may show stale list data until a manual page reload.
+- Repro example:
+  - create a new card
+  - navigate to `/cards`
+  - newly created card is missing until browser refresh
+- Expected behavior:
+  - `/cards` should reflect latest card mutations immediately after navigation without hard reload.
+- Likely fix direction:
+  - ensure card list query invalidation/refetch on create/move flows, or force a fresh query on navigation into `/cards`.
 
 ### T6 - Regression coverage for membership and access boundaries
 
