@@ -1,6 +1,6 @@
 # Memora: Step 12 Plan - Scalable Deck, Card, and Chunk UX
 
-**Status:** Proposed  
+**Status:** In Progress  
 **Date:** 2026-04-20  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 12
 
@@ -108,7 +108,7 @@ Out of scope for this step:
 ### T1 - Lock Step 12 UX contract and surface map
 
 Status:
-- Proposed
+- Ready
 
 - Confirm which pages/components are touched in this step.
 - Define CTA hierarchy for decks/cards/chunks pages.
@@ -117,10 +117,44 @@ Status:
 Exit criteria:
 - No ambiguity remains about Step 12 ownership and outcomes.
 
+Locked surface map:
+- `/decks`:
+  - primary: deck list browse/manage
+  - secondary: create deck, open deck workspace
+- `/decks/:id/edit`:
+  - primary: manage selected deck content and sharing
+  - actions split: move existing card/chunk vs create new card/chunk
+- `/cards`:
+  - primary: global card library browse/search
+  - context mode (`?deckId=`): move existing cards into target deck
+- `/chunks`:
+  - primary: global chunk library browse/search
+  - required CTA: top-level `Create Chunk`
+  - context mode (`?deckId=`): move existing chunks into target deck
+- `/chunks/new`:
+  - primary: create chunk via searchable multi-select card workflow
+  - selected-cards grid must support remove + reorder before submit
+
+Locked CTA hierarchy:
+- Global pages (`/decks`, `/cards`, `/chunks`):
+  - one clear primary action at top of page
+  - context-specific secondary actions below/adjacent, visually subordinate
+- Deck workspace (`/decks/:id/edit`):
+  - `Move Existing ...` and `Create New ...` remain explicit separate actions
+  - `Start Review` remains available and unchanged in intent
+- Chunk create:
+  - `Create Chunk` is the single primary submit action
+  - selection controls (search, add/remove/reorder) are interaction controls, not competing primary CTAs
+
+Verification completed:
+- Step 12 ownership is now explicit by route and action hierarchy.
+- Chunk parity expectations are locked in the plan (global grid + create CTA + deck-style selection flow).
+- Remaining tasks (`T2+`) can execute without re-deciding product behavior.
+
 ### T2 - Redesign global chunks page and add Create Chunk CTA
 
 Status:
-- Proposed
+- Ready
 
 - Improve `/chunks` visual hierarchy.
 - Add prominent `Create Chunk` action.
@@ -128,6 +162,12 @@ Status:
 
 Exit criteria:
 - `/chunks` clearly supports both browse and create entry.
+
+Verification completed:
+- `/chunks` header was redesigned into a clearer hero-style action area.
+- Added prominent `Create Chunk` CTA at top level of `/chunks`.
+- Kept move-context mode intact (`?deckId=` still drives move behavior and back navigation).
+- `Create Chunk` CTA supports deck-context by routing to `/chunks/new?deckId=<deckId>` when context exists.
 
 ### T3 - Align chunk create flow to deck-style selection ergonomics
 
@@ -189,4 +229,3 @@ Exit criteria:
 - Deck/card/chunk surfaces are visually and interaction-wise consistent.
 - Critical UX flows are covered by regression tests.
 - Docs reflect final Step 12 behavior and defer Step 13 scope clearly.
-
