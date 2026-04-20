@@ -237,6 +237,7 @@ Verification completed:
 - Renamed this plan file to `step-11-global-libraries-deck-move-flows.md` so filename matches the locked move semantics.
 - Updated Step 11 wording in `chunked-learning-roadmap.md` to use move semantics language instead of attach semantics.
 - Rechecked Step 11 task text and status markers so completed tasks are tracked as `Ready` and terminology matches implemented routes and behavior.
+- Explicitly handed chunk UX parity and `/chunks` create-CTA ownership to Step 12 planning (`step-12-redesign-scalable-deck-card-chunk-ux.md`).
 
 ---
 

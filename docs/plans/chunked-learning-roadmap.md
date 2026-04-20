@@ -279,6 +279,13 @@ Critical planning note before implementation:
 **Deliverables**
 - Redesigned deck overview/edit workspace with stronger hierarchy and actions.
 - Redesigned global cards/chunks library pages.
+- Chunk management parity contract:
+  - `/chunks` remains a global grid with search and includes a clear `Create Chunk` CTA
+  - chunk create UX follows the same mental model as deck create/edit selection:
+    - searchable card selection
+    - multi-select add to chunk
+    - visible selected-cards grid
+    - remove/reorder selected cards before submit
 - Scalable management patterns:
   - list-first layouts by default
   - search for cards/chunks
