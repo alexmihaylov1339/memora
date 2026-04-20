@@ -244,7 +244,7 @@
 
 Critical planning note before implementation:
 - cards and chunks currently have single-deck ownership (`Card.deckId`, `Chunk.deckId`)
-- Step 11 must first lock attach semantics so we do not accidentally treat a move as a non-destructive attach
+- Step 11 must first lock move semantics so we do not accidentally treat a destructive move as non-destructive membership
 - choose one explicit rule for v1 and keep API/UI wording aligned with that rule (`move`, `copy`, or true multi-deck membership)
 
 **Deliverables**

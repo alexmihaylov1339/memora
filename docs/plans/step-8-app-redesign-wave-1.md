@@ -415,7 +415,7 @@ Status:
   - single-select mode
   - multi-select mode
 - Keep the existing single-select behavior intact for current pages.
-- Add a controlled multi-select path so deck attach/select flows and chunk card selection can reuse the same search without forking the component.
+- Add a controlled multi-select path so deck move/select flows and chunk card selection can reuse the same search without forking the component.
 
 Implemented behavior:
 

@@ -1,6 +1,6 @@
 # Memora: Step 11 Plan - Global Libraries and Deck Move Flows
 
-**Status:** In Progress  
+**Status:** Ready  
 **Date:** 2026-04-19  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 11
 
@@ -35,7 +35,7 @@ Already present:
 Current gap/risk to solve in Step 11:
 - cards and chunks are currently single-deck entities (`Card.deckId`, `Chunk.deckId`)
 - current backend move behavior reassigns ownership to another deck
-- plan and UI wording has said "attach", which can be misread as non-destructive multi-deck membership
+- older plan and UI wording treated moves as "attach", which could be misread as non-destructive multi-deck membership
 
 Step 11 must lock this semantic choice first, before expanding UX/API surface.
 
@@ -225,13 +225,18 @@ Verification completed:
 ### T7 - Docs and roadmap alignment pass
 
 Status:
-- Proposed
+- Ready
 
 - Update Step 11 and related docs to reflect the exact semantic contract and route/API names.
 - Ensure plan text no longer uses ambiguous wording where behavior is destructive/non-destructive.
 
 Exit criteria:
 - Active docs describe the same behavior the code enforces.
+
+Verification completed:
+- Renamed this plan file to `step-11-global-libraries-deck-move-flows.md` so filename matches the locked move semantics.
+- Updated Step 11 wording in `chunked-learning-roadmap.md` to use move semantics language instead of attach semantics.
+- Rechecked Step 11 task text and status markers so completed tasks are tracked as `Ready` and terminology matches implemented routes and behavior.
 
 ---
 
