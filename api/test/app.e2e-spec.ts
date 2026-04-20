@@ -826,6 +826,16 @@ describe('AppController (e2e)', () => {
   it('deck move membership endpoints list candidates and support move/detach actions', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };
+    const sharedCredentials = {
+      email: `memora-e2e-move-shared-${uniqueSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora Move Shared',
+    };
+    const outsiderCredentials = {
+      email: `memora-e2e-move-outsider-${uniqueSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora Move Outsider',
+    };
 
     const sourceDeckRes = await request(server)
       .post('/v1/decks')
@@ -868,6 +878,74 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
     const chunkId = getStringField(asRecord(parseJson(chunkRes.text)), 'id');
+    const randomMissingCardId = 'card-missing';
+    const randomMissingChunkId = 'chunk-missing';
+
+    const sharedRegisterRes = await request(server)
+      .post('/v1/auth/register')
+      .send(sharedCredentials)
+      .expect(201);
+    const sharedToken = getStringField(
+      asRecord(parseJson(sharedRegisterRes.text)),
+      'accessToken',
+    );
+    const sharedAuthHeader = { Authorization: `Bearer ${sharedToken}` };
+
+    await request(server)
+      .post('/v1/auth/register')
+      .send(outsiderCredentials)
+      .expect(201);
+    const outsiderLoginRes = await request(server)
+      .post('/v1/auth/login')
+      .send(outsiderCredentials)
+      .expect(201);
+    const outsiderToken = getStringField(
+      asRecord(parseJson(outsiderLoginRes.text)),
+      'accessToken',
+    );
+    const outsiderAuthHeader = { Authorization: `Bearer ${outsiderToken}` };
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/shares`)
+      .set(authHeader)
+      .send({
+        identifier: sharedCredentials.email,
+        permission: 'view',
+      })
+      .expect(201);
+
+    await request(server)
+      .get(`/v1/decks/${targetDeckId}/move-candidates/cards`)
+      .set(sharedAuthHeader)
+      .expect(404);
+
+    await request(server)
+      .get(`/v1/decks/${targetDeckId}/move-candidates/chunks`)
+      .set(sharedAuthHeader)
+      .expect(404);
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/move/cards`)
+      .set(sharedAuthHeader)
+      .send({ cardIds: [cardId] })
+      .expect(404);
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/move/chunks`)
+      .set(sharedAuthHeader)
+      .send({ chunkIds: [chunkId] })
+      .expect(404);
+
+    await request(server)
+      .get(`/v1/decks/${targetDeckId}/move-candidates/cards`)
+      .set(outsiderAuthHeader)
+      .expect(404);
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/move/cards`)
+      .set(outsiderAuthHeader)
+      .send({ cardIds: [cardId] })
+      .expect(404);
 
     await request(server)
       .get(`/v1/decks/${targetDeckId}/move-candidates/cards`)
@@ -948,6 +1026,36 @@ describe('AppController (e2e)', () => {
           expect.objectContaining({
             id: chunkId,
             deckId: targetDeckId,
+          }),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/detach/cards`)
+      .set(authHeader)
+      .send({ cardIds: [randomMissingCardId] })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: DECK_ERROR_MESSAGES.cardIdsMustReferenceDeckCards,
+            error: 'Bad Request',
+          }),
+        );
+      });
+
+    await request(server)
+      .post(`/v1/decks/${targetDeckId}/detach/chunks`)
+      .set(authHeader)
+      .send({ chunkIds: [randomMissingChunkId] })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: DECK_ERROR_MESSAGES.chunkIdsMustReferenceDeckChunks,
+            error: 'Bad Request',
           }),
         );
       });

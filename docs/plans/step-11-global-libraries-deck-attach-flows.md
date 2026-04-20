@@ -204,7 +204,7 @@ Verification completed:
 ### T6 - Regression coverage for membership and access boundaries
 
 Status:
-- Proposed
+- Ready
 
 - Add e2e assertions for:
   - chosen move semantic behavior
@@ -214,6 +214,13 @@ Status:
 
 Exit criteria:
 - Move behavior is test-protected and cannot silently drift.
+
+Verification completed:
+- Move membership e2e coverage now includes owner-only enforcement:
+  - shared users cannot list candidates or execute move actions
+  - unrelated users cannot list candidates or execute move actions
+- Added invalid detach assertions to prevent unintended destructive deletes when IDs are not members of the target deck.
+- Existing move/detach happy-path assertions remain covered in the same e2e flow.
 
 ### T7 - Docs and roadmap alignment pass
 
