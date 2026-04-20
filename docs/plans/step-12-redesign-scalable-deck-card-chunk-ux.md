@@ -97,9 +97,10 @@ Out of scope for this step:
 
 1. lock target UX contract and page-level CTA hierarchy
 2. redesign `/chunks` and add explicit `Create Chunk` action
-3. align chunk create/edit interaction model with deck patterns
-4. align cards/decks/chunks visual system and state messaging
-5. add regression coverage and finalize docs
+3. redesign deck create/edit surfaces and align their styling system
+4. align chunk create/edit interaction model with deck patterns
+5. align cards/decks/chunks visual system and state messaging
+6. add regression coverage and finalize docs
 
 ---
 
@@ -169,7 +170,19 @@ Verification completed:
 - Kept move-context mode intact (`?deckId=` still drives move behavior and back navigation).
 - `Create Chunk` CTA supports deck-context by routing to `/chunks/new?deckId=<deckId>` when context exists.
 
-### T3 - Align chunk create flow to deck-style selection ergonomics
+### T3 - Redesign deck add/edit styling surfaces
+
+Status:
+- Proposed
+
+- Align `/decks/new` and `/decks/:id/edit` visual structure and spacing with the Step 12 UX language.
+- Standardize section hierarchy, CTA emphasis, and helper/feedback text treatment.
+- Ensure deck add/edit pages remain functional while adopting the scalable style foundation for cards/chunks parity.
+
+Exit criteria:
+- Deck create/edit surfaces share a clear, scalable styling pattern that the rest of Step 12 can reuse.
+
+### T4 - Align chunk create flow to deck-style selection ergonomics
 
 Status:
 - Proposed
@@ -184,7 +197,7 @@ Status:
 Exit criteria:
 - Chunk form interaction is consistent with deck-style mental model.
 
-### T4 - Cross-surface consistency pass (decks/cards/chunks)
+### T5 - Cross-surface consistency pass (decks/cards/chunks)
 
 Status:
 - Proposed
@@ -195,7 +208,7 @@ Status:
 Exit criteria:
 - Surfaces feel like one coherent system, not separate feature islands.
 
-### T5 - Regression coverage for UX-critical flows
+### T6 - Regression coverage for UX-critical flows
 
 Status:
 - Proposed
@@ -209,7 +222,7 @@ Status:
 Exit criteria:
 - Step 12 UX-critical behavior is test-protected.
 
-### T6 - Docs and handoff alignment for Step 13
+### T7 - Docs and handoff alignment for Step 13
 
 Status:
 - Proposed
