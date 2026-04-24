@@ -8,7 +8,7 @@ import type {
 import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
-  deckId: string;
+  deckId?: string;
   kind: string;
   fields: Record<string, unknown>;
 }

@@ -20,27 +20,15 @@ describe('card-validation', () => {
     it('accepts valid card input', () => {
       expect(() =>
         validateCreateCardInput({
-          deckId: 'deck-1',
           kind: 'basic',
           fields: { front: 'Hej', back: 'Hi' },
         }),
       ).not.toThrow();
     });
 
-    it('throws when deckId is missing', () => {
-      expect(() =>
-        validateCreateCardInput({
-          deckId: ' ',
-          kind: 'basic',
-          fields: { front: 'Hej' },
-        }),
-      ).toThrow(BadRequestException);
-    });
-
     it('throws when kind is missing', () => {
       expect(() =>
         validateCreateCardInput({
-          deckId: 'deck-1',
           kind: ' ',
           fields: { front: 'Hej' },
         }),
@@ -50,7 +38,6 @@ describe('card-validation', () => {
     it('throws when fields is not an object', () => {
       expect(() =>
         validateCreateCardInput({
-          deckId: 'deck-1',
           kind: 'basic',
           fields: [] as unknown as Record<string, unknown>,
         }),

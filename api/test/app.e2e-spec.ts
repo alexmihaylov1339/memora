@@ -393,6 +393,47 @@ describe('AppController (e2e)', () => {
       .expect(204);
   });
 
+  it('supports creating cards and chunks without deck assignment', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const createCardRes = await request(server)
+      .post('/v1/cards')
+      .set(authHeader)
+      .send({
+        kind: 'basic',
+        fields: {
+          front: 'Unassigned front',
+          back: 'Unassigned back',
+        },
+      })
+      .expect(201);
+
+    const createdCard = asRecord(parseJson(createCardRes.text));
+    const cardId = getStringField(createdCard, 'id');
+    expect(createdCard.deckId).toBeNull();
+
+    const createChunkRes = await request(server)
+      .post('/v1/chunks')
+      .set(authHeader)
+      .send({
+        title: 'Unassigned chunk',
+        cardIds: [cardId],
+      })
+      .expect(201);
+
+    const createdChunk = asRecord(parseJson(createChunkRes.text));
+    const chunkId = getStringField(createdChunk, 'id');
+    expect(createdChunk.deckId).toBeNull();
+
+    const getChunkRes = await request(server)
+      .get(`/v1/chunks/${chunkId}`)
+      .set(authHeader)
+      .expect(200);
+    const fetchedChunk = asRecord(parseJson(getChunkRes.text));
+    expect(fetchedChunk.deckId).toBeNull();
+  });
+
   it('deck create -> list -> detail -> update -> delete happy path', async () => {
     const server = app.getHttpServer();
     const authHeader = { Authorization: `Bearer ${accessToken}` };

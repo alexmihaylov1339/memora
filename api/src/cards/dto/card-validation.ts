@@ -16,10 +16,6 @@ export function validateCardId(id: string): string {
 }
 
 export function validateCreateCardInput(body: CreateCardDto) {
-  if (!body?.deckId?.trim()) {
-    throw new BadRequestException(CARD_ERROR_MESSAGES.deckIdRequired);
-  }
-
   if (!body?.kind?.trim()) {
     throw new BadRequestException(CARD_ERROR_MESSAGES.kindRequired);
   }

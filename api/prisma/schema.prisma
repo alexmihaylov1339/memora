@@ -21,6 +21,8 @@ model User {
 
   decks                  Deck[]
   sharedDecks            DeckShare[]
+  cards                  Card[]
+  chunks                 Chunk[]
 }
 
 /** Basic grading enum for SRS */
@@ -75,16 +77,19 @@ model DeckShare {
 /** A chunk groups ordered cards inside a deck */
 model Chunk {
   id         String      @id @default(cuid())
-  deckId     String
+  ownerId    String?
+  deckId     String?
   title      String
   position   Int         @default(0)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  deck       Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  owner      User?       @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  deck       Deck?       @relation(fields: [deckId], references: [id], onDelete: SetNull)
   chunkCards ChunkCard[]
   reviewState ChunkReviewState?
 
+  @@index([ownerId])
   @@index([deckId])
   @@index([deckId, position])
 }
@@ -122,16 +127,19 @@ model ChunkCard {
 /** A card can be of different kinds; payload stored in JSON for flexibility */
 model Card {
   id         String      @id @default(cuid())
-  deckId     String
+  ownerId    String?
+  deckId     String?
   kind       String      // 'basic' | 'cloze' | 'mcq' (we'll enforce in app layer)
   fields     Json        // payload per kind
   createdAt  DateTime    @default(now())
 
-  deck       Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  owner      User?       @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  deck       Deck?       @relation(fields: [deckId], references: [id], onDelete: SetNull)
   chunkCards ChunkCard[]
   state      ReviewState?
   logs       ReviewLog[]
 
+  @@index([ownerId])
   @@index([deckId])
   @@index([createdAt])
 }

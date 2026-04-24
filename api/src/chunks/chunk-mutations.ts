@@ -9,7 +9,7 @@ import {
 } from './chunks.helpers';
 
 export interface CreateChunkInput {
-  deckId: string;
+  deckId?: string;
   title: string;
   cardIds?: string[];
   position?: number;
@@ -38,11 +38,13 @@ export async function createChunk(
 ): Promise<CreateChunkResult> {
   return prisma.$transaction(async (tx) => {
     const client = tx as ChunkPersistenceClient;
-    const deck = await client.deck.findFirst({
-      where: { id: data.deckId, ownerId: userId },
-    });
-    if (!deck) {
-      return { status: 'deck_not_found' } satisfies CreateChunkResult;
+    if (data.deckId) {
+      const deck = await client.deck.findFirst({
+        where: { id: data.deckId, ownerId: userId },
+      });
+      if (!deck) {
+        return { status: 'deck_not_found' } satisfies CreateChunkResult;
+      }
     }
 
     if (
@@ -53,11 +55,14 @@ export async function createChunk(
       return { status: 'invalid_cards' } satisfies CreateChunkResult;
     }
 
-    await assignCardsToDeck(client, data.deckId, data.cardIds ?? []);
+    if (data.deckId) {
+      await assignCardsToDeck(client, data.deckId, data.cardIds ?? []);
+    }
 
     const chunk = await client.chunk.create({
       data: {
-        deckId: data.deckId,
+        ownerId: userId,
+        deckId: data.deckId ?? null,
         title: data.title,
         position: data.position ?? 0,
         chunkCards: {
@@ -91,7 +96,7 @@ export async function updateChunk(
   return prisma.$transaction(async (tx) => {
     const client = tx as ChunkPersistenceClient;
     const existing = await client.chunk.findFirst({
-      where: { id, deck: { ownerId: userId } },
+      where: { id, ownerId: userId },
     });
 
     if (!existing) {
@@ -106,7 +111,9 @@ export async function updateChunk(
       return { status: 'invalid_cards' } satisfies UpdateChunkResult;
     }
 
-    await assignCardsToDeck(client, existing.deckId, data.cardIds ?? []);
+    if (existing.deckId) {
+      await assignCardsToDeck(client, existing.deckId, data.cardIds ?? []);
+    }
 
     const chunk = await client.chunk.update({
       where: { id },
@@ -145,7 +152,7 @@ export async function removeChunk(
   userId: string,
 ): Promise<boolean> {
   const existing = await prisma.chunk.findFirst({
-    where: { id, deck: { ownerId: userId } },
+    where: { id, ownerId: userId },
   });
 
   if (!existing) {

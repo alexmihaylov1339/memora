@@ -1,15 +1,6 @@
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
 import type { SearchResultItem } from './search.types';
-
-interface SearchCardRow {
-  id: string;
-  kind: string;
-  deckName: string;
-  frontText: string | null;
-  backText: string | null;
-}
 
 async function getAccessibleDeckIdsOrEmpty(
   prisma: PrismaService,
@@ -63,17 +54,16 @@ export async function searchChunks(
 ): Promise<SearchResultItem[]> {
   const deckIds = await getAccessibleDeckIdsOrEmpty(prisma, userId);
 
-  if (deckIds.length === 0) {
-    return [];
-  }
-
   const chunks = await prisma.chunk.findMany({
     where: {
-      deckId: { in: deckIds },
       title: {
         contains: q,
         mode: 'insensitive',
       },
+      OR: [
+        { ownerId: userId },
+        ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+      ],
     },
     orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
     take: limit,
@@ -91,7 +81,7 @@ export async function searchChunks(
     id: chunk.id,
     type: 'chunk',
     label: chunk.title,
-    description: `${chunk.deck.name} • ${chunk._count.chunkCards} card${chunk._count.chunkCards === 1 ? '' : 's'}`,
+    description: `${chunk.deck?.name ?? 'Unassigned'} • ${chunk._count.chunkCards} card${chunk._count.chunkCards === 1 ? '' : 's'}`,
   }));
 }
 
@@ -102,41 +92,48 @@ export async function searchCards(
   userId: string,
 ): Promise<SearchResultItem[]> {
   const deckIds = await getAccessibleDeckIdsOrEmpty(prisma, userId);
+  const cards = await prisma.card.findMany({
+    where: {
+      OR: [
+        { ownerId: userId },
+        ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+      ],
+    },
+    orderBy: [{ createdAt: 'desc' }],
+    include: { deck: { select: { name: true } } },
+  });
 
-  if (deckIds.length === 0) {
-    return [];
-  }
+  const normalizedQuery = q.trim().toLowerCase();
 
-  const searchPattern = `%${q}%`;
-  const rows = await prisma.$queryRaw<SearchCardRow[]>(
-    Prisma.sql`
-      SELECT
-        c.id,
-        c.kind,
-        d.name AS "deckName",
-        COALESCE(c.fields->>'front', NULL) AS "frontText",
-        COALESCE(c.fields->>'back', NULL) AS "backText"
-      FROM "Card" c
-      INNER JOIN "Deck" d ON d.id = c."deckId"
-      WHERE
-        c."deckId" IN (${Prisma.join(deckIds)})
-        AND (
-        c.kind ILIKE ${searchPattern}
-        OR d.name ILIKE ${searchPattern}
-        OR COALESCE(c.fields->>'front', '') ILIKE ${searchPattern}
-        OR COALESCE(c.fields->>'back', '') ILIKE ${searchPattern}
-        )
-      ORDER BY c."createdAt" DESC
-      LIMIT ${limit}
-    `,
-  );
+  return cards
+    .map((card) => {
+      const fields = card.fields as Record<string, unknown>;
+      const frontText =
+        typeof fields.front === 'string' ? fields.front.trim() : '';
+      const backText =
+        typeof fields.back === 'string' ? fields.back.trim() : '';
+      const deckName = card.deck?.name ?? '';
+      const searchable = [
+        card.kind,
+        deckName,
+        frontText,
+        backText,
+      ]
+        .join(' ')
+        .toLowerCase();
 
-  return rows.map((row) => ({
-    id: row.id,
-    type: 'card',
-    label: row.frontText?.trim() || 'Untitled card',
-    description: [row.deckName, row.backText?.trim() || row.kind]
-      .filter(Boolean)
-      .join(' • '),
-  }));
+      return { card, frontText, backText, searchable };
+    })
+    .filter((entry) => entry.searchable.includes(normalizedQuery))
+    .slice(0, limit)
+    .map(({ card, frontText, backText }) => {
+      return {
+        id: card.id,
+        type: 'card',
+        label: frontText || 'Untitled card',
+        description: [card.deck?.name ?? 'Unassigned', backText || card.kind]
+          .filter(Boolean)
+          .join(' • '),
+      };
+    });
 }

@@ -1,6 +1,6 @@
 export interface ChunkRecord {
   id: string;
-  deckId: string;
+  deckId: string | null;
   title: string;
   cardIds: string[];
   position: number;
@@ -9,7 +9,7 @@ export interface ChunkRecord {
 }
 
 export interface CreateChunkDto {
-  deckId: string;
+  deckId?: string;
   title: string;
   cardIds: string[];
   position?: number;

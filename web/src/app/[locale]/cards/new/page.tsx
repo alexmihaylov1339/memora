@@ -12,7 +12,7 @@ export default function NewCardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deckIdParam = searchParams.get('deckId') ?? '';
-  const fields = useCreateCardFormFields(deckIdParam);
+  const fields = useCreateCardFormFields();
 
   const createCard = useCreateCardMutation({
     onSuccess: (card) => {
@@ -21,16 +21,12 @@ export default function NewCardPage() {
   });
 
   const handleCreate = (values: {
-    deckId?: string;
     kind: string;
     front: string;
     back: string;
   }) => {
-    const deckId = (deckIdParam || values.deckId || '').trim();
-    if (!deckId) return;
-
     createCard.fetch({
-      deckId,
+      deckId: deckIdParam.trim() || undefined,
       kind: values.kind.trim(),
       fields: {
         front: values.front.trim(),
@@ -46,14 +42,12 @@ export default function NewCardPage() {
 
         <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
           <FormBuilder<{
-            deckId?: string;
             kind: string;
             front: string;
             back: string;
           }>
             fields={fields}
             initialValues={{
-              deckId: deckIdParam || undefined,
               kind: 'basic',
               front: '',
               back: '',

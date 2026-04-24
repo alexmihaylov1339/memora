@@ -19,10 +19,6 @@ export function validateChunkId(id: string): string {
 }
 
 export function validateCreateChunkInput(body: CreateChunkDto) {
-  if (!body || !hasTrimmedText(body.deckId)) {
-    throw new BadRequestException(CHUNK_ERROR_MESSAGES.deckIdRequired);
-  }
-
   if (!hasTrimmedText(body.title)) {
     throw new BadRequestException(CHUNK_ERROR_MESSAGES.titleRequired);
   }

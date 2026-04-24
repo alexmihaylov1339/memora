@@ -1,6 +1,5 @@
 export const CARD_ERROR_MESSAGES = {
   idRequired: 'id is required',
-  deckIdRequired: 'deckId is required',
   kindRequired: 'kind is required',
   kindCannotBeEmpty: 'kind cannot be empty',
   fieldsMustBeObject: 'fields must be a non-null object',

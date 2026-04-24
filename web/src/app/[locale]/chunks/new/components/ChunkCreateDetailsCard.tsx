@@ -1,6 +1,5 @@
 import { ErrorMessage, FormBuilder } from '@shared/components';
 import { useChunkCreateFormFields } from '@features/chunks';
-import ChunkCreateEmptyDeckState from './ChunkCreateEmptyDeckState';
 
 const CREATE_CHUNK_LABEL = 'Create Chunk';
 const CREATING_CHUNK_LABEL = 'Creating Chunk...';
@@ -31,11 +30,6 @@ export default function ChunkCreateDetailsCard({
   availableCardCount,
 }: ChunkCreateDetailsCardProps) {
   const fields = useChunkCreateFormFields();
-  const showEmptyDeckState =
-    !cardsLoading &&
-    !cardsError &&
-    availableCardCount === 0 &&
-    selectedCardCount === 0;
   const showForm =
     selectedCardCount > 0 || availableCardCount > 0 || cardsLoading;
 
@@ -50,24 +44,26 @@ export default function ChunkCreateDetailsCard({
         </div>
 
         <div className="text-right">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Current Deck</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Current Deck (optional)</p>
           <p className="mt-1 font-medium text-slate-900">
-            {currentDeckName ?? activeDeckId}
+            {currentDeckName ?? (activeDeckId ? activeDeckId : 'Unassigned')}
           </p>
-          <p className="mt-1 font-mono text-xs text-slate-500">{activeDeckId}</p>
-          <button
-            type="button"
-            onClick={onChangeDeck}
-            className="mt-3 text-sm text-[var(--primary)] hover:underline"
-          >
-            Change Deck
-          </button>
+          {activeDeckId && (
+            <>
+              <p className="mt-1 font-mono text-xs text-slate-500">{activeDeckId}</p>
+              <button
+                type="button"
+                onClick={onChangeDeck}
+                className="mt-3 text-sm text-[var(--primary)] hover:underline"
+              >
+                Create as Unassigned
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {cardsError && <ErrorMessage className="mt-4" message={cardsError} />}
-
-      {showEmptyDeckState && <ChunkCreateEmptyDeckState activeDeckId={activeDeckId} />}
 
       {showForm && (
         <div className="mt-4">

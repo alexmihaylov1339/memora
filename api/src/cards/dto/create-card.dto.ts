@@ -1,5 +1,5 @@
 export interface CreateCardDto {
-  deckId: string;
+  deckId?: string;
   kind: string;
   fields: unknown;
 }

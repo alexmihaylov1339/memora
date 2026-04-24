@@ -33,8 +33,8 @@ Already present:
 - deck workspace actions exist and route to add flows with `deckId` query context
 
 Current gap/risk to solve in Step 11:
-- cards and chunks are currently single-deck entities (`Card.deckId`, `Chunk.deckId`)
-- current backend move behavior reassigns ownership to another deck
+- cards and chunks may be unassigned (`deckId = null`) and later moved into decks
+- move semantics must stay explicit to avoid confusion with copy/multi-membership language
 - older plan and UI wording treated moves as "attach", which could be misread as non-destructive multi-deck membership
 
 Step 11 must lock this semantic choice first, before expanding UX/API surface.
@@ -118,7 +118,7 @@ Status:
 
 Behavior locked in this implementation:
 - move operations are owner-only and only accept IDs from the owner's library
-- detach operations are owner-only and currently remove selected records from the target deck (hard delete with current single-deck model)
+- detach operations are owner-only and remove deck assignment (`deckId -> null`) while preserving cards/chunks in the global library
 
 Exit criteria:
 - Backend supports deck-context library operations without reusing ambiguous update flows.

@@ -3,7 +3,7 @@ import type { CardRecord } from '../cards.service';
 
 export interface CardResponseDto {
   id: string;
-  deckId: string;
+  deckId: string | null;
   kind: string;
   fields: Prisma.JsonValue;
   createdAt: string;

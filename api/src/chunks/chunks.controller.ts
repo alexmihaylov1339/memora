@@ -47,7 +47,7 @@ export class ChunksController {
 
     const result = await this.chunks.create(
       {
-        deckId: body.deckId.trim(),
+        deckId: body.deckId?.trim() || undefined,
         title: body.title.trim(),
         cardIds: body.cardIds?.map((id) => id.trim()),
         position: body.position,

@@ -6,6 +6,7 @@ import {
   useRemoveDeckShareMutation,
 } from '@features/decks';
 import type { DeckShareRecord } from '@features/decks';
+import styles from '@features/decks/components/CreateDeckForm.module.scss';
 
 interface DeckSharePanelProps {
   deckId: string;
@@ -48,30 +49,30 @@ export default function DeckSharePanel({
   }
 
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-white p-4">
+    <section className={styles.shareSurface}>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Share Deck</h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <h2 className="text-[28px] font-semibold text-[rgba(1,1,1,0.72)]">Share Deck</h2>
+        <p className="mt-1 text-sm text-[rgba(1,1,1,0.5)]">
           Invite by username or email. Shared users can see the deck and its content.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-[1fr_150px_auto]">
+        <div className="grid gap-3 md:grid-cols-[1fr_120px_auto]">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">
-              Username or email
+            <span className="mb-1 block text-sm font-semibold text-[rgba(1,1,1,0.72)]">
+              Username or email.
             </span>
             <input
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
-              placeholder="alex or alex@example.com"
-              className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none ring-0 focus:border-[var(--primary)]"
+              placeholder="alex or alex@gmail.com"
+              className="h-9 w-full rounded-[4px] border border-[rgba(1,1,1,0.15)] bg-white px-3 text-sm outline-none ring-0 focus:border-[var(--primary)]"
             />
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">
+            <span className="mb-1 block text-sm font-semibold text-[rgba(1,1,1,0.72)]">
               Permission
             </span>
             <select
@@ -79,7 +80,7 @@ export default function DeckSharePanel({
               onChange={(event) =>
                 setPermission(event.target.value as DeckShareRecord['permission'])
               }
-              className="w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--primary)]"
+              className="h-9 w-full rounded-[4px] border border-[rgba(1,1,1,0.15)] bg-white px-3 text-sm outline-none focus:border-[var(--primary)]"
             >
               <option value="view">View</option>
               <option value="edit">Edit</option>
@@ -90,9 +91,9 @@ export default function DeckSharePanel({
             <Button
               type="submit"
               isLoading={shareDeck.isLoading}
-              className="h-10 rounded-md bg-[var(--primary)] px-4 text-white disabled:opacity-60"
+              className="h-10 rounded-[4px] bg-[#378add] px-8 text-white transition hover:opacity-90 disabled:opacity-60"
             >
-              Share
+              Share Deck
             </Button>
           </div>
         </div>
@@ -101,12 +102,12 @@ export default function DeckSharePanel({
       </form>
 
       <div className="mt-5">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="text-lg font-semibold text-[rgba(1,1,1,0.72)]">
           Shared users
         </h3>
 
         {sharedUsers.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">No shared users yet.</p>
+          <p className="mt-2 text-sm text-[rgba(1,1,1,0.5)]">No shared users yet.</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {sharedUsers.map((sharedUser) => (

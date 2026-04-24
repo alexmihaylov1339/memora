@@ -2,7 +2,8 @@ import type { PrismaService } from '../../prisma/prisma.service';
 
 export interface PersistedChunkRecord {
   id: string;
-  deckId: string;
+  ownerId: string | null;
+  deckId: string | null;
   title: string;
   position: number;
   createdAt: Date;
@@ -16,7 +17,7 @@ export interface PersistedChunkRecord {
 
 export interface ChunkSummary {
   id: string;
-  deckId: string;
+  deckId: string | null;
   title: string;
   cardIds: string[];
   position: number;
@@ -47,7 +48,7 @@ export async function hasExistingCards(
   userId: string,
 ): Promise<boolean> {
   const cards = await client.card.findMany({
-    where: { id: { in: cardIds }, deck: { ownerId: userId } },
+    where: { id: { in: cardIds }, ownerId: userId },
     select: { id: true },
   });
 

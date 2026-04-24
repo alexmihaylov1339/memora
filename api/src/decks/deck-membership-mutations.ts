@@ -80,7 +80,7 @@ export async function detachDeckCards(
   }
 
   const cardsInDeck = await prisma.card.findMany({
-    where: { id: { in: cardIds }, deckId, deck: { ownerId: userId } },
+    where: { id: { in: cardIds }, deckId, ownerId: userId },
     select: { id: true },
   });
 
@@ -88,8 +88,9 @@ export async function detachDeckCards(
     return { status: 'invalid_cards' };
   }
 
-  await prisma.card.deleteMany({
+  await prisma.card.updateMany({
     where: { id: { in: cardIds }, deckId },
+    data: { deckId: null },
   });
 
   return {
@@ -113,7 +114,7 @@ export async function detachDeckChunks(
   }
 
   const chunksInDeck = await prisma.chunk.findMany({
-    where: { id: { in: chunkIds }, deckId, deck: { ownerId: userId } },
+    where: { id: { in: chunkIds }, deckId, ownerId: userId },
     select: { id: true },
   });
 
@@ -121,8 +122,9 @@ export async function detachDeckChunks(
     return { status: 'invalid_chunks' };
   }
 
-  await prisma.chunk.deleteMany({
+  await prisma.chunk.updateMany({
     where: { id: { in: chunkIds }, deckId },
+    data: { deckId: null },
   });
 
   return {

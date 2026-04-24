@@ -5,16 +5,11 @@ import { APP_ROUTES } from '@shared/constants';
 import {
   useCardsListQuery,
   useDeckDetailQuery,
-  useDecksListQuery,
   type CardRecord,
 } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
 import { MIN_CHUNK_CARD_SELECTION } from '../constants/reviewSchedule';
 import { useCreateChunkMutation } from './useChunkMutations';
-
-interface SelectChunkDeckValues {
-  deckId?: string;
-}
 
 interface CreateChunkValues {
   title: string;
@@ -28,16 +23,18 @@ export function useChunkCreateScreen(initialDeckId: string) {
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [selectionError, setSelectionError] = useState<string>();
 
-  const decksQuery = useDecksListQuery({
-    enabled: !activeDeckId,
-  });
   const deckDetailQuery = useDeckDetailQuery(activeDeckId, {
     enabled: Boolean(activeDeckId),
   });
   const cardsQuery = useCardsListQuery();
   const createChunk = useCreateChunkMutation({
     onSuccess: (chunk) => {
-      router.replace(APP_ROUTES.deckEdit(chunk.deckId));
+      if (chunk.deckId) {
+        router.replace(APP_ROUTES.deckEdit(chunk.deckId));
+        return;
+      }
+
+      router.replace(APP_ROUTES.chunkEdit(chunk.id));
     },
   });
 
@@ -53,22 +50,7 @@ export function useChunkCreateScreen(initialDeckId: string) {
     [allCards, selectedCardIds],
   );
 
-  const hasDeckContext = Boolean(activeDeckId);
-  const hasNoDecks = !decksQuery.isLoading && !decksQuery.error && (decksQuery.result?.length ?? 0) === 0;
   const submitError = selectionError ?? createChunk.error?.message;
-
-  async function handleDeckSelection(values: SelectChunkDeckValues) {
-    const nextDeckId = values.deckId?.trim() ?? '';
-
-    if (!nextDeckId) {
-      setSelectionError('Choose a deck before creating a chunk.');
-      return;
-    }
-
-    setActiveDeckId(nextDeckId);
-    setSelectedCardIds([]);
-    setSelectionError(undefined);
-  }
 
   function handleResetDeckSelection() {
     setActiveDeckId('');
@@ -106,11 +88,6 @@ export function useChunkCreateScreen(initialDeckId: string) {
   async function handleCreateChunk(values: CreateChunkValues) {
     const title = values.title.trim();
 
-    if (!activeDeckId) {
-      setSelectionError('Choose a deck before creating a chunk.');
-      return;
-    }
-
     if (selectedCardIds.length < MIN_CHUNK_CARD_SELECTION) {
       setSelectionError('Select at least one card for the chunk.');
       return;
@@ -119,7 +96,7 @@ export function useChunkCreateScreen(initialDeckId: string) {
     setSelectionError(undefined);
 
     await createChunk.fetch({
-      deckId: activeDeckId,
+      deckId: activeDeckId || undefined,
       title,
       cardIds: selectedCardIds,
     });
@@ -131,16 +108,10 @@ export function useChunkCreateScreen(initialDeckId: string) {
     cardsLoading: cardsQuery.isLoading,
     createChunkLoading: createChunk.isLoading,
     currentDeck: deckDetailQuery.result,
-    deckSelectionError: decksQuery.error?.message,
-    decks: decksQuery.result ?? [],
-    decksLoading: decksQuery.isLoading,
-    hasDeckContext,
-    hasNoDecks,
     selectedCards,
     submitError,
     totalCardCount: allCards.length,
     handleCreateChunk,
-    handleDeckSelection,
     handleMoveCard,
     handleRemoveCard,
     handleResetDeckSelection,

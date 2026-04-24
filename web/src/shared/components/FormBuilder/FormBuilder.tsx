@@ -33,6 +33,13 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
     const values: Record<string, unknown> = {};
 
     for (const field of fields) {
+      if (field.type === 'grid') {
+        values[field.name] = field.serialize
+          ? field.serialize(field.value)
+          : field.value;
+        continue;
+      }
+
       const value = formData.get(field.name);
 
       // Handle different field types

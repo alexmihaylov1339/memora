@@ -87,9 +87,10 @@ Out of scope for this step:
   - multi-select cards into chunk
   - selected-cards grid with remove/reorder
   - validation and submit feedback consistent with deck flows
+  - deck assignment is optional at create time (unassigned chunk creation is supported)
 
 4. Predictable post-submit behavior:
-- Create/edit actions should return users to a sensible destination (`/decks/:id/edit` or relevant detail context) with updated data visible.
+- Create/edit actions should return users to a sensible destination (`/decks/:id/edit`, `/chunks/:id/edit`, or relevant detail context) with updated data visible.
 
 ---
 
@@ -173,7 +174,7 @@ Verification completed:
 ### T3 - Redesign deck add/edit styling surfaces
 
 Status:
-- Proposed
+- Ready
 
 - Align `/decks/new` and `/decks/:id/edit` visual structure and spacing with the Step 12 UX language.
 - Standardize section hierarchy, CTA emphasis, and helper/feedback text treatment.
@@ -181,6 +182,16 @@ Status:
 
 Exit criteria:
 - Deck create/edit surfaces share a clear, scalable styling pattern that the rest of Step 12 can reuse.
+
+Verification completed:
+- `/decks/:id/edit` now follows the Figma `EditDeckPageGridCards` structure:
+  - centered title + subtitle
+  - card-like authoring panel
+  - details first, then `My Cards` / `My Chunks`
+  - bottom `Delete Deck` and `Save Changes` action row
+  - share panel as a separate surface below
+- `/decks/new` was aligned to the same authoring language for structural parity with edit.
+- Deck add/edit flows remain functional (create, update, delete, share) after styling updates.
 
 ### T4 - Align chunk create flow to deck-style selection ergonomics
 

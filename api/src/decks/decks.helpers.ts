@@ -117,7 +117,7 @@ export async function hasExistingCards(
   userId: string,
 ): Promise<boolean> {
   const cards = await prisma.card.findMany({
-    where: { id: { in: cardIds }, deck: { ownerId: userId } },
+    where: { id: { in: cardIds }, ownerId: userId },
     select: { id: true },
   });
 
@@ -130,7 +130,7 @@ export async function hasExistingChunks(
   userId: string,
 ): Promise<boolean> {
   const chunks = await prisma.chunk.findMany({
-    where: { id: { in: chunkIds }, deck: { ownerId: userId } },
+    where: { id: { in: chunkIds }, ownerId: userId },
     select: { id: true },
   });
 
@@ -161,8 +161,9 @@ export async function replaceDeckCards(
   deckId: string,
   cardIds: string[],
 ): Promise<void> {
-  await client.card.deleteMany({
+  await client.card.updateMany({
     where: { deckId, id: { notIn: cardIds } },
+    data: { deckId: null },
   });
 
   await moveCardsToDeck(client, deckId, cardIds);
@@ -188,8 +189,9 @@ export async function replaceDeckChunks(
   deckId: string,
   chunkIds: string[],
 ): Promise<void> {
-  await client.chunk.deleteMany({
+  await client.chunk.updateMany({
     where: { deckId, id: { notIn: chunkIds } },
+    data: { deckId: null },
   });
 
   await moveChunksToDeck(client, deckId, chunkIds);

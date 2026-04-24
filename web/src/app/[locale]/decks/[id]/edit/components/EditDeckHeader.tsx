@@ -3,14 +3,20 @@ import { APP_ROUTES } from '@shared/constants';
 
 export default function EditDeckHeader() {
   return (
-    <>
-      <h1 className="mb-4 text-2xl font-semibold">Edit Deck</h1>
+    <header className="mb-8">
+      <h1 className="text-center text-4xl font-semibold text-[rgba(1,1,1,0.72)]">Edit Deck</h1>
+      <p className="mt-2 text-center text-lg font-semibold text-[#378add]">
+        A deck is just a promise to yourself. Keep it.
+      </p>
 
-      <div className="mb-4">
-        <Link href={APP_ROUTES.decks} className="text-sm text-[var(--primary)] hover:underline">
+      <div className="mt-5">
+        <Link
+          href={APP_ROUTES.decks}
+          className="inline-flex items-center rounded-md border border-[rgba(1,1,1,0.15)] bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
+        >
           Back to Decks
         </Link>
       </div>
-    </>
+    </header>
   );
 }

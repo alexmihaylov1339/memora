@@ -2,7 +2,7 @@ import type { ChunkSummary } from '../chunks.service';
 
 export interface ChunkResponseDto {
   id: string;
-  deckId: string;
+  deckId: string | null;
   title: string;
   cardIds: string[];
   position: number;

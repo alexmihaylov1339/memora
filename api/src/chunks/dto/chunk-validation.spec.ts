@@ -29,15 +29,6 @@ describe('chunk-validation', () => {
       ).not.toThrow();
     });
 
-    it('throws when deckId is missing', () => {
-      expect(() =>
-        validateCreateChunkInput({
-          deckId: '  ',
-          title: 'Chunk title',
-        }),
-      ).toThrow(BadRequestException);
-    });
-
     it('throws when title is missing', () => {
       expect(() =>
         validateCreateChunkInput({

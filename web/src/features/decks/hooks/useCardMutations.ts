@@ -10,7 +10,7 @@ import type {
 import { CARD_QUERY_KEYS } from './useCardQueries';
 
 interface CreateCardParams {
-  deckId: string;
+  deckId?: string;
   kind: string;
   fields: Record<string, unknown>;
 }

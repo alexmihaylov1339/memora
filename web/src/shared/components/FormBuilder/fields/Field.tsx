@@ -7,6 +7,7 @@ import {
   SelectField,
   CheckboxField,
   RadioField,
+  GridField,
 } from './';
 
 import type { FieldConfig } from '../types';
@@ -34,11 +35,12 @@ export default function Field({ config, disabled }: FieldProps) {
       return <CheckboxField config={config} disabled={disabled} />;
     case 'radio':
       return <RadioField config={config} disabled={disabled} />;
+    case 'grid':
+      return <GridField config={config} disabled={disabled} />;
     default:
       return null;
   }
 }
-
 
 
 

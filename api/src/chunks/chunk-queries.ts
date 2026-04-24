@@ -11,12 +11,14 @@ export async function listChunks(
   userId: string,
 ): Promise<ChunkSummary[]> {
   const deckIds = await getAccessibleDeckIds(prisma, userId);
-  if (deckIds.length === 0) {
-    return [];
-  }
 
   const chunks = await prisma.chunk.findMany({
-    where: { deckId: { in: deckIds } },
+    where: {
+      OR: [
+        { ownerId: userId },
+        ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+      ],
+    },
     orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
     include: {
       chunkCards: {
@@ -35,12 +37,14 @@ export async function findChunkById(
 ): Promise<ChunkSummary | null> {
   const deckIds = await getAccessibleDeckIds(prisma, userId);
 
-  if (deckIds.length === 0) {
-    return null;
-  }
-
   const chunk = await prisma.chunk.findFirst({
-    where: { id, deckId: { in: deckIds } },
+    where: {
+      id,
+      OR: [
+        { ownerId: userId },
+        ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+      ],
+    },
     include: {
       chunkCards: {
         orderBy: { sequenceIndex: 'asc' },

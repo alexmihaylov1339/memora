@@ -3,9 +3,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { FormBuilder } from '@shared/components';
+import { FormBuilder, type FieldConfig } from '@shared/components';
 import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
 import { useCreateDeckMutation } from '../hooks';
@@ -41,34 +41,71 @@ export default function CreateDeckForm() {
     onError: handleCreateError,
   });
 
-  const handleSubmit = (values: CreateDeckDto) => {
-    return createDeck.fetch({
-      ...values,
-      cardIds: selectedCards.map((item) => item.id),
-      chunkIds: selectedChunks.map((item) => item.id),
+  const fields = useMemo<FieldConfig[]>(
+    () => [
+      ...createDeckFormFields,
+      {
+        type: 'grid',
+        name: 'cardIds',
+        label: 'Cards',
+        value: selectedCards,
+        onChange: (value) => setSelectedCards(value as SearchResultItem[]),
+        serialize: (value) =>
+          (value as SearchResultItem[]).map((item) => item.id),
+        fieldWrapperClassName: styles.section,
+        render: ({ value, onChange }) => (
+          <DeckCardSelectionPanel
+            selectedCards={value as SearchResultItem[]}
+            onSelectionChange={(items) => onChange(items)}
+          />
+        ),
+      },
+      {
+        type: 'grid',
+        name: 'chunkIds',
+        label: 'Chunks',
+        value: selectedChunks,
+        onChange: (value) => setSelectedChunks(value as SearchResultItem[]),
+        serialize: (value) =>
+          (value as SearchResultItem[]).map((item) => item.id),
+        fieldWrapperClassName: styles.section,
+        render: ({ value, onChange }) => (
+          <DeckChunkSelectionPanel
+            selectedChunks={value as SearchResultItem[]}
+            onSelectionChange={(items) => onChange(items)}
+          />
+        ),
+      },
+    ],
+    [selectedCards, selectedChunks],
+  );
+
+  async function handleSubmit(values: CreateDeckDto) {
+    await createDeck.fetch({
+      name: values.name.trim(),
+      description: values.description?.trim() || undefined,
+      cardIds: values.cardIds,
+      chunkIds: values.chunkIds,
     });
-  };
+  }
 
   return (
     <div className={styles.container}>
-      <DeckCardSelectionPanel
-        selectedCards={selectedCards}
-        onSelectionChange={setSelectedCards}
-      />
-
-      <DeckChunkSelectionPanel
-        selectedChunks={selectedChunks}
-        onSelectionChange={setSelectedChunks}
-      />
-
       <FormBuilder<CreateDeckDto>
-        fields={createDeckFormFields}
+        fields={fields}
         onSubmit={handleSubmit}
         submitLabel={createDeck.isLoading ? t(TRANSLATION_KEYS.decks.creating) : t(TRANSLATION_KEYS.decks.createButton)}
-        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
+        submitButtonClassName={`${styles.primaryButton} ml-auto mt-4 block`}
         errorMessage={createDeck.error?.message}
-        resetOnSubmit={true}
+        formClassName={styles.form}
+        resetOnSubmit={false}
       />
+
+      <div className={styles.actionRow}>
+        <span className="text-sm text-[rgba(1,1,1,0.5)]">
+          {selectedCards.length} cards, {selectedChunks.length} chunks selected
+        </span>
+      </div>
     </div>
   );
 }

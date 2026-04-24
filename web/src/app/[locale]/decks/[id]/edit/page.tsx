@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
@@ -12,15 +11,11 @@ import {
   useDeleteDeckMutation,
   useUpdateDeckMutation,
 } from '@features/decks';
-import {
-  useChunksListQuery,
-  useDeleteChunkMutation,
-} from '@features/chunks';
+import { useChunksListQuery } from '@features/chunks';
 import { resolveSingleParam } from '@/shared/utils';
 import {
   DeckEditForm,
   DeckSharePanel,
-  DeckWorkspacePanels,
   EditDeckHeader,
 } from './components';
 import {
@@ -36,7 +31,6 @@ export default function EditDeckPage() {
   const deckQuery = useDeckDetailQuery(id);
   const cardsQuery = useCardsListQuery();
   const chunksQuery = useChunksListQuery();
-  const [deletingChunkId, setDeletingChunkId] = useState<string>();
 
   const updateDeck = useUpdateDeckMutation({
     onSuccess: () => {
@@ -51,20 +45,6 @@ export default function EditDeckPage() {
       router.replace(APP_ROUTES.decks);
     },
   });
-  const deleteChunk = useDeleteChunkMutation({
-    onSuccess: () => {
-      void chunksQuery.refetch();
-      setDeletingChunkId(undefined);
-    },
-    onError: () => {
-      setDeletingChunkId(undefined);
-    },
-  });
-
-  function handleDeleteChunk(chunkId: string) {
-    setDeletingChunkId(chunkId);
-    void deleteChunk.fetch({ id: chunkId });
-  }
 
   async function handleUpdateDeck(payload: {
     id: string;
@@ -87,14 +67,14 @@ export default function EditDeckPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-6xl p-6">
+      <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
         <EditDeckHeader />
 
         {isLoading && <PageLoader />}
         {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}
 
         {allLoaded && deck && (
-          <div className="space-y-6">
+          <div className="space-y-10">
             <DeckEditForm
               key={deck.id}
               id={deck.id}
@@ -113,19 +93,6 @@ export default function EditDeckPage() {
               deckId={deck.id}
               sharedUsers={deck.sharedUsers ?? []}
               onChanged={() => void deckQuery.refetch()}
-            />
-
-            <DeckWorkspacePanels
-              deckId={deck.id}
-              cards={cards}
-              chunks={chunks}
-              cardsLoading={cardsQuery.isLoading}
-              chunksLoading={chunksQuery.isLoading}
-              cardsError={cardsQuery.error?.message}
-              chunksError={chunksQuery.error?.message}
-              chunkDeleteError={deleteChunk.error?.message}
-              deletingChunkId={deletingChunkId}
-              onDeleteChunk={handleDeleteChunk}
             />
           </div>
         )}

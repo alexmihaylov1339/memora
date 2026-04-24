@@ -1,6 +1,5 @@
 import { useChunkCreateScreen } from '@features/chunks';
 import ChunkCreateForm from './ChunkCreateForm';
-import ChunkDeckSelectionForm from './ChunkDeckSelectionForm';
 
 interface ChunkCreateScreenProps {
   initialDeckId: string;
@@ -15,33 +14,15 @@ export default function ChunkCreateScreen({
     cardsLoading,
     createChunkLoading,
     currentDeck,
-    deckSelectionError,
-    decks,
-    decksLoading,
-    hasDeckContext,
-    hasNoDecks,
     selectedCards,
     submitError,
     totalCardCount,
     handleCreateChunk,
-    handleDeckSelection,
     handleMoveCard,
     handleRemoveCard,
     handleResetDeckSelection,
     handleSelectionChange,
   } = useChunkCreateScreen(initialDeckId);
-
-  if (!hasDeckContext) {
-    return (
-      <ChunkDeckSelectionForm
-        decks={decks}
-        error={deckSelectionError}
-        hasNoDecks={hasNoDecks}
-        isLoading={decksLoading}
-        onSubmit={handleDeckSelection}
-      />
-    );
-  }
 
   return (
     <ChunkCreateForm

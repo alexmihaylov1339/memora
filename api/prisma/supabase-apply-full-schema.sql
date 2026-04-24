@@ -48,7 +48,8 @@ CREATE TABLE "DeckShare" (
 -- CreateTable
 CREATE TABLE "Chunk" (
     "id" TEXT NOT NULL,
-    "deckId" TEXT NOT NULL,
+    "ownerId" TEXT,
+    "deckId" TEXT,
     "title" TEXT NOT NULL,
     "position" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -83,7 +84,8 @@ CREATE TABLE "ChunkReviewState" (
 -- CreateTable
 CREATE TABLE "Card" (
     "id" TEXT NOT NULL,
-    "deckId" TEXT NOT NULL,
+    "ownerId" TEXT,
+    "deckId" TEXT,
     "kind" TEXT NOT NULL,
     "fields" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -139,6 +141,9 @@ CREATE INDEX "DeckShare_deckId_idx" ON "DeckShare"("deckId");
 CREATE INDEX "DeckShare_userId_idx" ON "DeckShare"("userId");
 
 -- CreateIndex
+CREATE INDEX "Chunk_ownerId_idx" ON "Chunk"("ownerId");
+
+-- CreateIndex
 CREATE INDEX "Chunk_deckId_idx" ON "Chunk"("deckId");
 
 -- CreateIndex
@@ -155,6 +160,9 @@ CREATE UNIQUE INDEX "ChunkReviewState_chunkId_key" ON "ChunkReviewState"("chunkI
 
 -- CreateIndex
 CREATE INDEX "ChunkReviewState_due_idx" ON "ChunkReviewState"("due");
+
+-- CreateIndex
+CREATE INDEX "Card_ownerId_idx" ON "Card"("ownerId");
 
 -- CreateIndex
 CREATE INDEX "Card_deckId_idx" ON "Card"("deckId");
@@ -175,7 +183,10 @@ CREATE INDEX "ReviewLog_cardId_reviewedAt_idx" ON "ReviewLog"("cardId", "reviewe
 ALTER TABLE "Deck" ADD CONSTRAINT "Deck_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Chunk" ADD CONSTRAINT "Chunk_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Chunk" ADD CONSTRAINT "Chunk_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chunk" ADD CONSTRAINT "Chunk_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "Chunk"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -187,7 +198,10 @@ ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_cardId_fkey" FOREIGN KEY ("car
 ALTER TABLE "ChunkReviewState" ADD CONSTRAINT "ChunkReviewState_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "Chunk"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Card" ADD CONSTRAINT "Card_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Card" ADD CONSTRAINT "Card_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Card" ADD CONSTRAINT "Card_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DeckShare" ADD CONSTRAINT "DeckShare_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -5,7 +5,8 @@ import { getAccessibleDeckIds } from '../decks/deck-access';
 
 export interface CardRecord {
   id: string;
-  deckId: string;
+  ownerId: string | null;
+  deckId: string | null;
   kind: string;
   fields: Prisma.JsonValue;
   createdAt: Date;
@@ -18,30 +19,34 @@ export class CardsService {
   async findAll(userId: string): Promise<CardRecord[]> {
     const deckIds = await getAccessibleDeckIds(this.prisma, userId);
 
-    if (deckIds.length === 0) {
-      return [];
-    }
-
     return (await this.prisma.card.findMany({
-      where: { deckId: { in: deckIds } },
+      where: {
+        OR: [
+          { ownerId: userId },
+          ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+        ],
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     })) as CardRecord[];
   }
 
   async create(
-    data: { deckId: string; kind: string; fields: Prisma.JsonObject },
+    data: { deckId?: string; kind: string; fields: Prisma.JsonObject },
     userId: string,
   ): Promise<CardRecord | null> {
-    const deck = await this.prisma.deck.findFirst({
-      where: { id: data.deckId, ownerId: userId },
-    });
-    if (!deck) {
-      return null;
+    if (data.deckId) {
+      const deck = await this.prisma.deck.findFirst({
+        where: { id: data.deckId, ownerId: userId },
+      });
+      if (!deck) {
+        return null;
+      }
     }
 
     return this.prisma.card.create({
       data: {
-        deckId: data.deckId,
+        ownerId: userId,
+        deckId: data.deckId ?? null,
         kind: data.kind,
         fields: data.fields,
       },
@@ -50,12 +55,15 @@ export class CardsService {
 
   async findOne(id: string, userId: string): Promise<CardRecord | null> {
     const deckIds = await getAccessibleDeckIds(this.prisma, userId);
-    if (deckIds.length === 0) {
-      return null;
-    }
 
     return (await this.prisma.card.findFirst({
-      where: { id, deckId: { in: deckIds } },
+      where: {
+        id,
+        OR: [
+          { ownerId: userId },
+          ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+        ],
+      },
     })) as CardRecord | null;
   }
 
@@ -65,7 +73,7 @@ export class CardsService {
     userId: string,
   ): Promise<CardRecord | null> {
     const existing = await this.prisma.card.findFirst({
-      where: { id, deck: { ownerId: userId } },
+      where: { id, ownerId: userId },
     });
     if (!existing) {
       return null;
@@ -79,7 +87,7 @@ export class CardsService {
 
   async remove(id: string, userId: string) {
     const existing = await this.prisma.card.findFirst({
-      where: { id, deck: { ownerId: userId } },
+      where: { id, ownerId: userId },
     });
     if (!existing) {
       return false;

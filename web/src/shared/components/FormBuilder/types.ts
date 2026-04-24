@@ -1,7 +1,16 @@
 import type { CSSProperties } from 'react';
 
 // Base types shared across all fields
-export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio';
+export type FieldType =
+  | 'text'
+  | 'email'
+  | 'password'
+  | 'number'
+  | 'textarea'
+  | 'select'
+  | 'checkbox'
+  | 'radio'
+  | 'grid';
 
 export interface BaseFieldConfig {
   name: string;
@@ -30,6 +39,7 @@ import type {
   SelectFieldConfig,
   CheckboxFieldConfig,
   RadioFieldConfig,
+  GridFieldConfig,
 } from './fields/types';
 
 // Union of all field configs
@@ -41,7 +51,8 @@ export type FieldConfig =
   | TextareaFieldConfig
   | SelectFieldConfig
   | CheckboxFieldConfig
-  | RadioFieldConfig;
+  | RadioFieldConfig
+  | GridFieldConfig;
 
 export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   fields: FieldConfig[];

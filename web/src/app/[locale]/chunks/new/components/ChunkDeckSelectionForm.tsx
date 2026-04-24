@@ -24,9 +24,9 @@ export default function ChunkDeckSelectionForm({
   return (
     <section className="rounded-lg border border-[var(--border)] bg-white p-5">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Choose Deck</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Choose Deck (Optional)</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Pick the deck whose cards will be assembled into an ordered chunk.
+          Pick a deck if you want to assign this chunk immediately.
         </p>
       </div>
 
@@ -35,9 +35,9 @@ export default function ChunkDeckSelectionForm({
 
       {!isLoading && hasNoDecks && (
         <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-4">
-          <p className="text-sm text-slate-700">You need a deck before creating a chunk.</p>
+          <p className="text-sm text-slate-700">You can create chunks without a deck.</p>
           <p className="mt-1 text-sm text-slate-500">
-            Create a deck first, then come back here to assemble its cards into a chunk.
+            Create a deck only if you want immediate assignment.
           </p>
           <Link
             href={APP_ROUTES.newDeck}

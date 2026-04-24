@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
-import { Button, FormBuilder } from '@shared/components';
-import { DeckCardSelectionPanel, DeckChunkSelectionPanel, useDeckEditFormFields } from '@features/decks';
+import { Button } from '@shared/components';
+import { DeckCardSelectionPanel, DeckChunkSelectionPanel } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
-import DeckActionLink from './DeckActionLink';
+import styles from '@features/decks/components/CreateDeckForm.module.scss';
 
 interface DeckEditFormProps {
   id: string;
@@ -36,22 +36,51 @@ export default function DeckEditForm({
   updateError,
   deleteError,
 }: DeckEditFormProps) {
-  const fields = useDeckEditFormFields();
+  const [deckName, setDeckName] = useState(name);
+  const [deckDescription, setDeckDescription] = useState(description ?? '');
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>(initialCards);
   const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>(initialChunks);
 
-  async function handleSubmit(values: { name: string; description?: string }) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     await onUpdate({
       id,
-      name: (values.name ?? '').trim(),
-      description: values.description?.trim() || undefined,
+      name: deckName.trim(),
+      description: deckDescription.trim() || undefined,
       cardIds: selectedCards.map((item) => item.id),
       chunkIds: selectedChunks.map((item) => item.id),
     });
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
+    <form onSubmit={handleSubmit} className={styles.container}>
+      <label className={styles.fieldLabel} htmlFor="edit-deck-name">
+        Deck name*
+      </label>
+      <input
+        id="edit-deck-name"
+        name="name"
+        value={deckName}
+        onChange={(event) => setDeckName(event.target.value)}
+        placeholder="Enter the Deck name"
+        required
+        className={styles.input}
+      />
+
+      <div className={styles.section}>
+        <label className={styles.fieldLabel} htmlFor="edit-deck-description">
+          Description
+        </label>
+        <textarea
+          id="edit-deck-description"
+          name="description"
+          value={deckDescription}
+          onChange={(event) => setDeckDescription(event.target.value)}
+          placeholder="Add Description"
+          className={styles.textarea}
+        />
+      </div>
+
       <DeckCardSelectionPanel
         selectedCards={selectedCards}
         onSelectionChange={setSelectedCards}
@@ -62,43 +91,23 @@ export default function DeckEditForm({
         onSelectionChange={setSelectedChunks}
       />
 
-      <FormBuilder<{ name: string; description?: string }>
-        fields={fields}
-        initialValues={{ name, description: description ?? '' }}
-        onSubmit={handleSubmit}
-        submitLabel="Save Deck"
-        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
-        errorMessage={updateError}
-        translateFields={false}
-      />
+      {updateError && <p className="mt-3 text-sm text-[var(--destructive)]">{updateError}</p>}
+      {deleteError && <p className="mt-3 text-sm text-[var(--destructive)]">{deleteError}</p>}
 
-      {deleteError && <p className="text-sm text-[var(--destructive)]">{deleteError}</p>}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <DeckActionLink href={{ pathname: '/cards', query: { deckId: id } }}>
-          Move Card
-        </DeckActionLink>
-
-        <DeckActionLink href={{ pathname: '/cards/new', query: { deckId: id } }}>
-          Create Card
-        </DeckActionLink>
-
-        <DeckActionLink href={{ pathname: '/chunks', query: { deckId: id } }}>
-          Move Chunk
-        </DeckActionLink>
-
-        <DeckActionLink href={{ pathname: '/chunks/new', query: { deckId: id } }}>
-          Create Chunk
-        </DeckActionLink>
-
+      <div className={styles.actionRow}>
         <Button
+          type="button"
           onClick={onDelete}
           isLoading={isDeleting}
-          className="rounded-md border border-[var(--destructive)] px-4 py-2 text-[var(--destructive)] disabled:opacity-60"
+          className={styles.destructiveButton}
         >
           Delete Deck
         </Button>
+
+        <Button type="submit" className={styles.primaryButton}>
+          Save Changes
+        </Button>
       </div>
-    </div>
+    </form>
   );
 }

@@ -50,7 +50,7 @@ export interface DeckIdParams {
 
 export interface CardRecord {
   id: string;
-  deckId: string;
+  deckId: string | null;
   kind: string;
   fields: Record<string, unknown>;
   createdAt: string;

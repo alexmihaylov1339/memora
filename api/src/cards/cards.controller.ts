@@ -47,7 +47,7 @@ export class CardsController {
 
     const card = await this.cards.create(
       {
-        deckId: body.deckId.trim(),
+        deckId: body.deckId?.trim() || undefined,
         kind: body.kind.trim(),
         fields: body.fields as Prisma.JsonObject,
       },

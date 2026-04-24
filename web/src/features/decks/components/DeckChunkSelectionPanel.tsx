@@ -2,6 +2,7 @@ import { EntitySearch } from '@shared/components';
 import { SEARCH_QUERY_KEYS, SEARCH_SELECTION_MODES, type SearchResultItem } from '@features/search';
 import { chunkService } from '@features/chunks';
 import DeckSelectedItemsGrid from './DeckSelectedItemsGrid';
+import styles from './CreateDeckForm.module.scss';
 
 interface DeckChunkSelectionPanelProps {
   selectedChunks: SearchResultItem[];
@@ -17,10 +18,10 @@ export default function DeckChunkSelectionPanel({
   }
 
   return (
-    <section>
-      <div>
-        <h3>Chunks</h3>
-        <p>Search for chunks to add to this deck.</p>
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <h3 className={styles.sectionTitle}>My Chunks</h3>
+        <p className={styles.sectionDescription}>Search and select chunks for this deck.</p>
       </div>
 
       <EntitySearch
@@ -29,17 +30,19 @@ export default function DeckChunkSelectionPanel({
         selectionMode={SEARCH_SELECTION_MODES.multiple}
         selectedItems={selectedChunks}
         onSelectionChange={onSelectionChange}
-        placeholder="Search chunks to add"
+        placeholder="Search chunks"
       />
 
-      <DeckSelectedItemsGrid
-        id="deck-selected-chunks-grid"
-        items={selectedChunks}
-        labelHeader="Title"
-        descriptionHeader="Details"
-        emptyMessage="No chunks selected yet."
-        onRemove={handleRemove}
-      />
+      <div className="mt-2">
+        <DeckSelectedItemsGrid
+          id="deck-selected-chunks-grid"
+          items={selectedChunks}
+          labelHeader="Front"
+          descriptionHeader="Back"
+          emptyMessage="There are currently no chunks to choose from."
+          onRemove={handleRemove}
+        />
+      </div>
     </section>
   );
 }

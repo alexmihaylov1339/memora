@@ -4,6 +4,10 @@
 **Date:** 2026-04-04  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 7
 
+Historical note (2026-04-20):
+- This step originally assumed chunk/card creation required deck context.
+- Current product behavior allows creating cards/chunks without deck assignment and attaching them later through move flows.
+
 ---
 
 ## Branch proposal

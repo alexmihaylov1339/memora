@@ -4,6 +4,7 @@ Memora is a language-learning app centered on chunked review.
 
 ## Current product rule
 
+- Cards and chunks can exist without an assigned deck (`deckId = null`) and can be assigned later through deck move flows.
 - A chunk groups one target idea with multiple ordered exposure cards, such as example sentences.
 - Each chunk review shows exactly one card, never multiple cards from the same chunk at once.
 - After a successful review, the next review for that chunk advances to the next card in order.

@@ -17,7 +17,10 @@ export async function listMovableCardsForDeck(
   }
 
   return (await prisma.card.findMany({
-    where: { deckId: { not: deckId }, deck: { ownerId: userId } },
+    where: {
+      ownerId: userId,
+      OR: [{ deckId: null }, { deckId: { not: deckId } }],
+    },
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
   })) as DeckMembershipCardRecord[];
 }
@@ -32,7 +35,10 @@ export async function listMovableChunksForDeck(
   }
 
   const chunks = await prisma.chunk.findMany({
-    where: { deckId: { not: deckId }, deck: { ownerId: userId } },
+    where: {
+      ownerId: userId,
+      OR: [{ deckId: null }, { deckId: { not: deckId } }],
+    },
     orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
     include: {
       chunkCards: {

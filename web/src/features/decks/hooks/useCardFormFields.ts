@@ -24,18 +24,8 @@ const CARD_BASE_FIELDS: FieldConfig[] = [
   },
 ];
 
-const CARD_DECK_ID_FIELD: FieldConfig = {
-  type: 'text',
-  name: 'deckId',
-  label: 'Deck ID',
-  required: true,
-};
-
-export function useCreateCardFormFields(deckId: string): FieldConfig[] {
-  return useMemo<FieldConfig[]>(
-    () => (deckId ? CARD_BASE_FIELDS : [CARD_DECK_ID_FIELD, ...CARD_BASE_FIELDS]),
-    [deckId]
-  );
+export function useCreateCardFormFields(): FieldConfig[] {
+  return useMemo<FieldConfig[]>(() => CARD_BASE_FIELDS, []);
 }
 
 export function useEditCardFormFields(): FieldConfig[] {

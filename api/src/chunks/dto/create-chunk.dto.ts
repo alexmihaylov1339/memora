@@ -1,5 +1,5 @@
 export interface CreateChunkDto {
-  deckId: string;
+  deckId?: string;
   title: string;
   cardIds?: string[];
   position?: number;

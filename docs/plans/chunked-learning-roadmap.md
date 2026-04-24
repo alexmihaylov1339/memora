@@ -243,8 +243,8 @@
 **Objective:** Separate “items already in this deck” from “all items I own”.
 
 Critical planning note before implementation:
-- cards and chunks currently have single-deck ownership (`Card.deckId`, `Chunk.deckId`)
-- Step 11 must first lock move semantics so we do not accidentally treat a destructive move as non-destructive membership
+- cards and chunks are now first-class library entities with optional deck assignment (`deckId` can be `null`)
+- Step 11 still locks move semantics for assigning existing items into decks
 - choose one explicit rule for v1 and keep API/UI wording aligned with that rule (`move`, `copy`, or true multi-deck membership)
 
 **Deliverables**
