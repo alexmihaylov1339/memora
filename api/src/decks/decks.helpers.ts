@@ -117,7 +117,10 @@ export async function hasExistingCards(
   userId: string,
 ): Promise<boolean> {
   const cards = await prisma.card.findMany({
-    where: { id: { in: cardIds }, ownerId: userId },
+    where: {
+      id: { in: cardIds },
+      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+    },
     select: { id: true },
   });
 
@@ -130,7 +133,10 @@ export async function hasExistingChunks(
   userId: string,
 ): Promise<boolean> {
   const chunks = await prisma.chunk.findMany({
-    where: { id: { in: chunkIds }, ownerId: userId },
+    where: {
+      id: { in: chunkIds },
+      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+    },
     select: { id: true },
   });
 

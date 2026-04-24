@@ -48,7 +48,10 @@ export async function hasExistingCards(
   userId: string,
 ): Promise<boolean> {
   const cards = await client.card.findMany({
-    where: { id: { in: cardIds }, ownerId: userId },
+    where: {
+      id: { in: cardIds },
+      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+    },
     select: { id: true },
   });
 

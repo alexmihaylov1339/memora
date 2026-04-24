@@ -96,7 +96,10 @@ export async function updateChunk(
   return prisma.$transaction(async (tx) => {
     const client = tx as ChunkPersistenceClient;
     const existing = await client.chunk.findFirst({
-      where: { id, ownerId: userId },
+      where: {
+        id,
+        OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+      },
     });
 
     if (!existing) {
@@ -152,7 +155,10 @@ export async function removeChunk(
   userId: string,
 ): Promise<boolean> {
   const existing = await prisma.chunk.findFirst({
-    where: { id, ownerId: userId },
+    where: {
+      id,
+      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+    },
   });
 
   if (!existing) {

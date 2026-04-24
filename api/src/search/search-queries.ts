@@ -113,12 +113,7 @@ export async function searchCards(
       const backText =
         typeof fields.back === 'string' ? fields.back.trim() : '';
       const deckName = card.deck?.name ?? '';
-      const searchable = [
-        card.kind,
-        deckName,
-        frontText,
-        backText,
-      ]
+      const searchable = [card.kind, deckName, frontText, backText]
         .join(' ')
         .toLowerCase();
 

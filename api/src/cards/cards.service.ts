@@ -73,7 +73,10 @@ export class CardsService {
     userId: string,
   ): Promise<CardRecord | null> {
     const existing = await this.prisma.card.findFirst({
-      where: { id, ownerId: userId },
+      where: {
+        id,
+        OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+      },
     });
     if (!existing) {
       return null;
@@ -87,7 +90,10 @@ export class CardsService {
 
   async remove(id: string, userId: string) {
     const existing = await this.prisma.card.findFirst({
-      where: { id, ownerId: userId },
+      where: {
+        id,
+        OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+      },
     });
     if (!existing) {
       return false;

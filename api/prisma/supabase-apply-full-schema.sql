@@ -214,3 +214,44 @@ ALTER TABLE "ReviewState" ADD CONSTRAINT "ReviewState_cardId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "ReviewLog" ADD CONSTRAINT "ReviewLog_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Data backfill safety: guarantee ownerId for legacy/orphaned rows.
+INSERT INTO "User" ("id", "email", "name", "createdAt", "updatedAt")
+VALUES (
+  'system_orphaned_owner',
+  'system.orphaned-owner@memora.local',
+  'System Orphaned Owner',
+  NOW(),
+  NOW()
+)
+ON CONFLICT ("email") DO NOTHING;
+
+UPDATE "Deck" AS d
+SET "ownerId" = u."id"
+FROM "User" AS u
+WHERE u."email" = 'system.orphaned-owner@memora.local'
+  AND d."ownerId" IS NULL;
+
+UPDATE "Card" AS c
+SET "ownerId" = d."ownerId"
+FROM "Deck" AS d
+WHERE c."deckId" = d."id"
+  AND c."ownerId" IS NULL;
+
+UPDATE "Chunk" AS c
+SET "ownerId" = d."ownerId"
+FROM "Deck" AS d
+WHERE c."deckId" = d."id"
+  AND c."ownerId" IS NULL;
+
+UPDATE "Card" AS c
+SET "ownerId" = u."id"
+FROM "User" AS u
+WHERE u."email" = 'system.orphaned-owner@memora.local'
+  AND c."ownerId" IS NULL;
+
+UPDATE "Chunk" AS c
+SET "ownerId" = u."id"
+FROM "User" AS u
+WHERE u."email" = 'system.orphaned-owner@memora.local'
+  AND c."ownerId" IS NULL;
