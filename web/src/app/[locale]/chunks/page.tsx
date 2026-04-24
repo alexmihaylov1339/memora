@@ -13,7 +13,6 @@ import {
 import { APP_ROUTES } from '@shared/constants';
 import type { ChunkRecord } from '@features/chunks';
 import {
-  chunkService,
   useChunksListQuery,
   useDeckMovableChunksQuery,
   useMoveDeckChunksMutation,
@@ -81,7 +80,7 @@ export default function ChunksPage() {
                 event.stopPropagation();
                 void handleMoveChunk(chunk.id);
               }}
-              className="rounded-md bg-[#1d6fa5] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#165984]"
+              className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-hover"
             >
               Move to Deck
             </Button>
@@ -107,10 +106,10 @@ export default function ChunksPage() {
       <main className="min-h-screen bg-white">
         <section className="mx-auto flex w-full max-w-[1100px] flex-col px-4 pb-10 pt-8 sm:px-6 lg:px-0">
           <div className="mb-10 text-center">
-            <h1 className="text-[2rem] font-bold tracking-[0.01em] text-[rgba(1,1,1,0.75)] sm:text-[2.15rem]">
+            <h1 className="text-[2rem] font-bold tracking-[0.01em] text-ink-heading sm:text-[2.15rem]">
               {pageTitle}
             </h1>
-            <p className="mt-3 text-[1.125rem] font-bold tracking-[0.01em] text-[#1D6FA5]">
+            <p className="mt-3 text-[1.125rem] font-bold tracking-[0.01em] text-brand">
               {pageDescription}
             </p>
           </div>
@@ -128,7 +127,7 @@ export default function ChunksPage() {
             </div>
             <Link
               href={createChunkHref}
-              className="rounded-[5px] bg-[#378ADD] px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#2e78c0]"
+              className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover"
             >
               Create Chunk
             </Link>
@@ -140,7 +139,7 @@ export default function ChunksPage() {
             <ErrorMessage message={moveChunksMutation.error.message} />
           )}
           {result && (
-            <div className="overflow-hidden rounded-[5px] border border-[rgba(1,1,1,0.1)] bg-white">
+            <div className="overflow-hidden rounded-[5px] border border-line-soft bg-white">
               <Grid
                 id="chunks-grid"
                 rowData={result}

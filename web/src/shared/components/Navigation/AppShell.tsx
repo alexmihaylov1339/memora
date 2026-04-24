@@ -18,7 +18,7 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#ffffff] lg:pl-[285px]">
+    <div className="min-h-screen bg-surface lg:pl-[285px]">
       <Navigation />
       <div className="min-h-screen">{children}</div>
     </div>

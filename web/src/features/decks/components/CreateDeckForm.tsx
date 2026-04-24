@@ -102,7 +102,7 @@ export default function CreateDeckForm() {
       />
 
       <div className={styles.actionRow}>
-        <span className="text-sm text-[rgba(1,1,1,0.5)]">
+        <span className="text-sm text-ink-subtle">
           {selectedCards.length} cards, {selectedChunks.length} chunks selected
         </span>
       </div>

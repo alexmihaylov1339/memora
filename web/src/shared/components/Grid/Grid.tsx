@@ -83,7 +83,7 @@ export default function Grid<TRow extends { id: string }>({
 
   return (
     <div className="w-full">
-      <div className="overflow-hidden rounded-[5px] border border-[rgba(1,1,1,0.1)] bg-white">
+      <div className="overflow-hidden rounded-[5px] border border-line-soft bg-white">
         {showQuickFilter && (
           <div className="px-[16px] pt-[16px]">
             <GridSearchInput
@@ -95,7 +95,7 @@ export default function Grid<TRow extends { id: string }>({
         )}
 
         {paginatedRows.length === 0 ? (
-          <p className="px-[16px] py-10 text-sm text-[rgba(1,1,1,0.4)]">
+          <p className="px-[16px] py-10 text-sm text-ink-faint">
             {emptyMessage}
           </p>
         ) : (

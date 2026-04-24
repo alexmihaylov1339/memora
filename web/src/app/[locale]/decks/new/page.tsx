@@ -11,8 +11,8 @@ export default function NewDeckPage() {
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
         <header className="mb-8">
-          <h1 className="text-center text-4xl font-semibold text-[rgba(1,1,1,0.72)]">Create Deck</h1>
-          <p className="mt-2 text-center text-lg font-semibold text-[#378add]">
+          <h1 className="text-center text-4xl font-semibold text-ink-strong">Create Deck</h1>
+          <p className="mt-2 text-center text-lg font-semibold text-brand-accent">
             Build your deck structure before starting reviews.
           </p>
         </header>
@@ -20,7 +20,7 @@ export default function NewDeckPage() {
         <div className="mb-5">
           <Link
             href={APP_ROUTES.decks}
-            className="inline-flex items-center rounded-md border border-[rgba(1,1,1,0.15)] bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
+            className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
           >
             Back to Decks
           </Link>

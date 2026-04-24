@@ -10,7 +10,7 @@ export default function AccountPage() {
     <ProtectedRoute>
       <main className="p-6">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold text-[rgba(1,1,1,0.72)]">Account</h1>
+          <h1 className="text-xl font-semibold text-ink-strong">Account</h1>
           <LanguageSwitcher />
         </div>
 

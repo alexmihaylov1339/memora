@@ -9,9 +9,9 @@ export const createDeckFormFields: FieldConfig[] = [
     required: true,
     placeholder: TRANSLATION_KEYS.decks.namePlaceholder,
     fieldWrapperClassName: 'mb-5',
-    labelClassName: 'mb-2 block text-sm font-semibold text-[rgba(1,1,1,0.72)]',
+    labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
     inputClassName:
-      'h-9 w-full rounded-[4px] border border-[rgba(1,1,1,0.15)] bg-white px-3 text-sm text-[rgba(1,1,1,0.72)] outline-none focus:border-[#378add]',
+      'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
   },
   {
     type: 'textarea',
@@ -19,9 +19,9 @@ export const createDeckFormFields: FieldConfig[] = [
     label: TRANSLATION_KEYS.decks.description,
     placeholder: TRANSLATION_KEYS.decks.descriptionPlaceholder,
     fieldWrapperClassName: 'mb-0',
-    labelClassName: 'mb-2 block text-sm font-semibold text-[rgba(1,1,1,0.72)]',
+    labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
     rows: 3,
     inputClassName:
-      'w-full rounded-[4px] border border-[rgba(1,1,1,0.15)] bg-white px-3 py-2 text-sm text-[rgba(1,1,1,0.72)] outline-none resize-y focus:border-[#378add]',
+      'w-full rounded-[4px] border border-line bg-white px-3 py-2 text-sm text-ink-strong outline-none resize-y focus:border-brand-accent',
   },
 ];

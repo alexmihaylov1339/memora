@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
     <GuestOnlyRoute>
       <AuthShell
         description="Forgot your password? No worries. Enter your email to proceed."
-        descriptionClassName="mb-[30px] max-w-[382px] text-[20px] font-bold leading-[30px] tracking-[0.01em] text-[rgba(1,1,1,0.75)]"
+        descriptionClassName="mb-[30px] max-w-[382px] text-[20px] font-bold leading-[30px] tracking-[0.01em] text-ink-heading"
       >
         <ForgotPasswordForm />
       </AuthShell>

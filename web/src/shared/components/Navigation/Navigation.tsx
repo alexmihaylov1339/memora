@@ -19,17 +19,17 @@ export default function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-y-0 left-0 z-20 hidden w-[285px] border-r border-[rgba(1,1,1,0.08)] bg-[rgba(13,43,69,0.02)] px-12 py-10 lg:flex lg:flex-col">
+    <nav className="fixed inset-y-0 left-0 z-20 hidden w-[285px] border-r border-line-nav bg-surface-nav px-12 py-10 lg:flex lg:flex-col">
       <Link
         href={APP_ROUTES.home}
         className="mb-16 flex items-center gap-3 self-start"
       >
         <div
-          className="flex h-[52px] w-[52px] items-center justify-center rounded-[10px] bg-[#1d6fa5] font-['Vibur'] text-[52px] leading-none text-[#e6f1fb]"
+          className="flex h-[52px] w-[52px] items-center justify-center rounded-[10px] bg-brand font-['Vibur'] text-[52px] leading-none text-brand-contrast"
         >
           m
         </div>
-        <span className="translate-y-[-1px] font-['Vibur'] text-[54px] leading-none tracking-[0.01em] text-[#1d6fa5]">
+        <span className="translate-y-[-1px] font-['Vibur'] text-[54px] leading-none tracking-[0.01em] text-brand">
           memora
         </span>
       </Link>
@@ -45,16 +45,16 @@ export default function Navigation() {
               href={item.href}
               className={
                 active
-                  ? 'flex items-center gap-3 rounded-[14px] px-2 py-3 text-[1rem] font-bold text-[#0D2B45]'
-                  : 'flex items-center gap-3 rounded-[14px] px-2 py-3 text-[1rem] font-bold text-[rgba(1,1,1,0.72)] transition hover:text-[#0D2B45]'
+                  ? 'flex items-center gap-3 rounded-[14px] px-2 py-3 text-[1rem] font-bold text-brand-ink'
+                  : 'flex items-center gap-3 rounded-[14px] px-2 py-3 text-[1rem] font-bold text-ink-strong transition hover:text-brand-ink'
               }
             >
               <span
                 className={[
                   'flex h-9 w-9 items-center justify-center rounded-[8px] border shadow-[0_1px_4px_rgba(0,0,0,0.08)]',
                   active
-                    ? 'border-[#B5D4F4] bg-white text-[#378ADD]'
-                    : 'border-[#D5E4F1] bg-white text-[#378ADD]',
+                    ? 'border-line-brand-soft bg-white text-brand-accent'
+                    : 'border-line-brand-muted bg-white text-brand-accent',
                 ].join(' ')}
                 aria-hidden="true"
               >

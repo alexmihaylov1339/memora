@@ -33,21 +33,21 @@ export default function ForgotPasswordForm() {
     >
       {error && (
         <p
-          className="mb-4 rounded-[8px] border border-[#efb5b5] bg-[#fff5f5] px-4 py-3 text-sm font-medium text-[#c53d3d]"
+          className="mb-4 rounded-[8px] border border-destructive-line bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive-text"
           role="alert"
         >
           {error}
         </p>
       )}
       {success && (
-        <div className="mb-4 rounded-[8px] border border-[#b4ddbf] bg-[#f2fbf5] px-4 py-3">
-          <p className="text-sm font-medium text-[#237b3f]">{success.message}</p>
+        <div className="mb-4 rounded-[8px] border border-success-line bg-success-soft px-4 py-3">
+          <p className="text-sm font-medium text-success-text">{success.message}</p>
           {success.resetToken && (
-            <p className="mt-2 break-all text-xs text-[#5b6b78]">
+            <p className="mt-2 break-all text-xs text-info">
               Dev reset link:{' '}
               <Link
                 href={APP_ROUTES.resetPasswordWithToken(success.resetToken)}
-                className="text-[#1d6fa5] underline"
+                className="text-brand underline"
               >
                 Reset password
               </Link>
@@ -61,11 +61,11 @@ export default function ForgotPasswordForm() {
           onSubmit={handleSubmit}
           formClassName="flex flex-col"
           submitLabel={mutation.isPending ? 'SENDING...' : 'Send Reset link'}
-          submitButtonClassName="mt-[2px] h-[47px] w-full rounded-[5px] bg-[#438cd4] px-4 text-center text-[20px] font-bold tracking-[0.01em] text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#337fc9] disabled:cursor-not-allowed disabled:opacity-60"
+          submitButtonClassName="mt-[2px] h-[47px] w-full rounded-[5px] bg-brand-accent px-4 text-center text-[20px] font-bold tracking-[0.01em] text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
           translateFields={false}
         />
       )}
-      <p className="mt-[31px] text-center text-[18px] font-bold tracking-[0.01em] text-[#1d6fa5]">
+      <p className="mt-[31px] text-center text-[18px] font-bold tracking-[0.01em] text-brand">
         <Link href={APP_ROUTES.login} className="hover:underline">
           Back to log in page
         </Link>

@@ -87,17 +87,17 @@ export default function EntitySearch({
           {selectedItems.map((item) => (
             <li
               key={`selected-${item.type}-${item.id}`}
-              className="flex items-center gap-1 rounded-md bg-[#e8f0f9] px-2 py-1 text-sm text-[#1d6fa5]"
+              className="flex items-center gap-1 rounded-md bg-brand-soft px-2 py-1 text-sm text-brand"
             >
               <span>{item.label}</span>
               {item.description && (
-                <span className="text-[#1d6fa5]/60"> — {item.description}</span>
+                <span className="text-brand/60"> — {item.description}</span>
               )}
               <button
                 type="button"
                 onClick={() => handleRemove(item)}
                 aria-label={`Remove ${item.label}`}
-                className="ml-1 text-[#1d6fa5]/60 transition hover:text-[#1d6fa5]"
+                className="ml-1 text-brand/60 transition hover:text-brand"
               >
                 ×
               </button>
@@ -107,7 +107,7 @@ export default function EntitySearch({
       )}
 
       <div className="relative w-full">
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[rgba(1,1,1,0.38)]">
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-faint">
           <svg
             width="16"
             height="16"
@@ -129,20 +129,20 @@ export default function EntitySearch({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder ?? 'Search'}
-            className="h-10 w-full rounded-[8px] border border-[#e5e7eb] bg-white pl-9 pr-3 text-sm text-[rgba(1,1,1,0.72)] placeholder:text-[rgba(1,1,1,0.38)] outline-none transition focus:border-[#1d6fa5] focus:ring-1 focus:ring-[#1d6fa5]"
+            className="h-10 w-full rounded-[8px] border border-line-muted bg-white pl-9 pr-3 text-sm text-ink-strong placeholder:text-ink-faint outline-none transition focus:border-brand focus:ring-1 focus:ring-brand"
           />
         </label>
 
         {showDropdown && (
-          <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-[8px] border border-[#e5e7eb] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
+          <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-[8px] border border-line-muted bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
             {isLoading && (
-              <p className="px-4 py-2.5 text-sm text-[rgba(1,1,1,0.4)]">Loading results...</p>
+              <p className="px-4 py-2.5 text-sm text-ink-faint">Loading results...</p>
             )}
             {error && (
-              <p className="px-4 py-2.5 text-sm text-[#dc2626]">{error.message}</p>
+              <p className="px-4 py-2.5 text-sm text-destructive">{error.message}</p>
             )}
             {!isLoading && !error && results.length === 0 && (
-              <p className="px-4 py-2.5 text-sm text-[rgba(1,1,1,0.4)]">No results found.</p>
+              <p className="px-4 py-2.5 text-sm text-ink-faint">No results found.</p>
             )}
             {!isLoading && !error && results.length > 0 && isMultiSelect && (
               <ul>
@@ -151,18 +151,18 @@ export default function EntitySearch({
                   return (
                     <li
                       key={`${item.type}-${item.id}`}
-                      className="border-b border-[#e5e7eb] last:border-b-0"
+                      className="border-b border-line-muted last:border-b-0"
                     >
-                      <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-[#f6f8fc]">
+                      <label className="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-surface-muted">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleStaged(item)}
-                          className="h-4 w-4 rounded border-[#e5e7eb] accent-[#1d6fa5]"
+                          className="h-4 w-4 rounded border-line-muted accent-brand"
                         />
-                        <span className="text-sm text-[rgba(1,1,1,0.72)]">{item.label}</span>
+                        <span className="text-sm text-ink-strong">{item.label}</span>
                         {item.description && (
-                          <span className="text-sm text-[rgba(1,1,1,0.4)]">
+                          <span className="text-sm text-ink-faint">
                             {item.description}
                           </span>
                         )}
@@ -173,11 +173,11 @@ export default function EntitySearch({
               </ul>
             )}
             {!isLoading && !error && isMultiSelect && (
-              <div className="border-t border-[#e5e7eb] px-4 py-2.5">
+              <div className="border-t border-line-muted px-4 py-2.5">
                 <button
                   type="button"
                   onClick={handleConfirm}
-                  className="rounded-[6px] bg-[#1d6fa5] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1a5f8e]"
+                  className="rounded-[6px] bg-brand px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-deep"
                 >
                   Done
                 </button>
@@ -188,16 +188,16 @@ export default function EntitySearch({
                 {results.map((item) => (
                   <li
                     key={`${item.type}-${item.id}`}
-                    className="border-b border-[#e5e7eb] last:border-b-0"
+                    className="border-b border-line-muted last:border-b-0"
                   >
                     <button
                       type="button"
                       onClick={() => handleSelect(item)}
-                      className="w-full px-4 py-2.5 text-left text-sm text-[rgba(1,1,1,0.72)] transition hover:bg-[#f6f8fc]"
+                      className="w-full px-4 py-2.5 text-left text-sm text-ink-strong transition hover:bg-surface-muted"
                     >
                       <span>{item.label}</span>
                       {item.description && (
-                        <span className="ml-2 text-[rgba(1,1,1,0.4)]">{item.description}</span>
+                        <span className="ml-2 text-ink-faint">{item.description}</span>
                       )}
                     </button>
                   </li>

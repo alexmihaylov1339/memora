@@ -22,7 +22,7 @@ export default function useDeckGridColumns(): GridColumnDef<Deck>[] {
             onClick={(event) => {
               event.stopPropagation();
             }}
-            className="inline-flex h-[36px] w-[168px] items-center justify-center rounded-[5px] bg-[#378ADD] text-base font-bold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:opacity-90"
+            className="inline-flex h-[36px] w-[168px] items-center justify-center rounded-[5px] bg-brand-accent text-base font-bold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:opacity-90"
           >
             Review
           </Link>

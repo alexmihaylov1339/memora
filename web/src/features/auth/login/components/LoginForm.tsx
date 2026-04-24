@@ -29,7 +29,7 @@ export default function LoginForm() {
       disabled={mutation.isPending}
       className="border-none p-0 m-0 min-w-0"
     >
-      <p className="mb-[30px] text-[18px] font-bold tracking-[0.01em] text-[#1d6fa5]">
+      <p className="mb-[30px] text-[18px] font-bold tracking-[0.01em] text-brand">
         <Link href={APP_ROUTES.register} className="hover:underline">
           I&apos;m new here. Register and start remembering.
         </Link>
@@ -37,7 +37,7 @@ export default function LoginForm() {
 
       {error && (
         <p
-          className="mb-4 rounded-[8px] border border-[#efb5b5] bg-[#fff5f5] px-4 py-3 text-sm font-medium text-[#c53d3d]"
+          className="mb-4 rounded-[8px] border border-destructive-line bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive-text"
           role="alert"
         >
           {error}
@@ -50,10 +50,10 @@ export default function LoginForm() {
         submitLabel={
           mutation.isPending ? 'SIGNING IN...' : 'CONTINUE REMEMBERING'
         }
-        submitButtonClassName="mt-[2px] h-[47px] w-full rounded-[5px] bg-[#438cd4] px-4 text-center text-[20px] font-bold tracking-[0.01em] text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#337fc9] disabled:cursor-not-allowed disabled:opacity-60"
+        submitButtonClassName="mt-[2px] h-[47px] w-full rounded-[5px] bg-brand-accent px-4 text-center text-[20px] font-bold tracking-[0.01em] text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
         translateFields={false}
       />
-      <p className="mt-[31px] text-center text-[18px] font-bold tracking-[0.01em] text-[#1d6fa5]">
+      <p className="mt-[31px] text-center text-[18px] font-bold tracking-[0.01em] text-brand">
         <Link
           href={APP_ROUTES.forgotPassword}
           className="hover:underline"

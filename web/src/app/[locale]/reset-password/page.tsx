@@ -17,9 +17,9 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <p className="text-[18px] font-bold tracking-[0.01em] text-[rgba(1,1,1,0.55)]">
+      <p className="text-[18px] font-bold tracking-[0.01em] text-ink-muted">
         Invalid or missing reset link. Please{' '}
-        <Link href={APP_ROUTES.forgotPassword} className="text-[#1d6fa5] hover:underline">
+        <Link href={APP_ROUTES.forgotPassword} className="text-brand hover:underline">
           request a new one
         </Link>
         .
@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
   return (
     <GuestOnlyRoute>
       <AuthShell description="Enter your new password to get back in.">
-        <Suspense fallback={<p className="text-sm text-[rgba(1,1,1,0.4)]">Loading…</p>}>
+        <Suspense fallback={<p className="text-sm text-ink-faint">Loading…</p>}>
           <ResetPasswordContent />
         </Suspense>
       </AuthShell>

@@ -1,6 +1,6 @@
 # Memora: Step 12b Plan - Add/Edit Card & Chunk Style Parity
 
-**Status:** Proposed  
+**Status:** In Progress  
 **Date:** 2026-04-24  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 12b
 
@@ -53,16 +53,37 @@ Out of scope for this step:
 
 ## Tasks
 
+### T0 - Design token standardization for Tailwind color usage
+
+Status:
+- Done
+
+- Introduce reusable color/shadow tokens in `tailwind.config.js`.
+- Route color classes through CSS variables in `globals.css`.
+- Replace hardcoded Tailwind color literals (`#...`, `rgba(...)`) in class utilities with tokenized classes.
+
+Exit criteria:
+- Tailwind color utilities resolve through variables and shared token names.
+
+Verification completed:
+- Added `web/tailwind.config.js` with semantic color/shadow tokens.
+- Expanded `web/src/app/globals.css` with centralized color/shadow variable definitions.
+- Removed hardcoded color literals from Tailwind class utilities in `web/src/**/*.tsx`.
+- Confirmed lint passes after token migration.
+
 ### T1 - Lock visual parity contract for add/edit pages
 
 Status:
-- Proposed
+- Done
 
 - Define the exact deck-page style primitives to reuse (hero, form card, section titles, action row).
 - Document accepted deviations for card-specific/chunk-specific controls.
 
 Exit criteria:
 - One explicit contract exists for how card/chunk add/edit should match deck add/edit.
+
+Verification completed:
+- Contract is locked in this plan and now explicitly tied to tokenized style primitives.
 
 ### T2 - Align `/cards/new` to deck-form style contract
 
