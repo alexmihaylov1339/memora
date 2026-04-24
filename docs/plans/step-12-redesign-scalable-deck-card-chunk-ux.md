@@ -196,7 +196,7 @@ Verification completed:
 ### T4 - Align chunk create flow to deck-style selection ergonomics
 
 Status:
-- Proposed
+- Ready
 
 - Ensure chunk authoring interaction mirrors deck-style selection patterns:
   - source search
@@ -207,6 +207,11 @@ Status:
 
 Exit criteria:
 - Chunk form interaction is consistent with deck-style mental model.
+
+Verification completed:
+- Chunk create form now uses `FormBuilder` with a `grid` field for `cardIds`, matching deck-form architecture.
+- Chunk edit form uses the same `FormBuilder` + `grid` pattern, so create/edit contracts are consistent.
+- Search, multi-select, selected-cards grid, remove, and reorder stay intact while now serializing through form payload.
 
 ### T5 - Cross-surface consistency pass (decks/cards/chunks)
 

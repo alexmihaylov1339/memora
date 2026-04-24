@@ -1,6 +1,5 @@
 import type { CardRecord } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
-import ChunkCardSearchPanel from './ChunkCardSearchPanel';
 import ChunkCreateDetailsCard from './ChunkCreateDetailsCard';
 import ChunkSchedulePreview from './ChunkSchedulePreview';
 
@@ -13,7 +12,7 @@ interface ChunkCreateFormProps {
   onSelectionChange: (items: SearchResultItem[]) => void;
   onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
-  onSubmit: (values: { title: string }) => Promise<void> | void;
+  onSubmit: (values: { title: string; cardIds: string[] }) => Promise<void> | void;
   selectedCards: CardRecord[];
   submitError?: string;
   submitLoading: boolean;
@@ -43,20 +42,14 @@ export default function ChunkCreateForm({
         cardsLoading={cardsLoading}
         currentDeckName={currentDeckName}
         onChangeDeck={onChangeDeck}
-        onSubmit={onSubmit}
-        selectedCardCount={selectedCards.length}
-        submitError={submitError}
-        submitLoading={submitLoading}
-        availableCardCount={totalCardCount}
-      />
-
-      <ChunkCardSearchPanel
-        cardsError={cardsError}
-        cardsLoading={cardsLoading}
         onSelectionChange={onSelectionChange}
         onMoveCard={onMoveCard}
         onRemoveCard={onRemoveCard}
+        onSubmit={onSubmit}
         selectedCards={selectedCards}
+        submitError={submitError}
+        submitLoading={submitLoading}
+        availableCardCount={totalCardCount}
       />
 
       <ChunkSchedulePreview />

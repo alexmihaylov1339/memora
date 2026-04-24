@@ -1,5 +1,9 @@
-import { ErrorMessage, FormBuilder } from '@shared/components';
+import { useMemo } from 'react';
+import { ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
 import { useChunkCreateFormFields } from '@features/chunks';
+import type { CardRecord } from '@features/decks';
+import type { SearchResultItem } from '@features/search';
+import ChunkCardSearchPanel from './ChunkCardSearchPanel';
 
 const CREATE_CHUNK_LABEL = 'Create Chunk';
 const CREATING_CHUNK_LABEL = 'Creating Chunk...';
@@ -10,8 +14,11 @@ interface ChunkCreateDetailsCardProps {
   cardsLoading: boolean;
   currentDeckName?: string;
   onChangeDeck: () => void;
-  onSubmit: (values: { title: string }) => Promise<void> | void;
-  selectedCardCount: number;
+  onSelectionChange: (items: SearchResultItem[]) => void;
+  onMoveCard: (cardId: string, offset: -1 | 1) => void;
+  onRemoveCard: (cardId: string) => void;
+  onSubmit: (values: { title: string; cardIds: string[] }) => Promise<void> | void;
+  selectedCards: CardRecord[];
   submitError?: string;
   submitLoading: boolean;
   availableCardCount: number;
@@ -23,15 +30,51 @@ export default function ChunkCreateDetailsCard({
   cardsLoading,
   currentDeckName,
   onChangeDeck,
+  onSelectionChange,
+  onMoveCard,
+  onRemoveCard,
   onSubmit,
-  selectedCardCount,
+  selectedCards,
   submitError,
   submitLoading,
   availableCardCount,
 }: ChunkCreateDetailsCardProps) {
-  const fields = useChunkCreateFormFields();
+  const baseFields = useChunkCreateFormFields();
+  const fields = useMemo<FieldConfig[]>(
+    () => [
+      ...baseFields,
+      {
+        type: 'grid',
+        name: 'cardIds',
+        label: 'Cards',
+        value: selectedCards,
+        onChange: (value) => onSelectionChange(value as SearchResultItem[]),
+        serialize: (value) => (value as CardRecord[]).map((card) => card.id),
+        fieldWrapperClassName: 'mt-6',
+        render: ({ value, onChange }) => (
+          <ChunkCardSearchPanel
+            cardsError={cardsError}
+            cardsLoading={cardsLoading}
+            onSelectionChange={(items) => onChange(items)}
+            onMoveCard={onMoveCard}
+            onRemoveCard={onRemoveCard}
+            selectedCards={value as CardRecord[]}
+          />
+        ),
+      },
+    ],
+    [
+      baseFields,
+      cardsError,
+      cardsLoading,
+      onMoveCard,
+      onRemoveCard,
+      onSelectionChange,
+      selectedCards,
+    ],
+  );
   const showForm =
-    selectedCardCount > 0 || availableCardCount > 0 || cardsLoading;
+    selectedCards.length > 0 || availableCardCount > 0 || cardsLoading;
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-white p-5">
@@ -67,7 +110,7 @@ export default function ChunkCreateDetailsCard({
 
       {showForm && (
         <div className="mt-4">
-          <FormBuilder<{ title: string }>
+          <FormBuilder<{ title: string; cardIds: string[] }>
             fields={fields}
             onSubmit={onSubmit}
             submitLabel={submitLoading ? CREATING_CHUNK_LABEL : CREATE_CHUNK_LABEL}

@@ -1,4 +1,5 @@
-import { Button, ErrorMessage, FormBuilder } from '@shared/components';
+import { useMemo } from 'react';
+import { Button, ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
 import { useChunkCreateFormFields } from '@features/chunks';
 import { type CardRecord } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
@@ -17,7 +18,7 @@ export interface EditChunkFormProps {
   onSelectionChange: (items: SearchResultItem[]) => void;
   onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
-  onSubmit: (values: { title: string }) => Promise<void> | void;
+  onSubmit: (values: { title: string; cardIds: string[] }) => Promise<void> | void;
   onDelete: () => void;
 }
 
@@ -37,11 +38,44 @@ export default function EditChunkForm({
   onSubmit,
   onDelete,
 }: EditChunkFormProps) {
-  const fields = useChunkCreateFormFields();
+  const baseFields = useChunkCreateFormFields();
+  const fields = useMemo<FieldConfig[]>(
+    () => [
+      ...baseFields,
+      {
+        type: 'grid',
+        name: 'cardIds',
+        label: 'Cards',
+        value: selectedCards,
+        onChange: (value) => onSelectionChange(value as SearchResultItem[]),
+        serialize: (value) => (value as CardRecord[]).map((card) => card.id),
+        fieldWrapperClassName: 'mt-6',
+        render: ({ value, onChange }) => (
+          <ChunkCardSearchPanel
+            cardsError={cardsError}
+            cardsLoading={cardsLoading}
+            onSelectionChange={(items) => onChange(items)}
+            onMoveCard={onMoveCard}
+            onRemoveCard={onRemoveCard}
+            selectedCards={value as CardRecord[]}
+          />
+        ),
+      },
+    ],
+    [
+      baseFields,
+      cardsError,
+      cardsLoading,
+      onMoveCard,
+      onRemoveCard,
+      onSelectionChange,
+      selectedCards,
+    ],
+  );
 
   return (
     <div>
-      <FormBuilder<{ title: string }>
+      <FormBuilder<{ title: string; cardIds: string[] }>
         key={chunkId}
         fields={fields}
         initialValues={{ title }}
@@ -50,15 +84,6 @@ export default function EditChunkForm({
         translateFields={false}
         errorMessage={submitError}
         resetOnSubmit={false}
-      />
-
-      <ChunkCardSearchPanel
-        cardsError={cardsError}
-        cardsLoading={cardsLoading}
-        onSelectionChange={onSelectionChange}
-        onMoveCard={onMoveCard}
-        onRemoveCard={onRemoveCard}
-        selectedCards={selectedCards}
       />
 
       {deleteError && <ErrorMessage message={deleteError} />}

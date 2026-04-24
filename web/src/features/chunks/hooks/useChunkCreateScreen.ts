@@ -13,6 +13,7 @@ import { useCreateChunkMutation } from './useChunkMutations';
 
 interface CreateChunkValues {
   title: string;
+  cardIds: string[];
 }
 
 export function useChunkCreateScreen(initialDeckId: string) {
@@ -87,8 +88,9 @@ export function useChunkCreateScreen(initialDeckId: string) {
 
   async function handleCreateChunk(values: CreateChunkValues) {
     const title = values.title.trim();
+    const cardIds = values.cardIds;
 
-    if (selectedCardIds.length < MIN_CHUNK_CARD_SELECTION) {
+    if (cardIds.length < MIN_CHUNK_CARD_SELECTION) {
       setSelectionError('Select at least one card for the chunk.');
       return;
     }
@@ -98,7 +100,7 @@ export function useChunkCreateScreen(initialDeckId: string) {
     await createChunk.fetch({
       deckId: activeDeckId || undefined,
       title,
-      cardIds: selectedCardIds,
+      cardIds,
     });
   }
 

@@ -87,12 +87,12 @@ export default function EditChunkPage() {
     setSelectionError(undefined);
   }
 
-  function handleSubmit(values: { title: string }): void {
+  function handleSubmit(values: { title: string; cardIds: string[] }): void {
     if (!chunkQuery.result) {
       return;
     }
 
-    if (selectedCardIds.length < MINIMUM_SELECTED_CARDS) {
+    if (values.cardIds.length < MINIMUM_SELECTED_CARDS) {
       setSelectionError('Select at least one card for the chunk.');
       return;
     }
@@ -102,7 +102,7 @@ export default function EditChunkPage() {
     updateChunk.trigger({
       id: chunkQuery.result.id,
       title: values.title.trim(),
-      cardIds: selectedCardIds,
+      cardIds: values.cardIds,
     });
   }
 
