@@ -233,7 +233,7 @@ Verification completed:
 ### T6 - Regression coverage for UX-critical flows
 
 Status:
-- Proposed
+- Done
 
 - Add/update tests for:
   - `/chunks` create CTA availability
@@ -243,6 +243,17 @@ Status:
 
 Exit criteria:
 - Step 12 UX-critical behavior is test-protected.
+
+Verification completed:
+- Added regression tests for chunk authoring interaction in `useChunkCreateScreen`:
+  - multi-select mapping
+  - reorder behavior
+  - remove behavior
+  - post-create navigation (`/decks/:id/edit` or `/chunks/:id/edit`)
+- Added page regression tests for:
+  - `/chunks` global `Create Chunk` CTA presence
+  - move-to-deck flows triggering list refresh (`refetch`) for both cards and chunks
+- Added Jest alias mappings for `@features/*` and `@shared/*` to keep path-resolution stable in test runs.
 
 ### T7 - Docs and handoff alignment for Step 13
 

@@ -12,6 +12,8 @@ const config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@features/(.*)$': '<rootDir>/src/features/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
   },
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
@@ -30,4 +32,3 @@ const config = {
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
 module.exports = createJestConfig(config);
-
