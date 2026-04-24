@@ -1,6 +1,6 @@
 # Memora: Step 12 Plan - Scalable Deck, Card, and Chunk UX
 
-**Status:** In Progress  
+**Status:** Done  
 **Date:** 2026-04-20  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 12
 
@@ -110,7 +110,7 @@ Out of scope for this step:
 ### T1 - Lock Step 12 UX contract and surface map
 
 Status:
-- Ready
+- Done
 
 - Confirm which pages/components are touched in this step.
 - Define CTA hierarchy for decks/cards/chunks pages.
@@ -156,7 +156,7 @@ Verification completed:
 ### T2 - Redesign global chunks page and add Create Chunk CTA
 
 Status:
-- Ready
+- Done
 
 - Improve `/chunks` visual hierarchy.
 - Add prominent `Create Chunk` action.
@@ -174,7 +174,7 @@ Verification completed:
 ### T3 - Redesign deck add/edit styling surfaces
 
 Status:
-- Ready
+- Done
 
 - Align `/decks/new` and `/decks/:id/edit` visual structure and spacing with the Step 12 UX language.
 - Standardize section hierarchy, CTA emphasis, and helper/feedback text treatment.
@@ -258,13 +258,45 @@ Verification completed:
 ### T7 - Docs and handoff alignment for Step 13
 
 Status:
-- Proposed
+- Done
 
 - Update roadmap/step docs for final Step 12 decisions.
 - Explicitly document what Step 13 owns next (extensibility architecture).
 
 Exit criteria:
 - Step 12 is fully documented and hands off cleanly.
+
+Verification completed:
+- Step 12 plan statuses are finalized (`T1` through `T7` marked done).
+- Final Step 12 UX decisions are captured in this plan:
+  - global cards/chunks library hierarchy
+  - chunk create/edit parity with deck form architecture (`FormBuilder` + `grid` payload for `cardIds`)
+  - consistent CTA naming and state UX behavior
+  - regression coverage for create/move/refresh-critical flows
+- Step 13 handoff ownership is explicitly defined below to prevent Step 12/13 scope overlap.
+
+---
+
+## Step 13 Handoff Contract
+
+Step 13 owns:
+- card/exercise extensibility architecture (renderer + validator/evaluator registries)
+- onboarding at least one non-`basic` kind as a proof point
+- keeping chunk/review core logic stable while introducing kind pluggability
+
+Step 13 does not own:
+- broad page-level redesign work already completed in Step 12
+- deck/chunk move semantics (locked in Step 11)
+- Step 12 parity regressions unless discovered while implementing registry changes
+
+Recommended Step 13 first implementation sequence:
+1. Backend `kind` registry interface and validator routing.
+2. Frontend renderer registry for authoring/review by `kind`.
+3. Add one stub/experimental non-`basic` kind wired end-to-end.
+4. Add regression tests proving new kinds do not require rewriting chunk/review core flows.
+
+UI parity follow-up before Step 13:
+- `docs/plans/step-12b-add-edit-card-chunk-style-parity.md`
 
 ---
 

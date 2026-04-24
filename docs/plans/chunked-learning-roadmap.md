@@ -276,6 +276,11 @@ Critical planning note before implementation:
 
 **Objective:** Introduce a cleaner visual system and scalable browsing patterns for the new IA.
 
+Status update (2026-04-24):
+- Completed.
+- Final details and verification are captured in:
+  - `docs/plans/step-12-redesign-scalable-deck-card-chunk-ux.md`
+
 **Deliverables**
 - Redesigned deck overview/edit workspace with stronger hierarchy and actions.
 - Redesigned global cards/chunks library pages.
@@ -302,9 +307,38 @@ Critical planning note before implementation:
 
 ---
 
+## Step 12b: Add/edit card and chunk style parity
+
+**Objective:** Align add/edit card/chunk pages with the deck add/edit visual contract from Step 12.
+
+**Deliverables**
+- Style parity for:
+  - `/cards/new`
+  - `/cards/:id/edit`
+  - `/chunks/new`
+  - `/chunks/:id/edit`
+- Shared styling primitives for add/edit shells where duplication is high.
+- Regression checks for add/edit UX-critical actions and state messaging.
+
+**Why now**
+- This closes remaining redesign drift before Step 13 starts.
+- Keeps Step 13 focused on extensibility architecture instead of broad UI restyling.
+
+**Exit criteria**
+- Add/edit card/chunk surfaces are visually consistent with deck add/edit patterns.
+
+Implementation plan:
+- `docs/plans/step-12b-add-edit-card-chunk-style-parity.md`
+
+---
+
 ## Step 13: Prepare extensible card/exercise architecture
 
 **Objective:** Avoid hardcoding “basic flashcard only” in core flows.
+
+Handoff from Step 12:
+- Step 12 locked global cards/chunks browse and chunk create/edit parity UX.
+- Step 13 should focus on extensibility internals (registry architecture), not broad page redesign.
 
 **Deliverables**
 - Backend card type registry/interface:
@@ -348,8 +382,9 @@ Critical planning note before implementation:
 10. Step 10
 11. Step 11
 12. Step 12
-13. Step 13
-14. Step 14
+13. Step 12b
+14. Step 13
+15. Step 14
  
 ---
 
