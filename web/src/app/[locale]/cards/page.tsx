@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
 import {
   Button,
@@ -20,7 +21,7 @@ import {
   useMoveDeckCardsMutation,
 } from '@features/decks';
 import { SEARCH_QUERY_KEYS } from '@features/search';
-import { CardsPageHeader, useCardGridColumns } from './components';
+import { useCardGridColumns } from './components';
 
 export default function CardsPage() {
   const router = useRouter();
@@ -95,49 +96,82 @@ export default function CardsPage() {
   const pageTitle = isMoveContext ? 'Move Cards to Deck' : 'Cards';
   const pageDescription = isMoveContext
     ? 'Select cards from your library and move them into the current deck.'
-    : undefined;
+    : 'Browse all cards, keep your library organized, and create cards quickly.';
   const backHref = isMoveContext
     ? APP_ROUTES.deckEdit(deckIdFromQuery)
     : APP_ROUTES.decks;
-  const backLabel = isMoveContext ? 'Back to Deck Workspace' : 'Back to Decks';
+  const backLabel = isMoveContext ? 'Back to Deck Workspace' : '';
+  const createCardHref = isMoveContext
+    ? { pathname: APP_ROUTES.newCard, query: { deckId: deckIdFromQuery } }
+    : APP_ROUTES.newCard;
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-2xl p-6">
-        <CardsPageHeader
-          title={pageTitle}
-          description={pageDescription}
-          backHref={backHref}
-          backLabel={backLabel}
-        />
-        {!isMoveContext && (
-          <EntitySearch
-            queryKey={SEARCH_QUERY_KEYS.card}
-            search={cardService.search}
-            placeholder="Search cards"
-            onSelect={(item) => handleCardSelect(item.id)}
-          />
-        )}
+      <main className="min-h-screen bg-white">
+        <section className="mx-auto flex w-full max-w-[1100px] flex-col px-4 pb-10 pt-8 sm:px-6 lg:px-0">
+          <div className="mb-10 text-center">
+            <h1 className="text-[2rem] font-bold tracking-[0.01em] text-[rgba(1,1,1,0.75)] sm:text-[2.15rem]">
+              {pageTitle}
+            </h1>
+            <p className="mt-3 text-[1.125rem] font-bold tracking-[0.01em] text-[#1D6FA5]">
+              {pageDescription}
+            </p>
+          </div>
 
-        {isLoading && <PageLoader />}
-        {error && <ErrorMessage message={error.message} />}
-        {moveCardsMutation.error && (
-          <ErrorMessage message={moveCardsMutation.error.message} />
-        )}
-        {result && (
-          <Grid
-            id="cards-grid"
-            rowData={result}
-            columnDefs={columnDefs}
-            onRowClick={isMoveContext ? undefined : handleCardRowClick}
-            quickFilterPlaceholder="Filter card rows"
-            emptyMessage={
-              isMoveContext
-                ? 'No movable cards available.'
-                : 'No cards found.'
-            }
-          />
-        )}
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              {isMoveContext && (
+                <Link
+                  href={backHref}
+                  className="text-sm text-[var(--primary)] hover:underline"
+                >
+                  {backLabel}
+                </Link>
+              )}
+            </div>
+            <Link
+              href={createCardHref}
+              className="rounded-[5px] bg-[#378ADD] px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#2e78c0]"
+            >
+              Create Card
+            </Link>
+          </div>
+
+          {!isMoveContext && (
+            <div className="mb-4">
+              <EntitySearch
+                queryKey={SEARCH_QUERY_KEYS.card}
+                search={cardService.search}
+                placeholder="Search"
+                onSelect={(item) => handleCardSelect(item.id)}
+              />
+            </div>
+          )}
+
+          {isLoading && <PageLoader />}
+          {error && <ErrorMessage message={error.message} />}
+          {moveCardsMutation.error && (
+            <ErrorMessage message={moveCardsMutation.error.message} />
+          )}
+          {result && (
+            <div className="overflow-hidden rounded-[5px] border border-[rgba(1,1,1,0.1)] bg-white">
+              <Grid
+                id="cards-grid"
+                rowData={result}
+                columnDefs={columnDefs}
+                onRowClick={isMoveContext ? undefined : handleCardRowClick}
+                quickFilterPlaceholder="Search"
+                emptyMessage={
+                  isMoveContext
+                    ? 'No movable cards available.'
+                    : 'No cards found.'
+                }
+                paginate
+                pageSize={5}
+              />
+            </div>
+          )}
+        </section>
       </main>
     </ProtectedRoute>
   );

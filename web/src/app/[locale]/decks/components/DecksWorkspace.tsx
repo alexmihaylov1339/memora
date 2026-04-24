@@ -36,7 +36,7 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
           href={APP_ROUTES.newDeck}
           className="rounded-[5px] bg-[#378ADD] px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-[#2e78c0]"
         >
-          New Deck
+          Create Deck
         </Link>
       </div>
 

@@ -196,7 +196,7 @@ Verification completed:
 ### T4 - Align chunk create flow to deck-style selection ergonomics
 
 Status:
-- Ready
+- Done
 
 - Ensure chunk authoring interaction mirrors deck-style selection patterns:
   - source search
@@ -216,13 +216,19 @@ Verification completed:
 ### T5 - Cross-surface consistency pass (decks/cards/chunks)
 
 Status:
-- Proposed
+- Done
 
 - Align spacing, typography hierarchy, action naming, and state UI.
 - Ensure empty/loading/error/success handling feels consistent.
 
 Exit criteria:
 - Surfaces feel like one coherent system, not separate feature islands.
+
+Verification completed:
+- `/cards` page now follows the same hero + action-row + grid-container structure as `/decks` and `/chunks`.
+- Primary CTA naming is aligned across surfaces (`Create Deck`, `Create Card`, `Create Chunk`).
+- Search and grid affordances are visually and behaviorally aligned (`Search` placeholder, paginated grid container styling).
+- Move-context behavior remains intact while preserving consistent back-navigation and error/loading handling patterns.
 
 ### T6 - Regression coverage for UX-critical flows
 
