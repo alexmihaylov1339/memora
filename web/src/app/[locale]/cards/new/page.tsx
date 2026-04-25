@@ -1,12 +1,12 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
 
 import { ProtectedRoute, FormBuilder } from '@shared/components';
-import { APP_ROUTES } from '@shared/constants';
+import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import { useCreateCardFormFields, useCreateCardMutation } from '@features/decks';
+import { CardsPageHeader } from '../components';
 
 export default function NewCardPage() {
   const router = useRouter();
@@ -42,42 +42,33 @@ export default function NewCardPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
-        <header className="mb-8">
-          <h1 className="text-center text-4xl font-semibold text-ink-strong">
-            Create Card
-          </h1>
-        </header>
+      <main className="mx-auto w-full max-w-2xl p-6">
+        <CardsPageHeader
+          title="Create Card"
+          backHref={backHref}
+          backLabel={backLabel}
+        />
 
-        <div className="mx-auto flex w-full max-w-[460px] flex-col">
-          <div className="mb-4">
-            <Link
-              href={backHref}
-              className="inline-flex items-center rounded-[4px] border border-line bg-white px-2 py-1 text-[10px] font-medium text-[var(--primary)] transition hover:bg-slate-50"
-            >
-              {backLabel}
-            </Link>
-          </div>
-
-          <div className="rounded-[4px] border border-line-soft bg-white p-3">
-            <FormBuilder<{
-              kind: string;
-              front: string;
-              back: string;
-            }>
-              fields={fields}
-              initialValues={{
-                kind: 'basic',
-                front: '',
-                back: '',
-              }}
-              onSubmit={handleCreate}
-              submitLabel="Create Card"
-              submitButtonClassName="mt-4 ml-auto block rounded-[4px] bg-brand-accent px-4 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-accent-hover disabled:opacity-60"
-              errorMessage={createCard.error?.message}
-              translateFields={false}
-            />
-          </div>
+        <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
+          <FormBuilder<{
+            kind: string;
+            front: string;
+            back: string;
+          }>
+            fields={fields}
+            initialValues={{
+              kind: 'basic',
+              front: '',
+              back: '',
+            }}
+            onSubmit={handleCreate}
+            submitLabel="Create Card"
+            submitButtonClassName={BUTTON_STYLES.primarySolid}
+            actionsContainerClassName="mt-3 flex items-center justify-end gap-3"
+            errorMessage={createCard.error?.message}
+            translateFields={false}
+            resetOnSubmit={false}
+          />
         </div>
       </main>
     </ProtectedRoute>
