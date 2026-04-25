@@ -1,6 +1,6 @@
 # Memora: Step 13 Plan - Extensible Card/Exercise Architecture
 
-**Status:** Proposed  
+**Status:** In Progress  
 **Date:** 2026-04-25  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 13
 
@@ -103,12 +103,170 @@ Shared behavior:
 
 ---
 
+## T1 Contract Lock Snapshot (Canonical Schemas)
+
+This section is the authoritative contract for Step 13 implementation.
+
+### Enabled kinds for Step 13
+
+- `basic` (existing, must remain backward compatible)
+- `cloze_text` (proof kind for extensibility)
+
+### Canonical payload: `basic`
+
+Shape:
+- `kind`: `"basic"`
+- `fields`:
+  - `front`: `string` (required)
+  - `back`: `string` (required)
+
+Validation rules:
+- `front` and `back` are required, non-empty strings after trim.
+- Max length for each: `2000` chars (post-trim).
+- Unknown extra keys in `fields` are ignored at normalization boundary (not persisted).
+
+Normalization:
+- Trim both values.
+- Collapse `null`/`undefined`/non-string into validation error (do not coerce silently).
+
+Valid example:
+```json
+{
+  "kind": "basic",
+  "fields": {
+    "front": "spielen",
+    "back": "to play"
+  }
+}
+```
+
+Invalid examples:
+```json
+{
+  "kind": "basic",
+  "fields": {
+    "front": "   ",
+    "back": "to play"
+  }
+}
+```
+Reason: `front` is empty after trim.
+
+```json
+{
+  "kind": "basic",
+  "fields": {
+    "front": "spielen"
+  }
+}
+```
+Reason: `back` is missing.
+
+### Canonical payload: `cloze_text` (proof kind)
+
+Shape:
+- `kind`: `"cloze_text"`
+- `fields`:
+  - `text`: `string` (required) -> sentence with one cloze marker
+  - `answer`: `string` (required) -> expected missing token/phrase
+  - `hint`: `string` (optional)
+
+Marker contract:
+- `text` must contain exactly one cloze marker in Step 13 MVP.
+- Marker syntax: `{{c1::...}}` (Anki-like), where the inner text should match `answer` after trim + case-insensitive comparison.
+
+Validation rules:
+- `text` and `answer` required, non-empty after trim.
+- Optional `hint` max length: `300`.
+- `text` max length: `2500`; `answer` max length: `300`.
+- Exactly one valid `{{c1::...}}` marker is required.
+- Unknown extra keys in `fields` are ignored at normalization boundary.
+
+Normalization:
+- Trim all string values.
+- Preserve marker syntax in `text`.
+- Normalize answer for comparisons using lowercase + trimmed value, but store original trimmed value in payload.
+
+Valid example:
+```json
+{
+  "kind": "cloze_text",
+  "fields": {
+    "text": "Ich {{c1::spiele}} gern Tennis.",
+    "answer": "spiele",
+    "hint": "Verb in present tense"
+  }
+}
+```
+
+Invalid examples:
+```json
+{
+  "kind": "cloze_text",
+  "fields": {
+    "text": "Ich spiele gern Tennis.",
+    "answer": "spiele"
+  }
+}
+```
+Reason: missing cloze marker.
+
+```json
+{
+  "kind": "cloze_text",
+  "fields": {
+    "text": "Ich {{c1::spiele}} gern {{c1::Tennis}}.",
+    "answer": "spiele"
+  }
+}
+```
+Reason: more than one marker in Step 13 MVP.
+
+### Review capability contract for Step 13
+
+- `basic`:
+  - authoring: supported
+  - review rendering: supported
+  - grade flow: fully supported
+
+- `cloze_text`:
+  - authoring: supported
+  - review rendering: supported by kind renderer registry (Step 13 target)
+  - grade flow: uses current grade API semantics (`again|hard|good|easy`) without schedule logic changes
+
+Unknown kinds:
+- authoring API: reject with `400 kind is not supported`
+- review queue: return an explicit unsupported-kind item contract (or safe fallback item metadata), never crash queue generation
+
+### Error semantics contract
+
+Create/update card API:
+- unknown `kind` -> `400` with deterministic message: `kind is not supported`
+- invalid `fields` shape -> `400` with deterministic message: `fields are invalid for kind: <kind>`
+- optional details payload can include field-level reasons for UI display
+
+Review API:
+- known but not review-enabled kind -> queue item flagged unsupported (safe UI fallback)
+- malformed persisted fields for a known kind -> queue item flagged invalid-payload (safe UI fallback + log)
+
+### FE/BE typing contract
+
+Backend DTO union target:
+- `kind: "basic" | "cloze_text"`
+- `fields: BasicFields | ClozeTextFields`
+
+Frontend service union target:
+- same discriminated union by `kind`
+- no `unknown` casts on happy path for supported kinds
+
+---
+
 ## Ordered tasks
 
 ### T1 - Lock kind contracts and canonical payload schemas
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Define canonical schemas for:
@@ -129,6 +287,12 @@ Exit criteria:
 Verification checklist:
 - Contract includes examples of valid/invalid payloads.
 - Contract includes trim/empty/null rules.
+
+Verification completed:
+- Canonical schemas are now locked in this file for both `basic` and `cloze_text`.
+- Validation/normalization/error semantics are explicit and deterministic.
+- Review capability expectations by kind are documented for both API and UI implementation.
+- FE/BE discriminated-union typing direction is explicitly defined.
 
 ---
 
@@ -433,4 +597,3 @@ Mitigation:
 - Unsupported kinds fail safely and visibly.
 - Backend and frontend tests cover extensibility-critical paths.
 - Docs include practical extension instructions and are linked from roadmap.
-
