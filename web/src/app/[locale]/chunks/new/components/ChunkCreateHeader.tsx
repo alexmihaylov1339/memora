@@ -10,6 +10,7 @@ export default function ChunkCreateHeader({
   deckId,
 }: ChunkCreateHeaderProps) {
   const hasDeckContext = Boolean(deckId.trim());
+  const targetHref = hasDeckContext ? APP_ROUTES.deckEdit(deckId) : APP_ROUTES.chunks;
 
   return (
     <header className="mb-8">
@@ -19,10 +20,10 @@ export default function ChunkCreateHeader({
 
       <div className="mt-5">
         <Link
-          href={hasDeckContext ? APP_ROUTES.deckEdit(deckId) : APP_ROUTES.decks}
+          href={targetHref}
           className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
         >
-          {hasDeckContext ? 'Back to Deck Workspace' : 'Back to Decks'}
+          Back to Decks
         </Link>
       </div>
     </header>
