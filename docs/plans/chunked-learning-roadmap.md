@@ -351,6 +351,9 @@ Handoff from Step 12:
 **Exit criteria**
 - Adding a new kind does not require rewriting core review/chunk scheduling logic.
 
+Implementation plan:
+- `docs/plans/step-13-extensible-card-exercise-architecture.md`
+
 ---
 
 ## Step 14: Quality, observability, and rollout safety
