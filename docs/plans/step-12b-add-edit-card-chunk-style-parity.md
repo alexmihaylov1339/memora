@@ -107,7 +107,7 @@ Verification completed:
 ### T3 - Align `/cards/:id/edit` to deck-form style contract
 
 Status:
-- Proposed
+- Done
 
 - Apply parity layout and action row treatment.
 - Ensure save/delete/error states visually match the established pattern.
@@ -115,16 +115,32 @@ Status:
 Exit criteria:
 - Card edit page is visually consistent with deck add/edit.
 
+Verification completed:
+- `/cards/:id/edit` uses the same add/edit surface language as deck/chunk:
+  - consistent page shell + header treatment
+  - matching form card container rhythm
+  - aligned primary/destructive action row via `FormBuilder` action configuration
+- Delete action styling now uses shared button style tokens for parity with deck/chunk edit.
+- Error treatment remains consistent with the shared add/edit patterns.
+
 ### T4 - Align `/chunks/new` and `/chunks/:id/edit` shells to deck-form style contract
 
 Status:
-- Proposed
+- Done
 
 - Keep FormBuilder + grid-card selection architecture from Step 12.
 - Restyle shell, section rhythm, and action emphasis to match deck forms.
 
 Exit criteria:
 - Chunk create/edit pages look and feel like first-class peers of deck add/edit.
+
+Verification completed:
+- `/chunks/new` was aligned to `/chunks/:id/edit` shell primitives:
+  - same max content width
+  - same form card border/radius/padding contract
+  - same action-row spacing and CTA emphasis
+- Create flow keeps functional differences only (no pre-populated values, create semantics), while visual structure matches edit.
+- Chunk edit remains on shared `FormBuilder` conventions (including destructive action placement).
 
 ### T5 - Shared style extraction pass
 
