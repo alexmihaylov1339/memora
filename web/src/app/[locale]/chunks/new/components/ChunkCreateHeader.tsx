@@ -9,18 +9,22 @@ interface ChunkCreateHeaderProps {
 export default function ChunkCreateHeader({
   deckId,
 }: ChunkCreateHeaderProps) {
-  return (
-    <>
-      <h1 className="mb-4 text-2xl font-semibold">Create Chunk</h1>
+  const hasDeckContext = Boolean(deckId.trim());
 
-      <div className="mb-4">
+  return (
+    <header className="mb-8">
+      <h1 className="text-center text-4xl font-semibold text-ink-strong">
+        Create Chunk
+      </h1>
+
+      <div className="mt-5">
         <Link
-          href={deckId ? APP_ROUTES.deckEdit(deckId) : APP_ROUTES.decks}
-          className="text-sm text-[var(--primary)] hover:underline"
+          href={hasDeckContext ? APP_ROUTES.deckEdit(deckId) : APP_ROUTES.decks}
+          className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
         >
-          Back
+          {hasDeckContext ? 'Back to Deck Workspace' : 'Back to Decks'}
         </Link>
       </div>
-    </>
+    </header>
   );
 }

@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo } from 'react';
 
-import { Button, ErrorMessage } from '@shared/components';
+import { Button, ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
 import {
   useCreateDeckShareMutation,
   useRemoveDeckShareMutation,
@@ -19,14 +19,39 @@ export default function DeckSharePanel({
   sharedUsers = [],
   onChanged,
 }: DeckSharePanelProps) {
-  const [identifier, setIdentifier] = useState('');
-  const [permission, setPermission] =
-    useState<DeckShareRecord['permission']>('view');
+  const shareFields = useMemo<FieldConfig[]>(
+    () => [
+      {
+        type: 'text',
+        name: 'identifier',
+        label: 'Username or email.',
+        required: true,
+        placeholder: 'alex or alex@gmail.com',
+        fieldWrapperClassName: 'md:col-span-1',
+        labelClassName: 'mb-1 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm outline-none ring-0 focus:border-brand-accent',
+      },
+      {
+        type: 'select',
+        name: 'permission',
+        label: 'Permission',
+        required: true,
+        options: [
+          { value: 'view', label: 'View' },
+          { value: 'edit', label: 'Edit' },
+        ],
+        fieldWrapperClassName: 'md:col-span-1',
+        labelClassName: 'mb-1 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm outline-none focus:border-brand-accent',
+      },
+    ],
+    [],
+  );
 
   const shareDeck = useCreateDeckShareMutation({
     onSuccess: () => {
-      setIdentifier('');
-      setPermission('view');
       onChanged();
     },
   });
@@ -35,12 +60,14 @@ export default function DeckSharePanel({
     onSuccess: onChanged,
   });
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(values: {
+    identifier: string;
+    permission: DeckShareRecord['permission'];
+  }) {
     await shareDeck.fetch({
       deckId,
-      identifier: identifier.trim(),
-      permission,
+      identifier: values.identifier.trim(),
+      permission: values.permission,
     });
   }
 
@@ -57,49 +84,18 @@ export default function DeckSharePanel({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-[1fr_120px_auto]">
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-ink-strong">
-              Username or email.
-            </span>
-            <input
-              value={identifier}
-              onChange={(event) => setIdentifier(event.target.value)}
-              placeholder="alex or alex@gmail.com"
-              className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm outline-none ring-0 focus:border-[var(--primary)]"
-            />
-          </label>
-
-          <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-ink-strong">
-              Permission
-            </span>
-            <select
-              value={permission}
-              onChange={(event) =>
-                setPermission(event.target.value as DeckShareRecord['permission'])
-              }
-              className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm outline-none focus:border-[var(--primary)]"
-            >
-              <option value="view">View</option>
-              <option value="edit">Edit</option>
-            </select>
-          </label>
-
-          <div className="flex items-end">
-            <Button
-              type="submit"
-              isLoading={shareDeck.isLoading}
-              className="h-10 rounded-[4px] bg-brand-accent px-8 text-white transition hover:opacity-90 disabled:opacity-60"
-            >
-              Share Deck
-            </Button>
-          </div>
-        </div>
-
-        {shareDeck.error && <ErrorMessage message={shareDeck.error.message} />}
-      </form>
+      <FormBuilder<{ identifier: string; permission: DeckShareRecord['permission'] }>
+        fields={shareFields}
+        onSubmit={handleSubmit}
+        submitLabel="Share Deck"
+        submitButtonClassName="h-10 rounded-[4px] bg-brand-accent px-8 text-white transition hover:opacity-90 disabled:opacity-60"
+        formClassName="grid items-end gap-3 md:grid-cols-[1fr_120px_auto]"
+        actionsContainerClassName="flex items-end"
+        initialValues={{ permission: 'view' }}
+        translateFields={false}
+        resetOnSubmit
+        errorMessage={shareDeck.error?.message}
+      />
 
       <div className="mt-5">
         <h3 className="text-lg font-semibold text-ink-strong">

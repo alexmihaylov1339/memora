@@ -10,7 +10,6 @@ interface ChunkCardSearchPanelProps {
   cardsLoading: boolean;
   cardsError?: string;
   onSelectionChange: (items: SearchResultItem[]) => void;
-  onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
 }
 
@@ -19,22 +18,16 @@ export default function ChunkCardSearchPanel({
   cardsLoading,
   cardsError,
   onSelectionChange,
-  onMoveCard,
   onRemoveCard,
 }: ChunkCardSearchPanelProps) {
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-white p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Card Selection</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Search across all of your cards, select at least {MIN_CHUNK_CARD_SELECTION},
-            and arrange their order for this chunk.
-          </p>
-        </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-          {selectedCards.length} selected
-        </span>
+    <section className="mt-5">
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold text-ink-strong">Card Selection</h2>
+        <p className="mt-1 text-sm text-ink-subtle">
+          Search across all of your cards, select at least {MIN_CHUNK_CARD_SELECTION}, and
+          arrange their order for this chunk.
+        </p>
       </div>
 
       <EntitySearch
@@ -43,17 +36,16 @@ export default function ChunkCardSearchPanel({
         selectionMode={SEARCH_SELECTION_MODES.multiple}
         selectedItems={selectedCards.map(mapChunkCardToSearchResultItem)}
         onSelectionChange={onSelectionChange}
-        placeholder="Search cards to add to the chunk"
+        placeholder="Search across all in this chunk"
       />
 
-      {cardsLoading && <p className="mt-4 text-sm text-slate-600">Loading cards...</p>}
+      {cardsLoading && <p className="mt-4 text-sm text-ink-subtle">Loading cards...</p>}
       {cardsError && <ErrorMessage className="mt-4" message={cardsError} />}
 
       {!cardsLoading && !cardsError && (
         <div className="mt-4">
           <ChunkSelectedCardsGrid
             selectedCards={selectedCards}
-            onMoveCard={onMoveCard}
             onRemoveCard={onRemoveCard}
           />
         </div>

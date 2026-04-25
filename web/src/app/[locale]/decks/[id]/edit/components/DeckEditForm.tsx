@@ -1,7 +1,12 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 
-import { Button } from '@shared/components';
-import { DeckCardSelectionPanel, DeckChunkSelectionPanel } from '@features/decks';
+import { FormBuilder, type FieldConfig } from '@shared/components';
+import { BUTTON_STYLES } from '@shared/constants';
+import {
+  DeckCardSelectionPanel,
+  DeckChunkSelectionPanel,
+  useDeckEditFormFields,
+} from '@features/decks';
 import type { SearchResultItem } from '@features/search';
 import styles from '@features/decks/components/CreateDeckForm.module.scss';
 
@@ -36,78 +41,89 @@ export default function DeckEditForm({
   updateError,
   deleteError,
 }: DeckEditFormProps) {
-  const [deckName, setDeckName] = useState(name);
-  const [deckDescription, setDeckDescription] = useState(description ?? '');
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>(initialCards);
   const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>(initialChunks);
+  const baseFields = useDeckEditFormFields();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const fields = useMemo<FieldConfig[]>(
+    () => [
+      ...baseFields,
+      {
+        type: 'grid',
+        name: 'cardIds',
+        label: 'Cards',
+        value: selectedCards,
+        onChange: (value) => setSelectedCards(value as SearchResultItem[]),
+        serialize: (value) =>
+          (value as SearchResultItem[]).map((item) => item.id),
+        fieldWrapperClassName: styles.section,
+        render: ({ value, onChange }) => (
+          <DeckCardSelectionPanel
+            selectedCards={value as SearchResultItem[]}
+            onSelectionChange={(items) => onChange(items)}
+          />
+        ),
+      },
+      {
+        type: 'grid',
+        name: 'chunkIds',
+        label: 'Chunks',
+        value: selectedChunks,
+        onChange: (value) => setSelectedChunks(value as SearchResultItem[]),
+        serialize: (value) =>
+          (value as SearchResultItem[]).map((item) => item.id),
+        fieldWrapperClassName: styles.section,
+        render: ({ value, onChange }) => (
+          <DeckChunkSelectionPanel
+            selectedChunks={value as SearchResultItem[]}
+            onSelectionChange={(items) => onChange(items)}
+          />
+        ),
+      },
+    ],
+    [baseFields, selectedCards, selectedChunks],
+  );
+
+  async function handleSubmit(values: {
+    name: string;
+    description?: string;
+    cardIds?: string[];
+    chunkIds?: string[];
+  }) {
     await onUpdate({
       id,
-      name: deckName.trim(),
-      description: deckDescription.trim() || undefined,
-      cardIds: selectedCards.map((item) => item.id),
-      chunkIds: selectedChunks.map((item) => item.id),
+      name: values.name.trim(),
+      description: values.description?.trim() || undefined,
+      cardIds: values.cardIds,
+      chunkIds: values.chunkIds,
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.container}>
-      <label className={styles.fieldLabel} htmlFor="edit-deck-name">
-        Deck name*
-      </label>
-      <input
-        id="edit-deck-name"
-        name="name"
-        value={deckName}
-        onChange={(event) => setDeckName(event.target.value)}
-        placeholder="Enter the Deck name"
-        required
-        className={styles.input}
-      />
-
-      <div className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="edit-deck-description">
-          Description
-        </label>
-        <textarea
-          id="edit-deck-description"
-          name="description"
-          value={deckDescription}
-          onChange={(event) => setDeckDescription(event.target.value)}
-          placeholder="Add Description"
-          className={styles.textarea}
-        />
-      </div>
-
-      <DeckCardSelectionPanel
-        selectedCards={selectedCards}
-        onSelectionChange={setSelectedCards}
-      />
-
-      <DeckChunkSelectionPanel
-        selectedChunks={selectedChunks}
-        onSelectionChange={setSelectedChunks}
-      />
-
-      {updateError && <p className="mt-3 text-sm text-[var(--destructive)]">{updateError}</p>}
-      {deleteError && <p className="mt-3 text-sm text-[var(--destructive)]">{deleteError}</p>}
-
-      <div className={styles.actionRow}>
-        <Button
-          type="button"
-          onClick={onDelete}
-          isLoading={isDeleting}
-          className={styles.destructiveButton}
-        >
-          Delete Deck
-        </Button>
-
-        <Button type="submit" className={styles.primaryButton}>
-          Save Changes
-        </Button>
-      </div>
-    </form>
+    <FormBuilder<{
+      name: string;
+      description?: string;
+      cardIds?: string[];
+      chunkIds?: string[];
+    }>
+      fields={fields}
+      onSubmit={handleSubmit}
+      initialValues={{
+        name,
+        description: description ?? '',
+      }}
+      submitLabel="Save Changes"
+      submitButtonClassName={styles.primaryButton}
+      showDeleteButton
+      deleteLabel="Delete Deck"
+      deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
+      onDelete={onDelete}
+      isDeleting={isDeleting}
+      actionsContainerClassName={styles.actionRow}
+      translateFields={false}
+      resetOnSubmit={false}
+      errorMessage={updateError ?? deleteError}
+      formClassName={`${styles.container} ${styles.form}`}
+    />
   );
 }

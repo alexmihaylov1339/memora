@@ -88,13 +88,21 @@ Verification completed:
 ### T2 - Align `/cards/new` to deck-form style contract
 
 Status:
-- Proposed
+- Done
 
 - Apply matching shell/layout/spacing and CTA hierarchy.
 - Keep existing form behavior unchanged while restyling.
 
 Exit criteria:
 - Card create page matches deck add/edit styling patterns.
+
+Verification completed:
+- `/cards/new` now uses the same page-shell structure as `/decks/new`:
+  - centered hero title + subtitle
+  - explicit back-link row
+  - centered authoring surface with matching border/radius rhythm
+- Deck-context create mode keeps contextual back navigation (`Back to Deck Workspace` when `deckId` is present).
+- Form submission behavior and payload contract are unchanged.
 
 ### T3 - Align `/cards/:id/edit` to deck-form style contract
 

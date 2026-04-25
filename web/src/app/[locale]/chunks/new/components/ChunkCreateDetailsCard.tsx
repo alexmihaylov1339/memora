@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
+import { BUTTON_STYLES } from '@shared/constants';
 import { useChunkCreateFormFields } from '@features/chunks';
 import type { CardRecord } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
@@ -15,7 +16,6 @@ interface ChunkCreateDetailsCardProps {
   currentDeckName?: string;
   onChangeDeck: () => void;
   onSelectionChange: (items: SearchResultItem[]) => void;
-  onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
   onSubmit: (values: { title: string; cardIds: string[] }) => Promise<void> | void;
   selectedCards: CardRecord[];
@@ -31,7 +31,6 @@ export default function ChunkCreateDetailsCard({
   currentDeckName,
   onChangeDeck,
   onSelectionChange,
-  onMoveCard,
   onRemoveCard,
   onSubmit,
   selectedCards,
@@ -56,7 +55,6 @@ export default function ChunkCreateDetailsCard({
             cardsError={cardsError}
             cardsLoading={cardsLoading}
             onSelectionChange={(items) => onChange(items)}
-            onMoveCard={onMoveCard}
             onRemoveCard={onRemoveCard}
             selectedCards={value as CardRecord[]}
           />
@@ -67,7 +65,6 @@ export default function ChunkCreateDetailsCard({
       baseFields,
       cardsError,
       cardsLoading,
-      onMoveCard,
       onRemoveCard,
       onSelectionChange,
       selectedCards,
@@ -77,27 +74,26 @@ export default function ChunkCreateDetailsCard({
     selectedCards.length > 0 || availableCardCount > 0 || cardsLoading;
 
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-white p-5">
+    <section className="rounded-[4px] border border-line-soft bg-white p-3">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Chunk Details</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Choose a clear title and build the card order for this chunk.
+          <h2 className="text-lg font-semibold text-ink-strong">Chunk Details</h2>
+          <p className="mt-1 text-sm text-ink-subtle">
+            A title is required for this chunk.
           </p>
         </div>
 
         <div className="text-right">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Current Deck (optional)</p>
-          <p className="mt-1 font-medium text-slate-900">
+          <p className="text-xs text-ink-subtle">Attached to deck (un-linked)</p>
+          <p className="mt-1 text-sm font-semibold text-ink-strong">
             {currentDeckName ?? (activeDeckId ? activeDeckId : 'Unassigned')}
           </p>
           {activeDeckId && (
             <>
-              <p className="mt-1 font-mono text-xs text-slate-500">{activeDeckId}</p>
               <button
                 type="button"
                 onClick={onChangeDeck}
-                className="mt-3 text-sm text-[var(--primary)] hover:underline"
+                className="mt-1 text-sm text-[var(--primary)] hover:underline"
               >
                 Create as Unassigned
               </button>
@@ -114,7 +110,7 @@ export default function ChunkCreateDetailsCard({
             fields={fields}
             onSubmit={onSubmit}
             submitLabel={submitLoading ? CREATING_CHUNK_LABEL : CREATE_CHUNK_LABEL}
-            submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+            submitButtonClassName={`${BUTTON_STYLES.primarySolid} mt-3 ml-auto block`}
             translateFields={false}
             errorMessage={submitError}
             resetOnSubmit={false}

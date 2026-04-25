@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 // Base types shared across all fields
 export type FieldType =
@@ -61,6 +61,16 @@ export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   submitLabel?: string;
   /** Optional className for submit button styling */
   submitButtonClassName?: string;
+  /** Optional delete button visibility (hidden by default) */
+  showDeleteButton?: boolean;
+  /** Already translated delete button label */
+  deleteLabel?: string;
+  /** Optional className for delete button styling */
+  deleteButtonClassName?: string;
+  /** Optional delete handler */
+  onDelete?: () => Promise<unknown> | void;
+  /** Optional external loading state for delete action */
+  isDeleting?: boolean;
   formClassName?: string;
   /** Optional initial values mapped by field name */
   initialValues?: Partial<Record<string, unknown>>;
@@ -69,4 +79,6 @@ export interface FormBuilderProps<TFormValues = Record<string, unknown>> {
   /** Error message from backend (NOT translated - displayed as-is) */
   errorMessage?: string;
   resetOnSubmit?: boolean;
+  leadingAction?: ReactNode;
+  actionsContainerClassName?: string;
 }

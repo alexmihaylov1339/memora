@@ -11,7 +11,7 @@ export default function NewChunkPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-2xl p-6">
+      <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
         <ChunkCreateHeader deckId={deckId} />
         <ChunkCreateScreen initialDeckId={deckId} />
       </main>

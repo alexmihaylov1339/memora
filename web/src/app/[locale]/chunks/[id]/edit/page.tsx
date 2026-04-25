@@ -71,22 +71,6 @@ export default function EditChunkPage() {
     setSelectionError(undefined);
   }
 
-  function handleMoveCard(cardId: string, offset: -1 | 1) {
-    setSelectedCardIdsDraft((current) => {
-      const source = [...(current ?? chunkQuery.result?.cardIds ?? [])];
-      const index = source.indexOf(cardId);
-      const nextIndex = index + offset;
-
-      if (index < 0 || nextIndex < 0 || nextIndex >= source.length) {
-        return source;
-      }
-
-      [source[index], source[nextIndex]] = [source[nextIndex], source[index]];
-      return source;
-    });
-    setSelectionError(undefined);
-  }
-
   function handleSubmit(values: { title: string; cardIds: string[] }): void {
     if (!chunkQuery.result) {
       return;
@@ -108,38 +92,43 @@ export default function EditChunkPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto w-full max-w-2xl p-6">
-        <h1 className="mb-4 text-2xl font-semibold">Edit Chunk</h1>
+      <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
+        <header className="mb-8">
+          <h1 className="text-center text-4xl font-semibold text-ink-strong">
+            Edit Chunk
+          </h1>
 
-        <div className="mb-4">
-          <Link
-            href={APP_ROUTES.chunks}
-            className="text-sm text-[var(--primary)] hover:underline"
-          >
-            Back to Chunks
-          </Link>
-        </div>
+          <div className="mt-5">
+            <Link
+              href={APP_ROUTES.chunks}
+              className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
+            >
+              Back to Decks
+            </Link>
+          </div>
+        </header>
 
         {chunkQuery.isLoading && <PageLoader />}
         {chunkQuery.error && <ErrorMessage message={chunkQuery.error.message} />}
 
         {chunkQuery.result && (
-          <EditChunkForm
-            chunkId={chunkQuery.result.id}
-            title={chunkQuery.result.title}
-            selectedCards={selectedCards}
-            cardsLoading={cardsQuery.isLoading}
-            cardsError={cardsQuery.error?.message}
-            submitError={selectionError ?? updateChunk.error?.message}
-            submitLoading={updateChunk.isLoading}
-            deleteError={deleteChunk.error?.message}
-            isDeleting={deleteChunk.isLoading}
-            onSelectionChange={handleSelectionChange}
-            onMoveCard={handleMoveCard}
-            onRemoveCard={handleRemoveCard}
-            onSubmit={handleSubmit}
-            onDelete={() => deleteChunk.fetch({ id: chunkQuery.result!.id })}
-          />
+          <div className="mx-auto w-full max-w-[621px]">
+            <EditChunkForm
+              chunkId={chunkQuery.result.id}
+              title={chunkQuery.result.title}
+              selectedCards={selectedCards}
+              cardsLoading={cardsQuery.isLoading}
+              cardsError={cardsQuery.error?.message}
+              submitError={selectionError ?? updateChunk.error?.message}
+              submitLoading={updateChunk.isLoading}
+              deleteError={deleteChunk.error?.message}
+              isDeleting={deleteChunk.isLoading}
+              onSelectionChange={handleSelectionChange}
+              onRemoveCard={handleRemoveCard}
+              onSubmit={handleSubmit}
+              onDelete={() => deleteChunk.fetch({ id: chunkQuery.result!.id })}
+            />
+          </div>
         )}
       </main>
     </ProtectedRoute>

@@ -18,7 +18,6 @@ export default function ChunkCreateScreen({
     submitError,
     totalCardCount,
     handleCreateChunk,
-    handleMoveCard,
     handleRemoveCard,
     handleResetDeckSelection,
     handleSelectionChange,
@@ -32,7 +31,6 @@ export default function ChunkCreateScreen({
       currentDeckName={currentDeck?.name}
       onChangeDeck={handleResetDeckSelection}
       onSelectionChange={handleSelectionChange}
-      onMoveCard={handleMoveCard}
       onRemoveCard={handleRemoveCard}
       onSubmit={handleCreateChunk}
       selectedCards={selectedCards}

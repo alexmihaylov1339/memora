@@ -15,13 +15,21 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
   onSubmit,
   submitLabel = 'Submit',
   submitButtonClassName,
+  showDeleteButton = false,
+  deleteLabel = 'Delete',
+  deleteButtonClassName,
+  onDelete,
+  isDeleting = false,
   formClassName,
   initialValues,
   translateFields = true,
   errorMessage,
   resetOnSubmit = true,
+  leadingAction,
+  actionsContainerClassName,
 }: FormBuilderProps<TFormValues>) {
   const [isPending, startTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
   const t = useTranslations();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -68,6 +76,18 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
     });
   };
 
+  const handleDelete = () => {
+    if (!onDelete) return;
+
+    startDeleteTransition(async () => {
+      await onDelete();
+    });
+  };
+
+  const shouldRenderActionRow = Boolean(
+    showDeleteButton || leadingAction || actionsContainerClassName,
+  );
+
   return (
     <form onSubmit={handleSubmit} className={formClassName}>
       {fields.map((field) => {
@@ -96,9 +116,28 @@ export default function FormBuilder<TFormValues = Record<string, unknown>>({
       {/* errorMessage comes from BE - do NOT translate */}
       {errorMessage && <ErrorMessage message={errorMessage} />}
 
-      <Button type="submit" isLoading={isPending} className={submitButtonClassName}>
-        {submitLabel}
-      </Button>
+      {shouldRenderActionRow ? (
+        <div className={actionsContainerClassName}>
+          {leadingAction}
+          {showDeleteButton && (
+            <Button
+              type="button"
+              onClick={handleDelete}
+              isLoading={isDeleting || isDeletePending}
+              className={deleteButtonClassName}
+            >
+              {deleteLabel}
+            </Button>
+          )}
+          <Button type="submit" isLoading={isPending} className={submitButtonClassName}>
+            {submitLabel}
+          </Button>
+        </div>
+      ) : (
+        <Button type="submit" isLoading={isPending} className={submitButtonClassName}>
+          {submitLabel}
+        </Button>
+      )}
     </form>
   );
 }

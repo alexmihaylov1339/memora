@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
-import Button from './Button';
-import Fields from './formfields/Fields';
+import FormBuilder from '../FormBuilder/FormBuilder';
+import type { FieldConfig } from '../FormBuilder/types';
 
 export type AuthFormField = {
   name: string;
@@ -24,7 +24,19 @@ const AuthFormBuilder: React.FC<AuthFormBuilderProps> = ({
   submitLabel = 'Submit',
   initialValues,
 }) => {
-  const initialFieldValues = useMemo(
+  const formFields = useMemo<FieldConfig[]>(
+    () =>
+      fields.map((field) => ({
+        type: field.type,
+        name: field.name,
+        label: field.label,
+        placeholder: field.placeholder,
+        required: field.required,
+      })),
+    [fields],
+  );
+
+  const normalizedInitialValues = useMemo(
     () =>
       fields.reduce(
         (acc, field) => {
@@ -36,55 +48,28 @@ const AuthFormBuilder: React.FC<AuthFormBuilderProps> = ({
     [fields, initialValues],
   );
 
-  const [values, setValues] = useState<Record<string, string>>(
-    initialFieldValues,
-  );
+  const handleSubmit = (values: Record<string, unknown>) => {
+    const normalizedValues = fields.reduce(
+      (acc, field) => {
+        const value = values[field.name];
+        acc[field.name] = typeof value === 'string' ? value : '';
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
-  const fieldValues = useMemo(
-    () =>
-      fields.reduce(
-        (acc, field) => {
-          acc[field.name] = values[field.name] ?? initialFieldValues[field.name] ?? '';
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
-    [fields, initialFieldValues, values],
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues((currentValues) => ({
-      ...currentValues,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(fieldValues);
+    onSubmit(normalizedValues);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {fields.map((field) => {
-        const FieldComponent = Fields[field.type];
-
-        if (!FieldComponent) return null;
-
-        return (
-          <FieldComponent
-            key={field.name}
-            name={field.name}
-            label={field.label}
-            value={fieldValues[field.name]}
-            onChange={handleChange}
-            placeholder={field.placeholder}
-            required={field.required}
-          />
-        );
-      })}
-      <Button type="submit">{submitLabel}</Button>
-    </form>
+    <FormBuilder<Record<string, unknown>>
+      fields={formFields}
+      onSubmit={handleSubmit}
+      submitLabel={submitLabel}
+      initialValues={normalizedInitialValues}
+      translateFields={false}
+      resetOnSubmit={false}
+    />
   );
 };
 

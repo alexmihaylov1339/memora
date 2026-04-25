@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
-import { Button, Grid, type GridColumnDef } from '@shared/components';
+import { Grid, type GridColumnDef } from '@shared/components';
 import type { CardRecord } from '@features/decks';
 import { getChunkCardPreview } from './chunkCreatePreview';
 
 interface ChunkSelectedCardsGridProps {
   selectedCards: CardRecord[];
-  onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
 }
 
@@ -20,13 +19,10 @@ interface SelectedChunkCardRow {
   kind: string;
   front: string;
   back?: string;
-  isFirst: boolean;
-  isLast: boolean;
 }
 
 export default function ChunkSelectedCardsGrid({
   selectedCards,
-  onMoveCard,
   onRemoveCard,
 }: ChunkSelectedCardsGridProps) {
   const rowData = useMemo<SelectedChunkCardRow[]>(
@@ -40,8 +36,6 @@ export default function ChunkSelectedCardsGrid({
           kind: card.kind,
           front: preview.front,
           back: preview.back,
-          isFirst: index === 0,
-          isLast: index === selectedCards.length - 1,
         };
       }),
     [selectedCards],
@@ -53,33 +47,8 @@ export default function ChunkSelectedCardsGrid({
       { field: FIELD_KIND, headerName: 'Kind' },
       { field: FIELD_FRONT, headerName: 'Front' },
       { field: FIELD_BACK, headerName: 'Back' },
-      {
-        headerName: 'Actions',
-        searchable: false,
-        cellRenderer: (row) => (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              disabled={row.isFirst}
-              onClick={() => onMoveCard(row.id, -1)}
-            >
-              Move Up
-            </Button>
-            <Button
-              type="button"
-              disabled={row.isLast}
-              onClick={() => onMoveCard(row.id, 1)}
-            >
-              Move Down
-            </Button>
-            <Button type="button" onClick={() => onRemoveCard(row.id)}>
-              Remove
-            </Button>
-          </div>
-        ),
-      },
     ],
-    [onMoveCard, onRemoveCard],
+    [],
   );
 
   if (selectedCards.length === 0) {
@@ -100,6 +69,7 @@ export default function ChunkSelectedCardsGrid({
       columnDefs={columnDefs}
       emptyMessage="No cards selected."
       showQuickFilter={false}
+      onRemove={(row) => onRemoveCard(row.id)}
     />
   );
 }

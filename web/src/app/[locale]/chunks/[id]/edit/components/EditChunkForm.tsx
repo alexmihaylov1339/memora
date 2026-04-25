@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Button, ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
+import { ErrorMessage, FormBuilder, type FieldConfig } from '@shared/components';
+import { BUTTON_STYLES } from '@shared/constants';
 import { useChunkCreateFormFields } from '@features/chunks';
 import { type CardRecord } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
@@ -16,7 +17,6 @@ export interface EditChunkFormProps {
   deleteError?: string;
   isDeleting: boolean;
   onSelectionChange: (items: SearchResultItem[]) => void;
-  onMoveCard: (cardId: string, offset: -1 | 1) => void;
   onRemoveCard: (cardId: string) => void;
   onSubmit: (values: { title: string; cardIds: string[] }) => Promise<void> | void;
   onDelete: () => void;
@@ -33,7 +33,6 @@ export default function EditChunkForm({
   deleteError,
   isDeleting,
   onSelectionChange,
-  onMoveCard,
   onRemoveCard,
   onSubmit,
   onDelete,
@@ -55,7 +54,6 @@ export default function EditChunkForm({
             cardsError={cardsError}
             cardsLoading={cardsLoading}
             onSelectionChange={(items) => onChange(items)}
-            onMoveCard={onMoveCard}
             onRemoveCard={onRemoveCard}
             selectedCards={value as CardRecord[]}
           />
@@ -66,7 +64,6 @@ export default function EditChunkForm({
       baseFields,
       cardsError,
       cardsLoading,
-      onMoveCard,
       onRemoveCard,
       onSelectionChange,
       selectedCards,
@@ -74,23 +71,26 @@ export default function EditChunkForm({
   );
 
   return (
-    <div>
+    <div className="rounded-[4px] border border-line-soft bg-white px-8 pb-[30px] pt-6">
       <FormBuilder<{ title: string; cardIds: string[] }>
         key={chunkId}
         fields={fields}
         initialValues={{ title }}
         onSubmit={onSubmit}
         submitLabel={submitLoading ? 'Saving Chunk...' : 'Save Chunk'}
+        submitButtonClassName={BUTTON_STYLES.primarySolid}
+        actionsContainerClassName="mt-6 flex items-center justify-between gap-3"
+        showDeleteButton
+        deleteLabel="Delete Chunk"
+        deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
         translateFields={false}
         errorMessage={submitError}
         resetOnSubmit={false}
       />
 
-      {deleteError && <ErrorMessage message={deleteError} />}
-
-      <Button type="button" onClick={onDelete} isLoading={isDeleting}>
-        Delete Chunk
-      </Button>
+      {deleteError && <ErrorMessage className="mt-3" message={deleteError} />}
     </div>
   );
 }

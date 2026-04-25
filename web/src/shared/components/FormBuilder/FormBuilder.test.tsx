@@ -60,6 +60,39 @@ describe('FormBuilder', () => {
 
       expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
     });
+
+    it('hides delete button by default', () => {
+      const fields: FieldConfig[] = [
+        { type: 'text', name: 'username', label: 'form.username' },
+      ];
+      const onSubmit = jest.fn();
+
+      render(<FormBuilder fields={fields} onSubmit={onSubmit} />);
+
+      expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+    });
+
+    it('renders delete button when enabled', () => {
+      const fields: FieldConfig[] = [
+        { type: 'text', name: 'username', label: 'form.username' },
+      ];
+      const onSubmit = jest.fn();
+      const onDelete = jest.fn();
+
+      render(
+        <FormBuilder
+          fields={fields}
+          onSubmit={onSubmit}
+          showDeleteButton
+          deleteLabel="Delete Deck"
+          onDelete={onDelete}
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Delete Deck' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+    });
   });
 
   describe('Form Submission', () => {
@@ -154,6 +187,29 @@ describe('FormBuilder', () => {
       });
 
       expect(input.value).toBe('john_doe');
+    });
+
+    it('calls onDelete when delete button is clicked', async () => {
+      const fields: FieldConfig[] = [
+        { type: 'text', name: 'username', label: 'form.username' },
+      ];
+      const onSubmit = jest.fn();
+      const onDelete = jest.fn().mockResolvedValue(undefined);
+
+      render(
+        <FormBuilder
+          fields={fields}
+          onSubmit={onSubmit}
+          showDeleteButton
+          onDelete={onDelete}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+      await waitFor(() => {
+        expect(onDelete).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -359,4 +415,3 @@ describe('FormBuilder', () => {
     });
   });
 });
-

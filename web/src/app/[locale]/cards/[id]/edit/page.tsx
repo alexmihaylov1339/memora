@@ -3,8 +3,8 @@
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
-import { ProtectedRoute, Button, PageLoader, ErrorMessage, FormBuilder } from '@shared/components';
-import { APP_ROUTES } from '@shared/constants';
+import { ProtectedRoute, PageLoader, ErrorMessage, FormBuilder } from '@shared/components';
+import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import {
   useCardDetailQuery,
   useDeleteCardMutation,
@@ -102,22 +102,18 @@ function EditCardForm({
         }}
         onSubmit={handleUpdate}
         submitLabel="Save Changes"
-        submitButtonClassName="rounded-md bg-[var(--primary)] px-4 py-2 text-white disabled:opacity-60"
+        submitButtonClassName={BUTTON_STYLES.primarySolid}
         errorMessage={updateError}
         translateFields={false}
+        actionsContainerClassName="mt-3 flex items-center justify-between gap-3"
+        showDeleteButton
+        deleteLabel="Delete Card"
+        deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
       />
 
       {deleteError && <p className="text-sm text-[var(--destructive)]">{deleteError}</p>}
-
-      <div className="flex items-center gap-3">
-        <Button
-          onClick={onDelete}
-          isLoading={isDeleting}
-          className="rounded-md border border-[var(--destructive)] px-4 py-2 text-[var(--destructive)] disabled:opacity-60"
-        >
-          Delete Card
-        </Button>
-      </div>
     </div>
   );
 }

@@ -7,15 +7,26 @@ export function useDeckEditFormFields(): FieldConfig[] {
       {
         type: 'text',
         name: 'name',
-        label: 'Deck Name',
+        label: 'Deck name',
         required: true,
+        placeholder: 'Enter the Deck name',
+        fieldWrapperClassName: 'mb-5',
+        labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
       },
       {
         type: 'textarea',
         name: 'description',
         label: 'Description',
+        placeholder: 'Add Description',
+        fieldWrapperClassName: 'mb-0',
+        labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+        rows: 3,
+        inputClassName:
+          'w-full rounded-[4px] border border-line bg-white px-3 py-2 text-sm text-ink-strong outline-none resize-y focus:border-brand-accent',
       },
     ],
-    []
+    [],
   );
 }
