@@ -1,4 +1,5 @@
 export type ReviewGrade = 'again' | 'hard' | 'good' | 'easy';
+export type ReviewUnsupportedReason = 'kind_not_review_enabled' | 'invalid_payload';
 
 export interface ReviewQueueItem {
   cardId: string;
@@ -10,8 +11,8 @@ export interface ReviewQueueItem {
   due: string;
   kind: string;
   fields: Record<string, unknown>;
-  isReviewSupported?: boolean;
-  reviewUnsupportedReason?: string | null;
+  isReviewSupported: boolean;
+  reviewUnsupportedReason: ReviewUnsupportedReason | null;
   consecutiveSuccessCount: number;
 }
 

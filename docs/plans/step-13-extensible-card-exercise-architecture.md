@@ -520,7 +520,7 @@ Verification completed:
 ### T7 - API and client contract tightening
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Ensure FE/BE share deterministic assumptions:
@@ -544,6 +544,16 @@ Exit criteria:
 Verification checklist:
 - Typecheck/lint passes without new `any` workarounds.
 - Runtime payload errors are human-readable.
+
+Verification completed:
+- Tightened backend review queue DTO typing for unsupported-kind metadata:
+  - `reviewUnsupportedReason` now uses the adapter union type (`ReviewUnsupportedReason | null`) in `api/src/reviews/dto/review-queue-response.dto.ts`.
+- Tightened frontend review contract typing to match backend semantics:
+  - `isReviewSupported` and `reviewUnsupportedReason` are now explicit required fields on review queue items.
+  - introduced FE union type for unsupported reasons (`kind_not_review_enabled | invalid_payload`).
+- Updated frontend review renderer registry to consume the stricter typed contract without fallback ambiguity.
+- Aligned deck feature type imports/ordering and retained supported-kind typing in card mutation/service payloads.
+- Verified with targeted eslint across touched API and web files.
 
 ---
 

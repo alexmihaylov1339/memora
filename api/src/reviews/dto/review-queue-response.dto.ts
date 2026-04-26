@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import type { ReviewQueueItem } from '../reviews.service';
 import { serializeDate } from './review-response-serialization';
+import type { ReviewUnsupportedReason } from '../review-kind-adapter';
 
 export interface ReviewQueueItemDto {
   cardId: string;
@@ -13,7 +14,7 @@ export interface ReviewQueueItemDto {
   kind: string;
   fields: Prisma.JsonValue;
   isReviewSupported: boolean;
-  reviewUnsupportedReason: string | null;
+  reviewUnsupportedReason: ReviewUnsupportedReason | null;
   consecutiveSuccessCount: number;
 }
 

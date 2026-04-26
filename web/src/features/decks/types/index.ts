@@ -1,3 +1,5 @@
+import type { SupportedCardKind } from '../card-kinds';
+
 export interface CreateDeckDto {
   name: string;
   description?: string;
@@ -96,4 +98,3 @@ export type RemoveDeckShareResponse = void;
 
 // Backward-compatible alias for the current decks page usage.
 export type Deck = DeckListItem;
-import type { SupportedCardKind } from '../card-kinds';

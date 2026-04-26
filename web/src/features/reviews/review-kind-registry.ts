@@ -1,5 +1,5 @@
 import { isString } from '@shared/utils';
-import type { ReviewQueueItem } from './types';
+import type { ReviewQueueItem, ReviewUnsupportedReason } from './types';
 
 export interface BasicReviewCardFields {
   front: string;
@@ -13,7 +13,7 @@ type SupportedReviewRenderer = {
 
 type UnsupportedReviewRenderer = {
   renderer: 'unsupported';
-  reason: string;
+  reason: ReviewUnsupportedReason;
 };
 
 export type ReviewRendererResolution =
@@ -77,4 +77,3 @@ export function resolveReviewRenderer(
     reason: item.reviewUnsupportedReason ?? 'kind_not_review_enabled',
   };
 }
-
