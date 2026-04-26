@@ -423,7 +423,7 @@ Verification completed:
 ### T7 - Dashboard and alert specification
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Define dashboard panels (tool-agnostic spec in docs):
@@ -444,6 +444,28 @@ Exit criteria:
 
 Verification checklist:
 - alert messages include runbook links and likely cause hints.
+
+Verification completed:
+- Added dedicated dashboard/alerts operations spec:
+  - `docs/operations/review-observability.md` (new)
+- Documented dashboard panels for:
+  - queue size p50/p95
+  - supported vs unsupported mix
+  - unsupported reason trend
+  - grade latency p50/p95
+  - grade throughput mix
+  - UI queue empty/complete state trend
+- Defined warning/critical alert thresholds and ownership for:
+  - `invalid_payload` spikes
+  - `kind_not_review_enabled` spikes
+  - grade latency regressions
+  - queue fetch anomalies
+- Added operational routing/SLA and triage checklist:
+  - warning vs critical handling
+  - first-response steps
+- Added runbook links:
+  - Step 14 plan reference
+  - T8 rollout/rollback playbook target path
 
 ---
 
