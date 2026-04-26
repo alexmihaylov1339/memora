@@ -6,6 +6,7 @@ import type {
   PersistedChunkReviewState,
 } from './chunk-progress';
 import type { ReviewQueueItem } from './review-queue';
+import { resolveReviewKindSupport } from './review-kind-adapter';
 
 export const DEFAULT_REVIEW_EASE = 2.5;
 
@@ -133,6 +134,11 @@ export function buildNextActionableItem(
     return null;
   }
 
+  const reviewKindSupport = resolveReviewKindSupport(
+    nextChunkCard.card.kind,
+    nextChunkCard.card.fields,
+  );
+
   return {
     cardId: nextChunkCard.card.id,
     deckId: chunk.deckId,
@@ -143,6 +149,8 @@ export function buildNextActionableItem(
     due: snapshot.due,
     kind: nextChunkCard.card.kind,
     fields: nextChunkCard.card.fields,
+    isReviewSupported: reviewKindSupport.isReviewSupported,
+    reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
     cardCreatedAt: nextChunkCard.card.createdAt,
     consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
   };

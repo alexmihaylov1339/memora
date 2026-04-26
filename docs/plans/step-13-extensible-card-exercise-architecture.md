@@ -387,7 +387,7 @@ Verification completed:
 ### T4 - Review service kind adapter pass (no scheduling rewrite)
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Keep scheduling and queue generation logic unchanged.
@@ -409,6 +409,20 @@ Exit criteria:
 Verification checklist:
 - Existing review tests still pass.
 - New tests verify unsupported-kind queue item handling.
+
+Verification completed:
+- Added a dedicated review kind adapter boundary:
+  - `api/src/reviews/review-kind-adapter.ts`
+- Queue and next-actionable review items now carry explicit support metadata:
+  - `isReviewSupported`
+  - `reviewUnsupportedReason`
+- Grade path now guards against non-review-enabled/invalid-payload kinds and returns non-actionable behavior safely (no scheduler rewrite).
+- DTO serialization was extended to include support metadata in review queue responses.
+- Added/updated tests in:
+  - `api/src/reviews/review-kind-adapter.spec.ts`
+  - `api/src/reviews/reviews.service.spec.ts`
+  - `api/src/reviews/reviews.controller.spec.ts`
+- Verified with targeted review test suites and targeted eslint on all changed review files.
 
 ---
 
