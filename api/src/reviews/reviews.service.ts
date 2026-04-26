@@ -27,6 +27,7 @@ import {
 } from './review-grade';
 import { deriveChunkReviewState } from './chunk-progress';
 import { findChunkByCardId } from './review-access';
+import { resolveReviewKindSupport } from './review-kind-adapter';
 export type { ChunkProgressSnapshot, ReviewQueueItem } from './review-queries';
 export type { GradeChunkReviewResult } from './review-grade';
 @Injectable()
@@ -72,6 +73,14 @@ export class ReviewsService {
         : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
 
     if (!currentChunkCard?.card) {
+      return null;
+    }
+
+    const reviewKindSupport = resolveReviewKindSupport(
+      currentChunkCard.card.kind,
+      currentChunkCard.card.fields,
+    );
+    if (!reviewKindSupport.isReviewSupported) {
       return null;
     }
 

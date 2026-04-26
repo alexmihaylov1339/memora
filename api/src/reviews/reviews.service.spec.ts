@@ -273,13 +273,57 @@ describe('ReviewsService', () => {
           cardId: 'card-3',
           chunkId: 'chunk-2',
           positionInChunk: 0,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
           consecutiveSuccessCount: 0,
         }),
         expect.objectContaining({
           cardId: 'card-2',
           chunkId: 'chunk-1',
           positionInChunk: 1,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
           consecutiveSuccessCount: 1,
+        }),
+      ]);
+    });
+
+    it('returns unsupported metadata for non-review-enabled kinds', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-unsupported',
+          deckId: 'deck-1',
+          title: 'cloze chunk',
+          position: 0,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-cloze-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-cloze-1',
+                kind: 'cloze_text',
+                fields: {
+                  text: 'Ich {{c1::spiele}} gern Tennis.',
+                  answer: 'spiele',
+                },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-cloze-1',
+          kind: 'cloze_text',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'kind_not_review_enabled',
         }),
       ]);
     });
@@ -764,6 +808,58 @@ describe('ReviewsService', () => {
         id: 'state-1',
         chunkId: 'chunk-1',
         due: new Date('2026-04-03T08:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await expect(
+        service.applyGradeToCard('card-1', 'good', 'user-1', now),
+      ).resolves.toBeNull();
+
+      expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
+      expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
+    });
+
+    it('returns null when the current card kind is not review-enabled', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findFirst.mockResolvedValue({
+        id: 'chunk-1',
+        deckId: 'deck-1',
+        title: 'spielen',
+        position: 0,
+        reviewState: {
+          id: 'state-1',
+          chunkId: 'chunk-1',
+          due: new Date('2026-04-02T08:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [
+          {
+            cardId: 'card-1',
+            sequenceIndex: 0,
+            card: {
+              id: 'card-1',
+              kind: 'cloze_text',
+              fields: {
+                text: 'Ich {{c1::spiele}} gern Tennis.',
+                answer: 'spiele',
+              },
+              createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            },
+          },
+        ],
+      });
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'chunk-1',
+        due: new Date('2026-04-02T08:00:00.000Z'),
         consecutiveSuccessCount: 0,
         lastGrade: null,
         createdAt: now,

@@ -1,6 +1,8 @@
 import type { Prisma } from '@prisma/client';
 import type { ChunkWithCards } from './chunk-progress';
 import { deriveChunkReviewState } from './chunk-progress';
+import { resolveReviewKindSupport } from './review-kind-adapter';
+import type { ReviewUnsupportedReason } from './review-kind-adapter';
 
 export type ReviewQueueItem = {
   cardId: string;
@@ -12,6 +14,8 @@ export type ReviewQueueItem = {
   due: Date;
   kind: string;
   fields: Prisma.JsonValue;
+  isReviewSupported: boolean;
+  reviewUnsupportedReason: ReviewUnsupportedReason | null;
   cardCreatedAt: Date;
   consecutiveSuccessCount: number;
 };
@@ -37,6 +41,11 @@ export function buildEligibleQueueItems(
         return null;
       }
 
+      const reviewKindSupport = resolveReviewKindSupport(
+        currentCard.kind,
+        currentCard.fields,
+      );
+
       return {
         cardId: currentCard.id,
         deckId: chunk.deckId,
@@ -47,6 +56,8 @@ export function buildEligibleQueueItems(
         due: snapshot.due,
         kind: currentCard.kind,
         fields: currentCard.fields,
+        isReviewSupported: reviewKindSupport.isReviewSupported,
+        reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
         cardCreatedAt: currentCard.createdAt,
         consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
       } satisfies ReviewQueueItem;

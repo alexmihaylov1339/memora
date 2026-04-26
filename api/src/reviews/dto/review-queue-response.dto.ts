@@ -12,6 +12,8 @@ export interface ReviewQueueItemDto {
   due: string;
   kind: string;
   fields: Prisma.JsonValue;
+  isReviewSupported: boolean;
+  reviewUnsupportedReason: string | null;
   consecutiveSuccessCount: number;
 }
 
@@ -32,6 +34,8 @@ export function serializeReviewQueueItem(
     due: serializeDate(item.due),
     kind: item.kind,
     fields: item.fields,
+    isReviewSupported: item.isReviewSupported,
+    reviewUnsupportedReason: item.reviewUnsupportedReason,
     consecutiveSuccessCount: item.consecutiveSuccessCount,
   };
 }
