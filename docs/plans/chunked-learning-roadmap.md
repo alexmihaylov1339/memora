@@ -380,6 +380,11 @@ Implementation plan:
 Implementation plan:
 - `docs/plans/step-14-quality-observability-rollout-safety.md`
 
+Closeout and operations artifacts:
+- `docs/operations/review-observability.md`
+- `docs/operations/review-rollout-playbook.md`
+- `docs/architecture/card-kind-contract-strategy.md`
+
 ---
 
 ## Suggested execution order

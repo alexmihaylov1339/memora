@@ -1,6 +1,6 @@
 # Memora: Step 14 Plan - Quality, Observability, and Rollout Safety
 
-**Status:** Proposed  
+**Status:** Done  
 **Date:** 2026-04-26  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 14
 
@@ -551,7 +551,7 @@ Verification completed:
 ### T10 - Step closeout and audit trail
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Mark tasks `T1..T10` as Done with verification notes.
@@ -569,6 +569,92 @@ Exit criteria:
 
 Verification checklist:
 - all required docs are linked from this plan and roadmap.
+
+Verification completed:
+- Marked Step 14 as complete with all tasks `T1..T10` now set to `Done`.
+- Added Step 14 closeout summary for auditability:
+  - shipped scope summary (tests, contracts, observability, rollout docs)
+  - accepted debt and explicit carry-forward items
+  - Step 15 recommended start order
+- Assembled final proof pack links:
+  - test evidence (unit/integration/frontend regression commands from T1-T6)
+  - observability specification and rollout/rollback operations docs
+  - contract strategy decision and extensibility cross-reference docs
+- Confirmed roadmap linkage includes strategy decision reference:
+  - `docs/plans/chunked-learning-roadmap.md` -> Step 14 follow-ups.
+
+---
+
+## Step 14 closeout summary
+
+### What shipped
+
+1. Scheduling and chunk progression safety nets
+- deterministic scheduling edge-case unit coverage (UTC boundary, missed-day caps, failure resets)
+- end-to-end chunk progression semantics locked (advance, loop, reset)
+
+2. Contract reliability across API and UI
+- API DTO/controller/service regression locks for unsupported metadata:
+  - `isReviewSupported`
+  - `reviewUnsupportedReason`
+- frontend parser + renderer regression coverage for supported/unsupported/malformed cases
+
+3. Observability and operations readiness
+- backend structured events for queue fetch, grade, and unsupported detections
+- frontend analytics instrumentation for unsupported render, grade click, and queue state transitions
+- dashboard/alert specification and rollout/rollback operational playbook
+
+4. Long-term drift prevention strategy
+- FE/BE contract strategy documented:
+  - strict duplicated contracts + mandatory contract regression tests now
+  - explicit trigger criteria for future shared package adoption
+
+### Accepted debt
+
+1. Shared package deferred by design
+- shared FE/BE schema package is intentionally postponed until thresholds in:
+  - `docs/architecture/card-kind-contract-strategy.md`
+
+2. Operational validation remains environment-dependent
+- dashboard panel population and screenshot evidence must be captured in staging/prod traffic windows.
+
+3. Alert tuning requires first real baseline week
+- warning/critical values may need calibration after real usage distribution is observed.
+
+### Step 15 should start with
+
+1. Run production-like rollout dry-run using:
+- `docs/operations/review-rollout-playbook.md`
+
+2. Collect baseline metrics and tune alerts in:
+- `docs/operations/review-observability.md`
+
+3. Decide whether any Phase 2 trigger is met for shared contracts per:
+- `docs/architecture/card-kind-contract-strategy.md`
+
+4. Open follow-up implementation step for highest validated risk (based on first-week telemetry), not on assumptions.
+
+### Proof pack
+
+Test run summary (from completed tasks):
+- API contract suite:
+  - `npm test -- src/reviews/dto/review-queue-response.dto.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts`
+- Observability backend suite:
+  - `npm test -- src/reviews/review-observability.spec.ts src/reviews/reviews.service.spec.ts`
+- Review e2e progression:
+  - `npm run test:e2e -- -t "auth register -> login happy path|reviews queue -> grade progression -> loop -> reset flow"`
+- Frontend review regression suites:
+  - `npm test -- src/features/reviews/review-kind-registry.test.ts src/features/reviews/services/reviewService.test.ts`
+  - `npm test -- --runTestsByPath "src/app/[locale]/review/components/ReviewScreen.test.tsx"`
+  - `npm test -- --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx`
+
+Operational docs:
+- `docs/operations/review-observability.md`
+- `docs/operations/review-rollout-playbook.md`
+
+Architecture docs:
+- `docs/architecture/card-kind-extensibility.md`
+- `docs/architecture/card-kind-contract-strategy.md`
 
 ---
 
