@@ -299,7 +299,7 @@ Verification completed:
 ### T2 - Implement backend kind registry foundation
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Create a dedicated cards registry module.
@@ -323,6 +323,23 @@ Exit criteria:
 Verification checklist:
 - Unit tests for registry functions.
 - Create/update invalid-kind returns deterministic `400`.
+
+Verification completed:
+- Added backend kind registry foundation:
+  - `api/src/cards/card-kind-types.ts`
+  - `api/src/cards/card-kind-registry.ts`
+- Implemented required helper APIs:
+  - `isSupportedKind(kind)`
+  - `validateCardFields(kind, fields)`
+  - `normalizeCardFields(kind, fields)`
+- Wired create/update paths to registry normalization in `CardsService`, including effective-kind handling on update.
+- Tightened validation semantics for unsupported kinds in `card-validation.ts`.
+- Added coverage in:
+  - `api/src/cards/card-kind-registry.spec.ts`
+  - `api/src/cards/dto/card-validation.spec.ts`
+- Verified with:
+  - targeted tests: passing
+  - targeted eslint on changed cards files: passing
 
 ---
 

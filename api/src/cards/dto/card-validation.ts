@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { CARD_ERROR_MESSAGES } from '../card-errors';
+import { isSupportedKind, validateCardFields } from '../card-kind-registry';
 import type { CreateCardDto } from './create-card.dto';
 import type { UpdateCardDto } from './update-card.dto';
 
@@ -20,9 +21,12 @@ export function validateCreateCardInput(body: CreateCardDto) {
     throw new BadRequestException(CARD_ERROR_MESSAGES.kindRequired);
   }
 
-  if (!isObjectRecord(body.fields)) {
-    throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
+  const kind = body.kind.trim();
+  if (!isSupportedKind(kind)) {
+    throw new BadRequestException(CARD_ERROR_MESSAGES.kindNotSupported);
   }
+
+  validateCardFields(kind, body.fields);
 }
 
 export function validateUpdateCardInput(body: UpdateCardDto) {
@@ -36,5 +40,16 @@ export function validateUpdateCardInput(body: UpdateCardDto) {
 
   if (body.fields !== undefined && !isObjectRecord(body.fields)) {
     throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
+  }
+
+  if (body.kind !== undefined) {
+    const kind = body.kind.trim();
+    if (!isSupportedKind(kind)) {
+      throw new BadRequestException(CARD_ERROR_MESSAGES.kindNotSupported);
+    }
+
+    if (body.fields !== undefined) {
+      validateCardFields(kind, body.fields);
+    }
   }
 }

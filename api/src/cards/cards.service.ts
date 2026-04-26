@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
+import { normalizeCardFields } from './card-kind-registry';
 
 export interface CardRecord {
   id: string;
@@ -48,7 +49,7 @@ export class CardsService {
         ownerId: userId,
         deckId: data.deckId ?? null,
         kind: data.kind,
-        fields: data.fields,
+        fields: normalizeCardFields(data.kind, data.fields),
       },
     }) as Promise<CardRecord>;
   }
@@ -82,9 +83,18 @@ export class CardsService {
       return null;
     }
 
+    const nextKind = data.kind ?? existing.kind;
+    const nextFields =
+      data.fields !== undefined
+        ? normalizeCardFields(nextKind, data.fields)
+        : normalizeCardFields(nextKind, existing.fields);
+
     return (await this.prisma.card.update({
       where: { id },
-      data,
+      data: {
+        kind: data.kind,
+        fields: nextFields,
+      },
     })) as CardRecord;
   }
 

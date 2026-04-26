@@ -43,6 +43,18 @@ describe('card-validation', () => {
         }),
       ).toThrow(BadRequestException);
     });
+
+    it('throws when kind is not supported', () => {
+      expect(() =>
+        validateCreateCardInput({
+          kind: 'cloze_text',
+          fields: {
+            text: 'Ich {{c1::spiele}} gern Tennis.',
+            answer: 'spiele',
+          },
+        }),
+      ).toThrow(BadRequestException);
+    });
   });
 
   describe('validateUpdateCardInput', () => {
@@ -56,6 +68,23 @@ describe('card-validation', () => {
 
     it('throws when no updatable fields are provided', () => {
       expect(() => validateUpdateCardInput({})).toThrow(BadRequestException);
+    });
+
+    it('throws when provided kind is not supported', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          kind: 'cloze_text',
+        }),
+      ).toThrow(BadRequestException);
+    });
+
+    it('throws when provided fields are invalid for provided kind', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          kind: 'basic',
+          fields: { front: 'hello' },
+        }),
+      ).toThrow(BadRequestException);
     });
   });
 });
