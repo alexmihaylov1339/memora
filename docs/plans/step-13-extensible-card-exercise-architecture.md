@@ -1,7 +1,7 @@
 # Memora: Step 13 Plan - Extensible Card/Exercise Architecture
 
-**Status:** In Progress  
-**Date:** 2026-04-25  
+**Status:** Done  
+**Date:** 2026-04-26  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 13
 
 ---
@@ -652,7 +652,7 @@ Verification completed:
 ### T10 - Step closeout and handoff to Step 14
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Mark step task statuses to Done.
@@ -668,6 +668,18 @@ Exit criteria:
 Verification checklist:
 - Plan status updated.
 - Roadmap references updated.
+
+Verification completed:
+- Marked Step 13 as complete and all ordered tasks `T1..T10` as Done.
+- Final Step 13 decisions captured:
+  - Enabled kinds: `basic`, `cloze_text`.
+  - Authoring API behavior for unknown kinds: deterministic `400 kind is not supported`.
+  - Review behavior for non-reviewable/invalid payload kinds: safe fallback metadata (`isReviewSupported`, `reviewUnsupportedReason`) and explicit unsupported renderer path in UI.
+- Known technical debt captured for Step 14:
+  - FE and BE still duplicate part of kind contract definitions (no shared cross-package schema artifact yet).
+  - `cloze_text` Step 13 matcher remains intentionally strict/minimal (single-marker MVP), without broader parser ergonomics.
+  - No aggregate observability yet for unsupported-kind queue events and invalid-payload frequency.
+- Roadmap Step 14 updated with quality/observability follow-up items discovered during Step 13.
 
 ---
 
