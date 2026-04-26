@@ -376,6 +376,9 @@ Implementation plan:
 **Exit criteria**
 - Core chunk flow is test-covered and observable in real usage.
 
+Implementation plan:
+- `docs/plans/step-14-quality-observability-rollout-safety.md`
+
 ---
 
 ## Suggested execution order
