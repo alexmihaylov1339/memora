@@ -560,7 +560,7 @@ Verification completed:
 ### T8 - Regression test matrix for extensibility
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add focused test coverage for:
@@ -585,6 +585,28 @@ Exit criteria:
 Verification checklist:
 - `api` tests pass.
 - `web` tests pass for modified suites.
+
+Verification completed:
+- Added backend controller-level coverage for extensible card flows:
+  - `api/src/cards/cards.controller.spec.ts`
+    - create `basic`
+    - create `cloze_text`
+    - unsupported kind rejection before service call
+    - update `cloze_text`
+    - not-found mappings for create/update edge cases
+- Kept and validated backend registry/validation coverage for kind behavior:
+  - `api/src/cards/card-kind-registry.spec.ts`
+  - `api/src/cards/dto/card-validation.spec.ts`
+- Confirmed review queue serialization/contract behavior remains stable with updated metadata via:
+  - `api/src/reviews/reviews.controller.spec.ts`
+- Added frontend registry regression coverage for kind authoring parse/serialize contracts:
+  - `web/src/features/decks/card-kinds/registry.test.ts`
+- Kept frontend review renderer dispatch coverage active:
+  - `web/src/features/reviews/review-kind-registry.test.ts`
+- Verified with targeted runs:
+  - API suites passing
+  - Web suites passing
+  - targeted eslint passing on newly added/updated spec files
 
 ---
 
