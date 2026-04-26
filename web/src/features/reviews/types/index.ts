@@ -10,6 +10,8 @@ export interface ReviewQueueItem {
   due: string;
   kind: string;
   fields: Record<string, unknown>;
+  isReviewSupported?: boolean;
+  reviewUnsupportedReason?: string | null;
   consecutiveSuccessCount: number;
 }
 

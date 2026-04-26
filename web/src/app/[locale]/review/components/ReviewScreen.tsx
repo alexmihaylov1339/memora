@@ -8,7 +8,6 @@ import ReviewUnsupportedCard from './ReviewUnsupportedCard';
 
 export default function ReviewScreen() {
   const {
-    basicCardFields,
     currentItem,
     errorMessage,
     gradeErrorMessage,
@@ -19,6 +18,7 @@ export default function ReviewScreen() {
     isAnswerRevealed,
     isLoading,
     queueCount,
+    reviewRenderer,
     handleRevealAnswer,
   } = useReviewScreen();
 
@@ -45,8 +45,13 @@ export default function ReviewScreen() {
     return <ReviewEmptyState />;
   }
 
-  if (!basicCardFields) {
-    return <ReviewUnsupportedCard item={currentItem} />;
+  if (!reviewRenderer || reviewRenderer.renderer === 'unsupported') {
+    return (
+      <ReviewUnsupportedCard
+        item={currentItem}
+        reason={reviewRenderer?.reason ?? currentItem.reviewUnsupportedReason ?? undefined}
+      />
+    );
   }
 
   return (
@@ -55,7 +60,7 @@ export default function ReviewScreen() {
 
       <ReviewCurrentItemCard
         item={currentItem}
-        basicCardFields={basicCardFields}
+        basicCardFields={reviewRenderer.basicCardFields}
         isAnswerRevealed={isAnswerRevealed}
         queueCount={queueCount}
         onRevealAnswer={handleRevealAnswer}

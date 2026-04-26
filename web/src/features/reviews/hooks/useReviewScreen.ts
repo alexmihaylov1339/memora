@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { getBasicReviewCardFields } from '../reviewCardFields';
+import { resolveReviewRenderer } from '../review-kind-registry';
 import type { GradeReviewResponse, ReviewGrade, ReviewQueueItem } from '../types';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
@@ -20,7 +20,7 @@ export function useReviewScreen() {
       ? queueQuery.result?.items[0] ?? null
       : currentItemOverride;
   const queueCount = queueQuery.result?.items.length ?? 0;
-  const basicCardFields = getBasicReviewCardFields(currentItem);
+  const reviewRenderer = resolveReviewRenderer(currentItem);
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const gradeErrorMessage = gradeMutation.error?.message;
 
@@ -55,11 +55,11 @@ export function useReviewScreen() {
   }
 
   return {
-    basicCardFields,
     currentItem,
     errorMessage: queueQuery.error?.message,
     gradeErrorMessage,
     gradeResult: lastGradeResult,
+    reviewRenderer,
     isGrading: gradeMutation.isLoading,
     isAnswerRevealed,
     isLoading: queueQuery.isLoading,

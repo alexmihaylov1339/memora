@@ -477,7 +477,7 @@ Verification completed:
 ### T6 - Frontend review renderer registry
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Introduce review renderer map: `kind -> renderer`.
@@ -498,6 +498,22 @@ Exit criteria:
 Verification checklist:
 - Basic review continues to function exactly as before.
 - Unsupported kind shows fallback component and does not block navigation flow.
+
+Verification completed:
+- Added frontend review renderer registry:
+  - `web/src/features/reviews/review-kind-registry.ts`
+- Review screen flow now resolves render behavior by registry output rather than basic-only hardcoding:
+  - `web/src/features/reviews/hooks/useReviewScreen.ts`
+  - `web/src/app/[locale]/review/components/ReviewScreen.tsx`
+- Unsupported path is explicitly routed with reason metadata and safe fallback messaging:
+  - `web/src/app/[locale]/review/components/ReviewUnsupportedCard.tsx`
+- Review queue FE typing now includes support metadata from backend:
+  - `web/src/features/reviews/types/index.ts`
+- Added targeted unit coverage for registry dispatch behavior:
+  - `web/src/features/reviews/review-kind-registry.test.ts`
+- Verified with:
+  - targeted eslint on changed review files
+  - targeted jest for review kind registry test
 
 ---
 

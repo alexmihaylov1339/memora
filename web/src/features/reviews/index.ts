@@ -1,5 +1,11 @@
 export { reviewService } from './services';
-export type { BasicReviewCardFields } from './reviewCardFields';
+export {
+  resolveReviewRenderer,
+} from './review-kind-registry';
+export type {
+  BasicReviewCardFields,
+  ReviewRendererResolution,
+} from './review-kind-registry';
 export {
   REVIEW_QUERY_KEYS,
   useReviewQueueQuery,
