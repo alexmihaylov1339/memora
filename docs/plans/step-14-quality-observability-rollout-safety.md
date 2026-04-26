@@ -137,7 +137,7 @@ Required properties:
 ### T1 - Scheduling edge-case unit test matrix
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add deterministic tests for schedule transitions:
@@ -158,6 +158,19 @@ Exit criteria:
 Verification checklist:
 - tests do not rely on local timezone.
 - failures map to explicit business rule comments.
+
+Verification completed:
+- Extended scheduling unit coverage in:
+  - `api/src/reviews/chunk-scheduling.spec.ts`
+- Added deterministic checks for:
+  - UTC boundary arithmetic (`2026-10-31T23:30:00.000Z` + interval)
+  - long missed-day gap arithmetic (default max interval: `26280` hours)
+  - explicit consecutive success/failure transition table (including repeated failure reset to `0`)
+- Added focused persistence semantics coverage in:
+  - `api/src/reviews/review-grade.spec.ts` (new)
+- New `review-grade` tests lock:
+  - success progression side effects (`good` path)
+  - repeated `again` reset semantics with deterministic due progression and lapse increments
 
 ---
 

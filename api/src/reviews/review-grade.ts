@@ -10,10 +10,11 @@ import { resolveReviewKindSupport } from './review-kind-adapter';
 
 export const DEFAULT_REVIEW_EASE = 2.5;
 
-export type ReviewPersistenceClient = Pick<
-  PrismaService,
-  'chunkReviewState' | 'reviewLog' | 'reviewState'
->;
+export type ReviewPersistenceClient = {
+  chunkReviewState: Pick<PrismaService['chunkReviewState'], 'update'>;
+  reviewState: Pick<PrismaService['reviewState'], 'upsert'>;
+  reviewLog: Pick<PrismaService['reviewLog'], 'create'>;
+};
 
 export type GradeSideEffectsInput = {
   cardId: string;

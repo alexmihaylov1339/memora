@@ -56,6 +56,25 @@ describe('chunk-scheduling', () => {
         'currentConsecutiveSuccessCount must be a non-negative integer',
       );
     });
+
+    it('keeps deterministic progression across consecutive success/failure transitions', () => {
+      const transitions: Array<{
+        from: number;
+        success: boolean;
+        to: number;
+      }> = [
+        { from: 0, success: true, to: 1 },
+        { from: 1, success: true, to: 2 },
+        { from: 2, success: true, to: 3 },
+        { from: 3, success: false, to: 0 },
+        { from: 0, success: false, to: 0 },
+        { from: 0, success: true, to: 1 },
+      ];
+
+      transitions.forEach(({ from, success, to }) => {
+        expect(getNextConsecutiveSuccessCount(from, success)).toBe(to);
+      });
+    });
   });
 
   describe('hasChunkMastery', () => {
@@ -131,6 +150,25 @@ describe('chunk-scheduling', () => {
       );
       expect(computeNextDueAt(baseTime, 12).toISOString()).toBe(
         '2026-04-01T22:30:00.000Z',
+      );
+    });
+
+    it('remains deterministic across UTC day boundaries', () => {
+      const justBeforeMidnight = new Date('2026-10-31T23:30:00.000Z');
+
+      expect(computeNextDueAt(justBeforeMidnight, 4).toISOString()).toBe(
+        '2026-11-01T03:30:00.000Z',
+      );
+      expect(computeNextDueAt(justBeforeMidnight, 24).toISOString()).toBe(
+        '2026-11-01T23:30:00.000Z',
+      );
+    });
+
+    it('preserves exact-time arithmetic for long missed-day gaps', () => {
+      const baseTime = new Date('2026-01-01T00:00:00.000Z');
+
+      expect(computeNextDueAt(baseTime, 26280).toISOString()).toBe(
+        '2028-12-31T00:00:00.000Z',
       );
     });
 
