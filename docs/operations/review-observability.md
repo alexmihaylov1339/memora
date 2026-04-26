@@ -165,7 +165,7 @@ Use 15-minute rolling windows unless stated otherwise.
 ## Runbook links
 
 - Step 14 plan: `docs/plans/step-14-quality-observability-rollout-safety.md`
-- Rollout/rollback playbook (T8): `docs/operations/review-rollout-playbook.md` (to be created)
+- Rollout/rollback playbook: `docs/operations/review-rollout-playbook.md`
 
 If critical alert persists > 30 minutes:
 - open incident timeline

@@ -472,7 +472,7 @@ Verification completed:
 ### T8 - Rollout and rollback playbook
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Write phased rollout strategy:
@@ -493,6 +493,19 @@ Exit criteria:
 
 Verification checklist:
 - rollback steps are copy/paste executable and non-destructive by default.
+
+Verification completed:
+- Added dedicated rollout/rollback operations playbook:
+  - `docs/operations/review-rollout-playbook.md` (new)
+- Playbook now defines:
+  - phased rollout sequence (`local -> staging -> canary -> expansion`)
+  - per-phase monitor windows and promotion gates
+  - deterministic go/no-go table tied to Step 14 alert thresholds
+  - explicit rollback triggers (`invalid_payload` spikes, latency regressions, queue anomalies)
+  - step-by-step rollback procedure and communication protocol
+  - non-destructive command guidance and evidence package checklist
+- Updated observability runbook links:
+  - `docs/operations/review-observability.md` now links to the created rollout playbook path.
 
 ---
 
