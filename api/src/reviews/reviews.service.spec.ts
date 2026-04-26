@@ -1,6 +1,7 @@
 import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { GradeChunkReviewResult } from './reviews.service';
+import { REVIEW_KIND_UNSUPPORTED_REASONS } from './review-kind-adapter';
 import { ReviewsService } from './reviews.service';
 
 function createPrismaMock() {
@@ -323,7 +324,8 @@ describe('ReviewsService', () => {
           cardId: 'card-cloze-1',
           kind: 'cloze_text',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'kind_not_review_enabled',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         }),
       ]);
     });
@@ -362,7 +364,8 @@ describe('ReviewsService', () => {
           cardId: 'card-invalid-1',
           kind: 'basic',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'invalid_payload',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         }),
       ]);
     });

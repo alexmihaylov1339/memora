@@ -1,5 +1,6 @@
 import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
+import { isNull } from '../common/utils/type-guards';
 import type {
   ChunkProgressSnapshot,
   ChunkWithCards,
@@ -122,14 +123,13 @@ export function buildNextActionableItem(
   chunk: ChunkWithCards,
   snapshot: ChunkProgressSnapshot,
 ): ReviewQueueItem | null {
-  const nextChunkCard =
-    snapshot.currentCard === null
-      ? null
-      : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
+  const nextChunkCard = isNull(snapshot.currentCard)
+    ? null
+    : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
 
   if (
     snapshot.hasMastery ||
-    snapshot.currentCard === null ||
+    isNull(snapshot.currentCard) ||
     !nextChunkCard?.card
   ) {
     return null;

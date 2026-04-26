@@ -1,5 +1,9 @@
 import { isString } from '@shared/utils';
-import type { ReviewQueueItem, ReviewUnsupportedReason } from './types';
+import {
+  REVIEW_UNSUPPORTED_REASONS,
+  type ReviewQueueItem,
+  type ReviewUnsupportedReason,
+} from './types';
 
 export interface BasicReviewCardFields {
   front: string;
@@ -53,7 +57,9 @@ export function resolveReviewRenderer(
   if (item.isReviewSupported === false) {
     return {
       renderer: 'unsupported',
-      reason: item.reviewUnsupportedReason ?? 'kind_not_review_enabled',
+      reason:
+        item.reviewUnsupportedReason ??
+        REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
     };
   }
 
@@ -62,7 +68,7 @@ export function resolveReviewRenderer(
     if (!basicCardFields) {
       return {
         renderer: 'unsupported',
-        reason: 'invalid_payload',
+        reason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
       };
     }
 
@@ -74,6 +80,8 @@ export function resolveReviewRenderer(
 
   return {
     renderer: 'unsupported',
-    reason: item.reviewUnsupportedReason ?? 'kind_not_review_enabled',
+    reason:
+      item.reviewUnsupportedReason ??
+      REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
   };
 }

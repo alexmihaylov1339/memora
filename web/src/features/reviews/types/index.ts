@@ -1,5 +1,12 @@
 export type ReviewGrade = 'again' | 'hard' | 'good' | 'easy';
-export type ReviewUnsupportedReason = 'kind_not_review_enabled' | 'invalid_payload';
+
+export const REVIEW_UNSUPPORTED_REASONS = {
+  kindNotReviewEnabled: 'kind_not_review_enabled',
+  invalidPayload: 'invalid_payload',
+} as const;
+
+export type ReviewUnsupportedReason =
+  (typeof REVIEW_UNSUPPORTED_REASONS)[keyof typeof REVIEW_UNSUPPORTED_REASONS];
 
 export interface ReviewQueueItem {
   cardId: string;

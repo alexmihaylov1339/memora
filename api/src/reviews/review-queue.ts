@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { isNotNull, isNull } from '../common/utils/type-guards';
 import type { ChunkWithCards } from './chunk-progress';
 import { deriveChunkReviewState } from './chunk-progress';
 import { resolveReviewKindSupport } from './review-kind-adapter';
@@ -27,15 +28,14 @@ export function buildEligibleQueueItems(
   const items = chunks
     .map((chunk) => {
       const snapshot = deriveChunkReviewState(chunk, now);
-      const currentCard =
-        snapshot.currentCard === null
-          ? null
-          : chunk.chunkCards[snapshot.currentCard.sequenceIndex]?.card;
+      const currentCard = isNull(snapshot.currentCard)
+        ? null
+        : chunk.chunkCards[snapshot.currentCard.sequenceIndex]?.card;
 
       if (
         !snapshot.isDue ||
         snapshot.hasMastery ||
-        snapshot.currentCard === null ||
+        isNull(snapshot.currentCard) ||
         !currentCard
       ) {
         return null;
@@ -62,7 +62,7 @@ export function buildEligibleQueueItems(
         consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
       } satisfies ReviewQueueItem;
     })
-    .filter((item): item is ReviewQueueItem => item !== null);
+    .filter(isNotNull);
 
   items.sort((left, right) => {
     const dueDiff = left.due.getTime() - right.due.getTime();

@@ -4,7 +4,9 @@ export {
   isDefined,
   isBoolean,
   isBrowserEnvironment,
+  isNull,
   isNumber,
+  isObjectRecord,
   isString,
   isUndefined,
 } from './typeGuards';

@@ -1,5 +1,8 @@
 import { resolveReviewRenderer } from './review-kind-registry';
-import type { ReviewQueueItem } from './types';
+import {
+  REVIEW_UNSUPPORTED_REASONS,
+  type ReviewQueueItem,
+} from './types';
 
 function buildItem(overrides: Partial<ReviewQueueItem> = {}): ReviewQueueItem {
   return {
@@ -35,7 +38,7 @@ describe('review-kind-registry', () => {
       resolveReviewRenderer(buildItem({ fields: { front: 'spielen' } })),
     ).toEqual({
       renderer: 'unsupported',
-      reason: 'invalid_payload',
+      reason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
     });
   });
 
@@ -49,13 +52,44 @@ describe('review-kind-registry', () => {
             answer: 'spiele',
           },
           isReviewSupported: false,
-          reviewUnsupportedReason: 'kind_not_review_enabled',
+          reviewUnsupportedReason:
+            REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         }),
       ),
     ).toEqual({
       renderer: 'unsupported',
-      reason: 'kind_not_review_enabled',
+      reason: REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+    });
+  });
+
+  it('preserves invalid_payload reason when backend flags unsupported payload', () => {
+    expect(
+      resolveReviewRenderer(
+        buildItem({
+          kind: 'basic',
+          fields: { front: 'spielen' },
+          isReviewSupported: false,
+          reviewUnsupportedReason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
+        }),
+      ),
+    ).toEqual({
+      renderer: 'unsupported',
+      reason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
+    });
+  });
+
+  it('falls back to kind_not_review_enabled when unsupported reason is missing', () => {
+    expect(
+      resolveReviewRenderer(
+        buildItem({
+          kind: 'cloze_text',
+          isReviewSupported: false,
+          reviewUnsupportedReason: null,
+        }),
+      ),
+    ).toEqual({
+      renderer: 'unsupported',
+      reason: REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
     });
   });
 });
-

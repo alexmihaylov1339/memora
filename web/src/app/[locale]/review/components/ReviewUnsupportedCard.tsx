@@ -1,8 +1,10 @@
 import type { ReviewQueueItem } from '@features/reviews';
+import { REVIEW_UNSUPPORTED_REASONS } from '@features/reviews/types';
+import type { ReviewUnsupportedReason } from '@features/reviews/types';
 
 interface ReviewUnsupportedCardProps {
   item: ReviewQueueItem;
-  reason?: string;
+  reason?: ReviewUnsupportedReason;
 }
 
 export default function ReviewUnsupportedCard({
@@ -10,7 +12,7 @@ export default function ReviewUnsupportedCard({
   reason,
 }: ReviewUnsupportedCardProps) {
   const detail =
-    reason === 'invalid_payload'
+    reason === REVIEW_UNSUPPORTED_REASONS.invalidPayload
       ? 'The card payload is invalid for this renderer.'
       : 'This kind is not review-enabled yet.';
 

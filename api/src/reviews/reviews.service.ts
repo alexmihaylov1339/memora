@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { isNull } from '../common/utils/type-guards';
 import {
   computeNextDueAt,
   getChunkReviewIntervalHours,
@@ -67,10 +68,9 @@ export class ReviewsService {
       return null;
     }
 
-    const currentChunkCard =
-      snapshot.currentCard === null
-        ? null
-        : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
+    const currentChunkCard = isNull(snapshot.currentCard)
+      ? null
+      : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
 
     if (!currentChunkCard?.card) {
       return null;

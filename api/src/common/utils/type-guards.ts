@@ -2,6 +2,14 @@ export function isUndefined(value: unknown): value is undefined {
   return value === undefined;
 }
 
+export function isNull(value: unknown): value is null {
+  return value === null;
+}
+
+export function isNil(value: unknown): value is null | undefined {
+  return isUndefined(value) || isNull(value);
+}
+
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
@@ -9,7 +17,7 @@ export function isString(value: unknown): value is string {
 export function isObjectRecord(
   value: unknown,
 ): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && !isNil(value) && !Array.isArray(value);
 }
 
 export function isNumber(value: unknown): value is number {
@@ -37,4 +45,8 @@ export function isNonNegativeInteger(value: unknown): value is number {
 
 export function hasTrimmedText(value: unknown): value is string {
   return isString(value) && value.trim().length > 0;
+}
+
+export function isNotNull<T>(value: T | null): value is T {
+  return !isNull(value);
 }

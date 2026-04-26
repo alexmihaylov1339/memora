@@ -263,7 +263,7 @@ Verification completed:
 ### T4 - Frontend review contract/type safety regression suite
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add FE tests ensuring review screen behavior for:
@@ -283,6 +283,34 @@ Exit criteria:
 
 Verification checklist:
 - unsupported renderer path tested for each known reason.
+
+Verification completed:
+- Added frontend review-screen regression suite:
+  - `web/src/app/[locale]/review/components/ReviewScreen.test.tsx` (new)
+- New screen tests lock behavior for:
+  - loading + error rendering
+  - post-grade empty-state rendering
+  - unsupported-kind rendering with explicit reason
+  - malformed/null renderer fallback to item-level unsupported reason
+  - supported basic renderer path
+- Expanded review renderer registry regression coverage in:
+  - `web/src/features/reviews/review-kind-registry.test.ts`
+  - now explicitly verifies unsupported reason handling for:
+    - `kind_not_review_enabled`
+    - `invalid_payload`
+    - missing reason fallback path
+- Tightened runtime parsing boundary in:
+  - `web/src/features/reviews/services/reviewService.ts`
+  - added `parseReviewQueueResponse` contract parser with deterministic runtime guards for:
+    - required queue item fields
+    - `isReviewSupported` boolean
+    - `reviewUnsupportedReason` enum/null
+- Added parser regression tests:
+  - `web/src/features/reviews/services/reviewService.test.ts` (new)
+- Verified with targeted runs:
+  - `npm test -- src/features/reviews/review-kind-registry.test.ts src/features/reviews/services/reviewService.test.ts` (passing)
+  - `npm test -- --runTestsByPath \"src/app/[locale]/review/components/ReviewScreen.test.tsx\"` (passing)
+  - `npx eslint src/features/reviews/review-kind-registry.test.ts src/features/reviews/services/reviewService.ts src/features/reviews/services/reviewService.test.ts \"src/app/[locale]/review/components/ReviewScreen.test.tsx\"` (passing)
 
 ---
 

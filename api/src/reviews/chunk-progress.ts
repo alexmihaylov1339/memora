@@ -1,4 +1,5 @@
 import type { Grade, Prisma } from '@prisma/client';
+import { isNull } from '../common/utils/type-guards';
 import {
   DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
   getCurrentChunkCardIndex,
@@ -71,8 +72,9 @@ export function deriveChunkReviewState(
     totalCards > 0
       ? getCurrentChunkCardIndex(state.consecutiveSuccessCount, totalCards)
       : null;
-  const currentCard =
-    currentCardIndex === null ? null : chunk.chunkCards[currentCardIndex];
+  const currentCard = isNull(currentCardIndex)
+    ? null
+    : chunk.chunkCards[currentCardIndex];
 
   return {
     chunkId: chunk.id,

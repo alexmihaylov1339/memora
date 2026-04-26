@@ -1,4 +1,5 @@
 import type { ReviewQueueItem } from '../reviews.service';
+import { REVIEW_KIND_UNSUPPORTED_REASONS } from '../review-kind-adapter';
 import {
   serializeReviewQueueItem,
   serializeReviewQueueResponse,
@@ -51,7 +52,8 @@ describe('review-queue-response.dto', () => {
         kind: 'cloze_text',
         fields: { text: 'Ich {{c1::spiele}}.', answer: 'spiele' },
         isReviewSupported: false,
-        reviewUnsupportedReason: 'kind_not_review_enabled',
+        reviewUnsupportedReason:
+          REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         cardCreatedAt: new Date('2026-04-01T10:00:00.000Z'),
         consecutiveSuccessCount: 0,
       },
@@ -66,7 +68,7 @@ describe('review-queue-response.dto', () => {
         kind: 'basic',
         fields: { front: 'missing-back' },
         isReviewSupported: false,
-        reviewUnsupportedReason: 'invalid_payload',
+        reviewUnsupportedReason: REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         cardCreatedAt: new Date('2026-04-01T11:00:00.000Z'),
         consecutiveSuccessCount: 3,
       },
@@ -77,12 +79,14 @@ describe('review-queue-response.dto', () => {
         expect.objectContaining({
           cardId: 'card-cloze',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'kind_not_review_enabled',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         }),
         expect.objectContaining({
           cardId: 'card-invalid',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'invalid_payload',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         }),
       ],
     });

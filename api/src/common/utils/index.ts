@@ -1,5 +1,7 @@
 export {
   isUndefined,
+  isNull,
+  isNil,
   isString,
   isNumber,
   isStringArray,
@@ -7,4 +9,5 @@ export {
   hasUniqueTrimmedTextArray,
   isNonNegativeInteger,
   hasTrimmedText,
+  isNotNull,
 } from './type-guards';

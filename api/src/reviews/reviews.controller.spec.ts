@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
 import { REVIEW_ERROR_MESSAGES } from './review-errors';
+import { REVIEW_KIND_UNSUPPORTED_REASONS } from './review-kind-adapter';
 import { ReviewsController } from './reviews.controller';
 import type {
   GradeChunkReviewResult,
@@ -88,7 +89,8 @@ describe('ReviewsController', () => {
         kind: 'cloze_text',
         fields: { text: 'Ich {{c1::spiele}}.', answer: 'spiele' },
         isReviewSupported: false,
-        reviewUnsupportedReason: 'kind_not_review_enabled',
+        reviewUnsupportedReason:
+          REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         cardCreatedAt: new Date('2026-04-02T10:00:00.000Z'),
         consecutiveSuccessCount: 0,
       },
@@ -103,7 +105,7 @@ describe('ReviewsController', () => {
         kind: 'basic',
         fields: { front: 'front only' },
         isReviewSupported: false,
-        reviewUnsupportedReason: 'invalid_payload',
+        reviewUnsupportedReason: REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         cardCreatedAt: new Date('2026-04-02T11:00:00.000Z'),
         consecutiveSuccessCount: 0,
       },
@@ -114,12 +116,14 @@ describe('ReviewsController', () => {
         expect.objectContaining({
           cardId: 'card-cloze',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'kind_not_review_enabled',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
         }),
         expect.objectContaining({
           cardId: 'card-invalid',
           isReviewSupported: false,
-          reviewUnsupportedReason: 'invalid_payload',
+          reviewUnsupportedReason:
+            REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         }),
       ],
     });
