@@ -47,13 +47,26 @@ describe('card-validation', () => {
     it('throws when kind is not supported', () => {
       expect(() =>
         validateCreateCardInput({
-          kind: 'cloze_text',
+          kind: 'audio_gap',
           fields: {
             text: 'Ich {{c1::spiele}} gern Tennis.',
             answer: 'spiele',
           },
         }),
       ).toThrow(BadRequestException);
+    });
+
+    it('accepts valid cloze_text card input', () => {
+      expect(() =>
+        validateCreateCardInput({
+          kind: 'cloze_text',
+          fields: {
+            text: 'Ich {{c1::spiele}} gern Tennis.',
+            answer: 'spiele',
+            hint: 'Verb in present tense',
+          },
+        }),
+      ).not.toThrow();
     });
   });
 
@@ -73,7 +86,7 @@ describe('card-validation', () => {
     it('throws when provided kind is not supported', () => {
       expect(() =>
         validateUpdateCardInput({
-          kind: 'cloze_text',
+          kind: 'audio_gap',
         }),
       ).toThrow(BadRequestException);
     });
@@ -85,6 +98,18 @@ describe('card-validation', () => {
           fields: { front: 'hello' },
         }),
       ).toThrow(BadRequestException);
+    });
+
+    it('accepts cloze_text updates with matching marker and answer', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          kind: 'cloze_text',
+          fields: {
+            text: 'Wir {{c1::lernen}} Deutsch.',
+            answer: 'lernen',
+          },
+        }),
+      ).not.toThrow();
     });
   });
 });

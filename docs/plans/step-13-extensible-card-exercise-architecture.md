@@ -346,7 +346,7 @@ Verification completed:
 ### T3 - Introduce proof kind in backend with strict validation
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add one non-`basic` kind to the registry (recommended: `cloze_text`).
@@ -365,6 +365,22 @@ Exit criteria:
 Verification checklist:
 - Integration tests for create/update roundtrip of proof kind.
 - Regression tests confirm `basic` unchanged.
+
+Verification completed:
+- Added `cloze_text` as a supported backend kind in the card-kind registry.
+- Implemented strict `cloze_text` validation/normalization rules:
+  - required `text` + `answer`
+  - optional `hint`
+  - exactly one `{{c1::...}}` marker required in `text`
+  - marker value must match `answer` (case-insensitive, trimmed comparison)
+  - kind-specific max length constraints
+- Kept response DTO compatibility intact (`kind` + `fields` serialization remains generic JSON-safe).
+- Updated test coverage for both `basic` and `cloze_text` in:
+  - `api/src/cards/card-kind-registry.spec.ts`
+  - `api/src/cards/dto/card-validation.spec.ts`
+- Verified:
+  - targeted tests passing
+  - targeted eslint passing
 
 ---
 

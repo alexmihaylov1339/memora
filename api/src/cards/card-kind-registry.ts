@@ -11,6 +11,7 @@ function normalizeRequiredString(
   rawValue: unknown,
   key: string,
   kind: SupportedCardKind,
+  maxLength = 2000,
 ): string {
   if (typeof rawValue !== 'string') {
     throw new BadRequestException(
@@ -25,13 +26,73 @@ function normalizeRequiredString(
     );
   }
 
-  if (value.length > 2000) {
+  if (value.length > maxLength) {
     throw new BadRequestException(
-      cardFieldsInvalidForKind(kind, `${key} cannot exceed 2000 characters`),
+      cardFieldsInvalidForKind(
+        kind,
+        `${key} cannot exceed ${maxLength} characters`,
+      ),
     );
   }
 
   return value;
+}
+
+function normalizeOptionalString(
+  rawValue: unknown,
+  key: string,
+  kind: SupportedCardKind,
+  maxLength: number,
+): string | undefined {
+  if (rawValue === undefined || rawValue === null) {
+    return undefined;
+  }
+
+  if (typeof rawValue !== 'string') {
+    throw new BadRequestException(
+      cardFieldsInvalidForKind(kind, `${key} must be a string`),
+    );
+  }
+
+  const value = rawValue.trim();
+  if (!value) {
+    return undefined;
+  }
+
+  if (value.length > maxLength) {
+    throw new BadRequestException(
+      cardFieldsInvalidForKind(
+        kind,
+        `${key} cannot exceed ${maxLength} characters`,
+      ),
+    );
+  }
+
+  return value;
+}
+
+function extractSingleClozeMarkerValue(text: string): string {
+  const matches = [...text.matchAll(/{{c1::(.*?)}}/g)];
+  if (matches.length !== 1) {
+    throw new BadRequestException(
+      cardFieldsInvalidForKind(
+        'cloze_text',
+        'text must contain exactly one {{c1::...}} marker',
+      ),
+    );
+  }
+
+  const markerValue = matches[0]?.[1]?.trim() ?? '';
+  if (!markerValue) {
+    throw new BadRequestException(
+      cardFieldsInvalidForKind(
+        'cloze_text',
+        'cloze marker value cannot be empty',
+      ),
+    );
+  }
+
+  return markerValue;
 }
 
 const basicCardKindDefinition: CardKindDefinition = {
@@ -56,8 +117,82 @@ const basicCardKindDefinition: CardKindDefinition = {
   },
 };
 
+const clozeTextCardKindDefinition: CardKindDefinition = {
+  kind: 'cloze_text',
+  validateFields(fields: unknown) {
+    if (!isObjectRecord(fields)) {
+      throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
+    }
+
+    const text = normalizeRequiredString(
+      fields.text,
+      'text',
+      'cloze_text',
+      2500,
+    );
+    const answer = normalizeRequiredString(
+      fields.answer,
+      'answer',
+      'cloze_text',
+      300,
+    );
+    normalizeOptionalString(fields.hint, 'hint', 'cloze_text', 300);
+
+    const markerValue = extractSingleClozeMarkerValue(text);
+    if (markerValue.toLowerCase() !== answer.toLowerCase()) {
+      throw new BadRequestException(
+        cardFieldsInvalidForKind(
+          'cloze_text',
+          'answer must match the cloze marker value',
+        ),
+      );
+    }
+  },
+  normalizeFields(fields: unknown): Prisma.JsonObject {
+    if (!isObjectRecord(fields)) {
+      throw new BadRequestException(CARD_ERROR_MESSAGES.fieldsMustBeObject);
+    }
+
+    const text = normalizeRequiredString(
+      fields.text,
+      'text',
+      'cloze_text',
+      2500,
+    );
+    const answer = normalizeRequiredString(
+      fields.answer,
+      'answer',
+      'cloze_text',
+      300,
+    );
+    const hint = normalizeOptionalString(
+      fields.hint,
+      'hint',
+      'cloze_text',
+      300,
+    );
+
+    const markerValue = extractSingleClozeMarkerValue(text);
+    if (markerValue.toLowerCase() !== answer.toLowerCase()) {
+      throw new BadRequestException(
+        cardFieldsInvalidForKind(
+          'cloze_text',
+          'answer must match the cloze marker value',
+        ),
+      );
+    }
+
+    return {
+      text,
+      answer,
+      ...(hint ? { hint } : {}),
+    };
+  },
+};
+
 const cardKindRegistry: Record<SupportedCardKind, CardKindDefinition> = {
   basic: basicCardKindDefinition,
+  cloze_text: clozeTextCardKindDefinition,
 };
 
 export function isSupportedKind(kind: string): kind is SupportedCardKind {

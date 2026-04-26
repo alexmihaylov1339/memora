@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
 
-export type SupportedCardKind = 'basic';
+export type SupportedCardKind = 'basic' | 'cloze_text';
 
 export type CardKindDefinition = {
   kind: SupportedCardKind;
