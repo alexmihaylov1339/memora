@@ -2,6 +2,7 @@ import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { GradeChunkReviewResult } from './reviews.service';
 import { REVIEW_KIND_UNSUPPORTED_REASONS } from './review-kind-adapter';
+import * as reviewObservability from './review-observability';
 import { ReviewsService } from './reviews.service';
 
 function createPrismaMock() {
@@ -187,6 +188,52 @@ describe('ReviewsService', () => {
   });
 
   describe('getEligibleQueueItems', () => {
+    it('does not fail queue retrieval when observability emission throws', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+      const emitSpy = jest
+        .spyOn(reviewObservability, 'emitReviewQueueFetched')
+        .mockImplementation(() => {
+          throw new Error('observability_failed');
+        });
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen', back: 'play' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      try {
+        await expect(
+          service.getEligibleQueueItems('user-1', now),
+        ).resolves.toEqual([
+          expect.objectContaining({
+            cardId: 'card-1',
+            chunkId: 'chunk-1',
+            isReviewSupported: true,
+            reviewUnsupportedReason: null,
+          }),
+        ]);
+      } finally {
+        emitSpy.mockRestore();
+      }
+    });
+
     it('returns only the next eligible card for each due chunk', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
@@ -497,6 +544,53 @@ describe('ReviewsService', () => {
         expect.objectContaining({
           cardId: 'card-b',
           chunkId: 'chunk-2',
+        }),
+      ]);
+    });
+
+    it('gracefully handles malformed persisted chunk review state rows', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-broken-state',
+          deckId: 'deck-1',
+          title: 'broken-state',
+          position: 0,
+          reviewState: {
+            id: 'state-broken',
+            chunkId: 'chunk-broken-state',
+            due: null,
+            consecutiveSuccessCount: null,
+            lastGrade: 'not_a_grade',
+            createdAt: now,
+            updatedAt: now,
+          } as unknown,
+          chunkCards: [
+            {
+              cardId: 'card-safe-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-safe-1',
+                kind: 'basic',
+                fields: { front: 'safe', back: 'safe' },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          chunkId: 'chunk-broken-state',
+          cardId: 'card-safe-1',
+          due: now,
+          consecutiveSuccessCount: 0,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
         }),
       ]);
     });

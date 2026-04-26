@@ -23,7 +23,14 @@ const EMPTY_UNSUPPORTED_REASON_COUNTS: UnsupportedReasonCounts = {
 };
 
 export function hashUserId(userId: string): string {
-  return createHash('sha256').update(userId).digest('hex').slice(0, 16);
+  const normalizedUserId =
+    typeof userId === 'string' && userId.trim().length > 0
+      ? userId
+      : 'unknown_user';
+  return createHash('sha256')
+    .update(normalizedUserId)
+    .digest('hex')
+    .slice(0, 16);
 }
 
 export function getUnsupportedReasonCounts(

@@ -59,10 +59,12 @@ export class ReviewsService {
     now = new Date(),
   ): Promise<ReviewQueueItem[]> {
     const items = await loadEligibleQueueItems(this.prisma, userId, now);
-    emitReviewQueueFetched(this.logger, {
-      userId,
-      items,
-      generatedAt: now,
+    this.runObservabilitySafely('review_queue_fetched', () => {
+      emitReviewQueueFetched(this.logger, {
+        userId,
+        items,
+        generatedAt: now,
+      });
     });
 
     const unsupportedByReason = getUnsupportedReasonCounts(items);
@@ -71,28 +73,32 @@ export class ReviewsService {
         REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled
       ] > 0
     ) {
-      emitReviewUnsupportedDetected(this.logger, {
-        userId,
-        reason: REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
-        source: 'queue',
-        count:
-          unsupportedByReason[
-            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled
-          ],
-        generatedAt: now,
+      this.runObservabilitySafely('review_unsupported_detected', () => {
+        emitReviewUnsupportedDetected(this.logger, {
+          userId,
+          reason: REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+          source: 'queue',
+          count:
+            unsupportedByReason[
+              REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled
+            ],
+          generatedAt: now,
+        });
       });
     }
 
     if (
       unsupportedByReason[REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload] > 0
     ) {
-      emitReviewUnsupportedDetected(this.logger, {
-        userId,
-        reason: REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
-        source: 'queue',
-        count:
-          unsupportedByReason[REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload],
-        generatedAt: now,
+      this.runObservabilitySafely('review_unsupported_detected', () => {
+        emitReviewUnsupportedDetected(this.logger, {
+          userId,
+          reason: REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
+          source: 'queue',
+          count:
+            unsupportedByReason[REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload],
+          generatedAt: now,
+        });
       });
     }
 
@@ -126,26 +132,29 @@ export class ReviewsService {
     if (!currentChunkCard?.card) {
       return null;
     }
+    const currentCard = currentChunkCard.card;
 
     const reviewKindSupport = resolveReviewKindSupport(
-      currentChunkCard.card.kind,
-      currentChunkCard.card.fields,
+      currentCard.kind,
+      currentCard.fields,
     );
     if (!reviewKindSupport.isReviewSupported) {
-      emitReviewUnsupportedDetected(this.logger, {
-        userId,
-        source: 'grade_attempt',
-        reason:
-          reviewKindSupport.reviewUnsupportedReason ??
-          REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
-        cardId,
-        kind: currentChunkCard.card.kind,
-        generatedAt: now,
+      this.runObservabilitySafely('review_unsupported_detected', () => {
+        emitReviewUnsupportedDetected(this.logger, {
+          userId,
+          source: 'grade_attempt',
+          reason:
+            reviewKindSupport.reviewUnsupportedReason ??
+            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+          cardId,
+          kind: currentCard.kind,
+          generatedAt: now,
+        });
       });
       return null;
     }
 
-    const currentCardMode = currentChunkCard.card.kind;
+    const currentCardMode = currentCard.kind;
 
     const wasSuccessful = grade !== 'again';
     const nextConsecutiveSuccessCount = getNextConsecutiveSuccessCount(
@@ -185,15 +194,17 @@ export class ReviewsService {
       updatedAt: now,
     });
 
-    emitReviewGraded(this.logger, {
-      userId,
-      cardId,
-      kind: currentCardMode,
-      grade,
-      isReviewSupported: true,
-      reviewUnsupportedReason: null,
-      latencyMs: Date.now() - startedAtMs,
-      generatedAt: now,
+    this.runObservabilitySafely('review_graded', () => {
+      emitReviewGraded(this.logger, {
+        userId,
+        cardId,
+        kind: currentCardMode,
+        grade,
+        isReviewSupported: true,
+        reviewUnsupportedReason: null,
+        latencyMs: Date.now() - startedAtMs,
+        generatedAt: now,
+      });
     });
 
     return buildGradeChunkReviewResult({
@@ -227,5 +238,20 @@ export class ReviewsService {
     }
 
     throw new BadRequestException(REVIEW_ERROR_MESSAGES.cardNotReviewable);
+  }
+
+  private runObservabilitySafely(
+    eventName: string,
+    callback: () => void,
+  ): void {
+    try {
+      callback();
+    } catch (error) {
+      const reason =
+        error instanceof Error ? error.message : 'unknown_observability_error';
+      this.logger.warn(
+        `review_observability_emit_failed event=${eventName} reason=${reason}`,
+      );
+    }
   }
 }

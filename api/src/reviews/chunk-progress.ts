@@ -1,5 +1,9 @@
 import type { Grade, Prisma } from '@prisma/client';
-import { isNull } from '../common/utils/type-guards';
+import {
+  isNonNegativeInteger,
+  isNull,
+  isString,
+} from '../common/utils/type-guards';
 import {
   DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
   getCurrentChunkCardIndex,
@@ -52,25 +56,55 @@ export type ChunkProgressSnapshot = {
   lastGrade: Grade | null;
 };
 
+const REVIEW_GRADES: Grade[] = ['again', 'hard', 'good', 'easy'];
+
+function normalizeReviewDue(value: unknown, fallback: Date): Date {
+  if (!(value instanceof Date)) {
+    return fallback;
+  }
+
+  if (Number.isNaN(value.getTime())) {
+    return fallback;
+  }
+
+  return value;
+}
+
+function normalizeConsecutiveSuccessCount(value: unknown): number {
+  if (!isNonNegativeInteger(value)) {
+    return 0;
+  }
+
+  return value;
+}
+
+function normalizeLastGrade(value: unknown): Grade | null {
+  if (!isString(value)) {
+    return null;
+  }
+
+  if (!REVIEW_GRADES.includes(value as Grade)) {
+    return null;
+  }
+
+  return value as Grade;
+}
+
 export function deriveChunkReviewState(
   chunk: ChunkWithCards,
   now: Date,
   persistedState?: PersistedChunkReviewState | null,
 ): ChunkProgressSnapshot {
-  const state = persistedState ??
-    chunk.reviewState ?? {
-      id: `ephemeral-${chunk.id}`,
-      chunkId: chunk.id,
-      due: now,
-      consecutiveSuccessCount: 0,
-      lastGrade: null,
-      createdAt: now,
-      updatedAt: now,
-    };
+  const rawState = persistedState ?? chunk.reviewState;
+  const due = normalizeReviewDue(rawState?.due, now);
+  const consecutiveSuccessCount = normalizeConsecutiveSuccessCount(
+    rawState?.consecutiveSuccessCount,
+  );
+  const lastGrade = normalizeLastGrade(rawState?.lastGrade);
   const totalCards = chunk.chunkCards.length;
   const currentCardIndex =
     totalCards > 0
-      ? getCurrentChunkCardIndex(state.consecutiveSuccessCount, totalCards)
+      ? getCurrentChunkCardIndex(consecutiveSuccessCount, totalCards)
       : null;
   const currentCard = isNull(currentCardIndex)
     ? null
@@ -81,11 +115,11 @@ export function deriveChunkReviewState(
     deckId: chunk.deckId,
     title: chunk.title,
     position: chunk.position,
-    due: state.due,
-    isDue: state.due.getTime() <= now.getTime(),
-    consecutiveSuccessCount: state.consecutiveSuccessCount,
+    due,
+    isDue: due.getTime() <= now.getTime(),
+    consecutiveSuccessCount,
     requiredConsecutiveSuccesses: DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
-    hasMastery: hasChunkMastery(state.consecutiveSuccessCount),
+    hasMastery: hasChunkMastery(consecutiveSuccessCount),
     totalCards,
     currentCard: currentCard
       ? {
@@ -93,6 +127,6 @@ export function deriveChunkReviewState(
           sequenceIndex: currentCard.sequenceIndex,
         }
       : null,
-    lastGrade: state.lastGrade,
+    lastGrade,
   };
 }

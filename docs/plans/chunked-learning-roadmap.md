@@ -387,6 +387,48 @@ Closeout and operations artifacts:
 
 ---
 
+## Step 15: Production rollout, calibration, and reliability hardening
+
+**Objective:** Validate Step 14 assets in real environments and harden reliability controls with empirical data.
+
+**Deliverables**
+- Execute staging/canary rollout protocol with deterministic gate evidence.
+- Calibrate alerts and thresholds from first-week telemetry baselines.
+- Run rollback/incident drill and validate ownership/SLA execution.
+- Enforce FE/BE contract drift guardrails in CI.
+- Lock initial queue/grade SLO baselines with measured p50/p95 data.
+
+**Exit criteria**
+- rollout and rollback procedures are proven operationally.
+- alerts/SLOs are tuned and documented from real usage evidence.
+- CI blocks contract drift regressions automatically.
+
+Implementation plan:
+- `docs/plans/step-15-production-rollout-calibration-reliability.md`
+
+---
+
+## Step 16: Post-rollout productization and scale
+
+**Objective:** Convert operational stability into product improvements, extensibility velocity, and scale readiness.
+
+**Deliverables**
+- Prioritize post-rollout improvements using telemetry and incidents.
+- Ship a telemetry-backed review UX iteration pack.
+- Prove next-kind onboarding readiness through a scoped pilot.
+- Re-evaluate FE/BE contract strategy using live evidence thresholds.
+- Define performance/capacity envelope and automate high-toil reliability checks.
+
+**Exit criteria**
+- measurable product improvements are shipped from rollout signals.
+- extensibility and scale paths are explicit and validated.
+- roadmap continuation is documented with clear constraints.
+
+Implementation plan:
+- `docs/plans/step-16-post-rollout-productization-and-scale.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -404,6 +446,8 @@ Closeout and operations artifacts:
 13. Step 12b
 14. Step 13
 15. Step 14
+16. Step 15
+17. Step 16
  
 ---
 
