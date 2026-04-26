@@ -328,6 +328,45 @@ describe('ReviewsService', () => {
       ]);
     });
 
+    it('returns invalid-payload metadata for malformed basic fields', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-invalid-payload',
+          deckId: 'deck-1',
+          title: 'invalid basic payload',
+          position: 0,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-invalid-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-invalid-1',
+                kind: 'basic',
+                fields: {
+                  front: 'only front present',
+                },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-invalid-1',
+          kind: 'basic',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'invalid_payload',
+        }),
+      ]);
+    });
+
     it('skips chunks that are not yet due, mastered, or empty', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 

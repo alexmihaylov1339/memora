@@ -75,6 +75,56 @@ describe('ReviewsController', () => {
     });
   });
 
+  it('preserves unsupported review metadata enum values in queue responses', async () => {
+    reviewsService.getEligibleQueueItems.mockResolvedValue([
+      {
+        cardId: 'card-cloze',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'cloze',
+        chunkPosition: 0,
+        positionInChunk: 0,
+        due: new Date('2026-04-03T10:00:00.000Z'),
+        kind: 'cloze_text',
+        fields: { text: 'Ich {{c1::spiele}}.', answer: 'spiele' },
+        isReviewSupported: false,
+        reviewUnsupportedReason: 'kind_not_review_enabled',
+        cardCreatedAt: new Date('2026-04-02T10:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+      },
+      {
+        cardId: 'card-invalid',
+        deckId: 'deck-1',
+        chunkId: 'chunk-2',
+        chunkTitle: 'invalid',
+        chunkPosition: 1,
+        positionInChunk: 0,
+        due: new Date('2026-04-03T11:00:00.000Z'),
+        kind: 'basic',
+        fields: { front: 'front only' },
+        isReviewSupported: false,
+        reviewUnsupportedReason: 'invalid_payload',
+        cardCreatedAt: new Date('2026-04-02T11:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+      },
+    ]);
+
+    await expect(controller.queue(mockUser)).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          cardId: 'card-cloze',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'kind_not_review_enabled',
+        }),
+        expect.objectContaining({
+          cardId: 'card-invalid',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'invalid_payload',
+        }),
+      ],
+    });
+  });
+
   it('passes a validated enum grade to the review service', async () => {
     reviewsService.gradeReview.mockResolvedValue({
       cardId: 'card-1',

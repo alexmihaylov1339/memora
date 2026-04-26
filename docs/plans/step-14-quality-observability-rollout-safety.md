@@ -219,7 +219,7 @@ Verification completed:
 ### T3 - API contract regression tests for unsupported-kind metadata
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Lock response contract for:
@@ -237,6 +237,26 @@ Exit criteria:
 
 Verification checklist:
 - DTO serialization tests include all reason enum variants.
+
+Verification completed:
+- Added dedicated DTO serialization regression tests in:
+  - `api/src/reviews/dto/review-queue-response.dto.spec.ts` (new)
+- Locked queue serialization semantics for:
+  - supported path (`reviewUnsupportedReason: null`)
+  - unsupported enum variants:
+    - `kind_not_review_enabled`
+    - `invalid_payload`
+- Added controller contract regression in:
+  - `api/src/reviews/reviews.controller.spec.ts`
+  - queue response now explicitly tested to preserve unsupported metadata enum values without transformation.
+- Added service regression for malformed persisted payloads in:
+  - `api/src/reviews/reviews.service.spec.ts`
+  - verifies malformed `basic` fields map to:
+    - `isReviewSupported: false`
+    - `reviewUnsupportedReason: invalid_payload`
+- Verified with targeted runs:
+  - `npm test -- src/reviews/dto/review-queue-response.dto.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts` (passing)
+  - `npx eslint src/reviews/dto/review-queue-response.dto.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts` (passing)
 
 ---
 
