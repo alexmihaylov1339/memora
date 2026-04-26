@@ -2,10 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { CARD_ERROR_MESSAGES, cardFieldsInvalidForKind } from './card-errors';
 import type { CardKindDefinition, SupportedCardKind } from './card-kind-types';
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isObjectRecord, isString } from '../common/utils/type-guards';
 
 function normalizeRequiredString(
   rawValue: unknown,
@@ -13,7 +10,7 @@ function normalizeRequiredString(
   kind: SupportedCardKind,
   maxLength = 2000,
 ): string {
-  if (typeof rawValue !== 'string') {
+  if (!isString(rawValue)) {
     throw new BadRequestException(
       cardFieldsInvalidForKind(kind, `${key} must be a string`),
     );
@@ -48,7 +45,7 @@ function normalizeOptionalString(
     return undefined;
   }
 
-  if (typeof rawValue !== 'string') {
+  if (!isString(rawValue)) {
     throw new BadRequestException(
       cardFieldsInvalidForKind(kind, `${key} must be a string`),
     );

@@ -3,10 +3,7 @@ import { CARD_ERROR_MESSAGES } from '../card-errors';
 import { isSupportedKind, validateCardFields } from '../card-kind-registry';
 import type { CreateCardDto } from './create-card.dto';
 import type { UpdateCardDto } from './update-card.dto';
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isObjectRecord } from '../../common/utils/type-guards';
 
 export function validateCardId(id: string): string {
   if (!id?.trim()) {

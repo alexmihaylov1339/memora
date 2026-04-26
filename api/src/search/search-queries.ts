@@ -1,5 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
+import { isString } from '../common/utils/type-guards';
 import type { SearchResultItem } from './search.types';
 
 async function getAccessibleDeckIdsOrEmpty(
@@ -108,10 +109,8 @@ export async function searchCards(
   return cards
     .map((card) => {
       const fields = card.fields as Record<string, unknown>;
-      const frontText =
-        typeof fields.front === 'string' ? fields.front.trim() : '';
-      const backText =
-        typeof fields.back === 'string' ? fields.back.trim() : '';
+      const frontText = isString(fields.front) ? fields.front.trim() : '';
+      const backText = isString(fields.back) ? fields.back.trim() : '';
       const deckName = card.deck?.name ?? '';
       const searchable = [card.kind, deckName, frontText, backText]
         .join(' ')

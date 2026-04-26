@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { isObjectRecord, isString } from '../common/utils/type-guards';
 
 export const REVIEW_KIND_UNSUPPORTED_REASONS = {
   kindNotReviewEnabled: 'kind_not_review_enabled',
@@ -13,10 +14,6 @@ export type ReviewKindSupport = {
   reviewUnsupportedReason: ReviewUnsupportedReason | null;
 };
 
-function isObjectRecord(value: Prisma.JsonValue): value is Prisma.JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function hasValidBasicFields(fields: Prisma.JsonValue): boolean {
   if (!isObjectRecord(fields)) {
     return false;
@@ -25,7 +22,7 @@ function hasValidBasicFields(fields: Prisma.JsonValue): boolean {
   const front = fields.front;
   const back = fields.back;
 
-  if (typeof front !== 'string' || typeof back !== 'string') {
+  if (!isString(front) || !isString(back)) {
     return false;
   }
 
