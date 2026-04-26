@@ -3,6 +3,7 @@
 **Purpose:** Add a new card kind end-to-end without rewriting chunk scheduling, queue, or page shells.  
 **Last updated:** 2026-04-26  
 **Primary step reference:** `docs/plans/step-13-extensible-card-exercise-architecture.md`
+**Contract strategy reference:** `docs/architecture/card-kind-contract-strategy.md`
 
 ---
 
@@ -200,4 +201,3 @@ Before opening PR, confirm:
 - [ ] Review renderer/fallback path updated and tested.
 - [ ] `basic` behavior unchanged.
 - [ ] Step plan status updated with verification notes.
-

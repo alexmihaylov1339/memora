@@ -372,6 +372,7 @@ Implementation plan:
   - Add structured logs/metrics for invalid persisted kind payloads with card/kind context (without PII leakage).
   - Add contract-level regression tests ensuring FE review item typing remains aligned with API DTO fields.
   - Re-evaluate shared FE/BE schema strategy for card-kind payload contracts to reduce drift risk.
+  - Strategy decision doc: `docs/architecture/card-kind-contract-strategy.md`.
 
 **Exit criteria**
 - Core chunk flow is test-covered and observable in real usage.

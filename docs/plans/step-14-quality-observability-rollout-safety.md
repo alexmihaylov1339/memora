@@ -512,7 +512,7 @@ Verification completed:
 ### T9 - FE/BE shared schema strategy decision
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Decide and document one direction:
@@ -529,6 +529,22 @@ Exit criteria:
 
 Verification checklist:
 - includes tradeoffs, recommendation, and first implementation step.
+
+Verification completed:
+- Added architecture decision document:
+  - `docs/architecture/card-kind-contract-strategy.md` (new)
+- Decision recorded and justified:
+  - keep strict duplicated FE/BE contracts now
+  - enforce drift prevention with contract regression tests
+  - defer shared package until explicit complexity/drift thresholds are hit
+- Document now includes required T9 outputs:
+  - tradeoff analysis (shared package vs strict duplication)
+  - recommendation and rationale
+  - phased migration strategy with clear trigger conditions
+  - ownership and code-review guardrails
+  - first implementation step checklist for all future contract changes
+- Cross-linked from extensibility playbook:
+  - `docs/architecture/card-kind-extensibility.md`
 
 ---
 
