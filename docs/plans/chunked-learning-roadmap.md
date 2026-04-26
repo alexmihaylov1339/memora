@@ -10,6 +10,7 @@
 
 - A learner adds one target word and multiple sentence exposures (example: 5 cards).
 - These cards belong to one chunk and are reviewed in sequence, not all at once.
+- If cards are moved/added into a deck without explicit chunk membership, the system must auto-place them in a deck-scoped system chunk (`Deck Inbox`) so they are immediately reviewable.
 - In each chunk review session, the learner should see exactly one next sentence/card.
 - After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
 - Chunk mastery should require a longer consecutive success streak, with a hardcoded default schedule of about 20 intervals, and mistakes should reset chunk progress to the beginning.
@@ -246,6 +247,7 @@ Critical planning note before implementation:
 - cards and chunks are now first-class library entities with optional deck assignment (`deckId` can be `null`)
 - Step 11 still locks move semantics for assigning existing items into decks
 - choose one explicit rule for v1 and keep API/UI wording aligned with that rule (`move`, `copy`, or true multi-deck membership)
+- deck-scoped review safety rule: cards moved to a deck must remain reviewable even if they are not part of a user-authored chunk (auto system `Deck Inbox` chunk behavior)
 
 **Deliverables**
 - Global navigation entries:

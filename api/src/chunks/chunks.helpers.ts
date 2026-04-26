@@ -27,7 +27,7 @@ export interface ChunkSummary {
 
 export type ChunkPersistenceClient = Pick<
   PrismaService,
-  'card' | 'chunk' | 'chunkCard' | 'deck'
+  'card' | 'chunk' | 'chunkCard' | 'chunkReviewState' | 'deck'
 >;
 
 export function mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
@@ -67,12 +67,29 @@ export async function assignCardsToDeck(
     return;
   }
 
-  await client.chunkCard.deleteMany({
-    where: { cardId: { in: cardIds } },
-  });
-
   await client.card.updateMany({
     where: { id: { in: cardIds } },
     data: { deckId },
+  });
+}
+
+export async function resetChunkReviewProgress(
+  client: ChunkPersistenceClient,
+  chunkId: string,
+  now = new Date(),
+): Promise<void> {
+  await client.chunkReviewState.upsert({
+    where: { chunkId },
+    update: {
+      due: now,
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+    },
+    create: {
+      chunkId,
+      due: now,
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+    },
   });
 }

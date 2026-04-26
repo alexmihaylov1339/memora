@@ -70,8 +70,113 @@ export type DeckWithShares = Prisma.DeckGetPayload<{
 
 type DeckPersistenceClient = Pick<
   PrismaService,
-  'card' | 'chunk' | 'chunkCard' | 'deck' | 'deckShare' | 'user'
+  'card' | 'chunk' | 'chunkReviewState' | 'deck' | 'deckShare' | 'user'
 >;
+
+const DECK_INBOX_CHUNK_TITLE = 'Deck Inbox';
+
+async function ensureDeckInboxMembership(
+  client: DeckPersistenceClient,
+  deckId: string,
+  cardIds: string[],
+  ownerId?: string,
+): Promise<void> {
+  const cardsWithoutChunkInDeck = await client.card.findMany({
+    where: {
+      id: { in: cardIds },
+      deckId,
+      chunkCards: {
+        none: {
+          chunk: {
+            deckId,
+          },
+        },
+      },
+    },
+    select: { id: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  if (cardsWithoutChunkInDeck.length === 0) {
+    return;
+  }
+
+  const inboxChunk = await client.chunk.findFirst({
+    where: { deckId, title: DECK_INBOX_CHUNK_TITLE },
+    include: {
+      chunkCards: {
+        select: { sequenceIndex: true },
+        orderBy: { sequenceIndex: 'desc' },
+        take: 1,
+      },
+    },
+  });
+
+  if (!inboxChunk) {
+    const createdInboxChunk = await client.chunk.create({
+      data: {
+        ownerId: ownerId ?? null,
+        deckId,
+        title: DECK_INBOX_CHUNK_TITLE,
+        position: 0,
+        chunkCards: {
+          create: cardsWithoutChunkInDeck.map((card, index) => ({
+            cardId: card.id,
+            sequenceIndex: index,
+          })),
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await client.chunkReviewState.upsert({
+      where: { chunkId: createdInboxChunk.id },
+      update: {
+        due: new Date(),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+      },
+      create: {
+        chunkId: createdInboxChunk.id,
+        due: new Date(),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+      },
+    });
+
+    return;
+  }
+
+  const lastSequenceIndex = inboxChunk.chunkCards[0]?.sequenceIndex ?? -1;
+  await client.chunk.update({
+    where: { id: inboxChunk.id },
+    data: {
+      chunkCards: {
+        create: cardsWithoutChunkInDeck.map((card, index) => ({
+          cardId: card.id,
+          sequenceIndex: lastSequenceIndex + index + 1,
+        })),
+      },
+    },
+  });
+
+  await client.chunkReviewState.upsert({
+    where: { chunkId: inboxChunk.id },
+    update: {
+      due: new Date(),
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+    },
+    create: {
+      chunkId: inboxChunk.id,
+      due: new Date(),
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+    },
+  });
+}
 
 export async function findOwnedDeck(
   prisma: PrismaService,
@@ -147,32 +252,32 @@ export async function moveCardsToDeck(
   client: DeckPersistenceClient,
   deckId: string,
   cardIds: string[],
+  ownerId?: string,
 ): Promise<void> {
   if (cardIds.length === 0) {
     return;
   }
 
-  await client.chunkCard.deleteMany({
-    where: { cardId: { in: cardIds } },
-  });
-
   await client.card.updateMany({
     where: { id: { in: cardIds } },
     data: { deckId },
   });
+
+  await ensureDeckInboxMembership(client, deckId, cardIds, ownerId);
 }
 
 export async function replaceDeckCards(
   client: DeckPersistenceClient,
   deckId: string,
   cardIds: string[],
+  ownerId?: string,
 ): Promise<void> {
   await client.card.updateMany({
     where: { deckId, id: { notIn: cardIds } },
     data: { deckId: null },
   });
 
-  await moveCardsToDeck(client, deckId, cardIds);
+  await moveCardsToDeck(client, deckId, cardIds, ownerId);
 }
 
 export async function moveChunksToDeck(
@@ -188,6 +293,26 @@ export async function moveChunksToDeck(
     where: { id: { in: chunkIds } },
     data: { deckId },
   });
+
+  const now = new Date();
+  await Promise.all(
+    chunkIds.map(async (chunkId) =>
+      client.chunkReviewState.upsert({
+        where: { chunkId },
+        update: {
+          due: now,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+        create: {
+          chunkId,
+          due: now,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      }),
+    ),
+  );
 }
 
 export async function replaceDeckChunks(

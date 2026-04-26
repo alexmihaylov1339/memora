@@ -40,6 +40,9 @@ function createPrismaMock() {
     chunkCard: {
       deleteMany: jest.fn(),
     },
+    chunkReviewState: {
+      upsert: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -135,6 +138,7 @@ describe('ChunksService', () => {
 
       expect(prisma.chunk.create).toHaveBeenCalledWith({
         data: {
+          ownerId: 'user-1',
           deckId: 'deck-1',
           title: 'Chunk 1',
           position: 0,
@@ -184,13 +188,11 @@ describe('ChunksService', () => {
         'user-1',
       );
 
-      expect(prisma.chunkCard.deleteMany).toHaveBeenCalledWith({
-        where: { cardId: { in: ['card-2'] } },
-      });
       expect(prisma.card.updateMany).toHaveBeenCalledWith({
         where: { id: { in: ['card-2'] } },
         data: { deckId: 'deck-1' },
       });
+      expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -240,7 +242,10 @@ describe('ChunksService', () => {
       });
 
       expect(prisma.chunk.findFirst).toHaveBeenCalledWith({
-        where: { id: 'chunk-1', deckId: { in: ['deck-1'] } },
+        where: {
+          id: 'chunk-1',
+          OR: [{ ownerId: 'user-1' }, { deckId: { in: ['deck-1'] } }],
+        },
         include: {
           chunkCards: {
             orderBy: { sequenceIndex: 'asc' },
@@ -349,13 +354,11 @@ describe('ChunksService', () => {
         },
       });
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-      expect(prisma.chunkCard.deleteMany).toHaveBeenCalledWith({
-        where: { cardId: { in: ['card-3'] } },
-      });
       expect(prisma.card.updateMany).toHaveBeenCalledWith({
         where: { id: { in: ['card-3'] } },
         data: { deckId: 'deck-1' },
       });
+      expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
     });
   });
 

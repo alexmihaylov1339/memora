@@ -65,6 +65,7 @@ Chosen v1 rule:
 - moving a card/chunk to deck B removes it from deck A
 - API and UI language should use `move` terminology for existing items
 - `attach` should be avoided in user-visible copy and new endpoint naming for this step
+- review safety invariant: when cards are moved into a deck and are not in any deck chunk, backend auto-assigns them to a system chunk (`Deck Inbox`) with immediate due state so review queue is never silently empty for new deck cards
 
 Explicit non-goals in Step 11:
 - no copy semantics for cards/chunks in this step
@@ -119,6 +120,10 @@ Status:
 Behavior locked in this implementation:
 - move operations are owner-only and only accept IDs from the owner's library
 - detach operations are owner-only and remove deck assignment (`deckId -> null`) while preserving cards/chunks in the global library
+- moved cards preserve/receive chunk membership for reviewability:
+  - no destructive removal from `chunk_cards` during deck card moves
+  - cards without deck chunk membership are auto-added to `Deck Inbox`
+  - auto/system chunk review state is reset to due-now on assignment
 
 Exit criteria:
 - Backend supports deck-context library operations without reusing ambiguous update flows.
@@ -238,6 +243,7 @@ Verification completed:
 - Updated Step 11 wording in `chunked-learning-roadmap.md` to use move semantics language instead of attach semantics.
 - Rechecked Step 11 task text and status markers so completed tasks are tracked as `Ready` and terminology matches implemented routes and behavior.
 - Explicitly handed chunk UX parity and `/chunks` create-CTA ownership to Step 12 planning (`step-12-redesign-scalable-deck-card-chunk-ux.md`).
+- Documented immediate-review invariant for deck card moves via auto `Deck Inbox` chunk behavior.
 
 ---
 

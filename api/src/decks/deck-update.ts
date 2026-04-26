@@ -43,7 +43,7 @@ export async function updateDeck(
 
   return prisma.$transaction(async (tx) => {
     if (data.cardIds !== undefined) {
-      await replaceDeckCards(tx, id, data.cardIds);
+      await replaceDeckCards(tx, id, data.cardIds, userId);
     }
 
     if (data.chunkIds !== undefined) {

@@ -40,7 +40,7 @@ export async function createDeck(
       },
     })) as DeckRecord;
 
-    await moveCardsToDeck(tx, deck.id, input.cardIds);
+    await moveCardsToDeck(tx, deck.id, input.cardIds, input.userId);
     await moveChunksToDeck(tx, deck.id, input.chunkIds);
 
     return { status: 'created', deck } satisfies CreateDeckResult;

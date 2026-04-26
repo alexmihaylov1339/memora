@@ -62,6 +62,7 @@ Step 5 fills that gap.
   - reset on `again`
   - advance on `hard/good/easy`
   - loop after the last card
+  - cards attached to a deck but not present in a user-authored chunk are still reviewable via an auto-managed deck system chunk (`Deck Inbox`)
 
 ---
 
@@ -124,6 +125,10 @@ Preferred principle:
 ### `GET /reviews/queue`
 
 The queue endpoint should return review items that are directly renderable by the future UI.
+
+Queue source rule:
+- queue is chunk-driven.
+- cards moved/added into a deck without explicit chunk membership must be represented through an auto-managed deck chunk (`Deck Inbox`) so new cards are due immediately instead of being invisible to review.
 
 Recommended stable response shape:
 - `items: ReviewQueueItem[]`

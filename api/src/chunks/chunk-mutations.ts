@@ -3,6 +3,7 @@ import {
   assignCardsToDeck,
   hasExistingCards,
   mapChunkSummary,
+  resetChunkReviewProgress,
   type ChunkPersistenceClient,
   type ChunkSummary,
   type PersistedChunkRecord,
@@ -80,6 +81,10 @@ export async function createChunk(
       },
     });
 
+    if (chunk.chunkCards.length > 0) {
+      await resetChunkReviewProgress(client, chunk.id);
+    }
+
     return {
       status: 'created',
       chunk: mapChunkSummary(chunk as PersistedChunkRecord),
@@ -141,6 +146,10 @@ export async function updateChunk(
         },
       },
     });
+
+    if (data.cardIds !== undefined && chunk.chunkCards.length > 0) {
+      await resetChunkReviewProgress(client, chunk.id);
+    }
 
     return {
       status: 'updated',

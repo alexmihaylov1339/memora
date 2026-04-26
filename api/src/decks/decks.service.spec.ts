@@ -34,6 +34,9 @@ function createPrismaMock() {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    chunkReviewState: {
+      upsert: jest.fn(),
+    },
     chunkCard: {
       deleteMany: jest.fn(),
     },
@@ -81,6 +84,51 @@ describe('DecksService', () => {
       { id: 'deck-owned', name: 'Owned', count: 2 },
       { id: 'deck-shared', name: 'Shared', count: 1 },
     ]);
+  });
+
+  it('creates deck inbox chunk so newly attached cards are immediately reviewable', async () => {
+    const now = new Date('2026-04-26T10:00:00.000Z');
+    jest.useFakeTimers().setSystemTime(now);
+
+    prisma.card.findMany
+      .mockResolvedValueOnce([{ id: 'card-1' }])
+      .mockResolvedValueOnce([{ id: 'card-1' }]);
+    prisma.deck.create.mockResolvedValue({
+      id: 'deck-1',
+      name: 'Deck 1',
+      description: null,
+      ownerId: 'user-1',
+      createdAt: now,
+      updatedAt: now,
+    });
+    prisma.chunk.findFirst.mockResolvedValue(null);
+    prisma.chunk.create.mockResolvedValue({ id: 'chunk-inbox-1' });
+
+    await expect(
+      service.create('Deck 1', undefined, ['card-1'], [], 'user-1'),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        status: 'created',
+      }),
+    );
+
+    expect(prisma.chunk.create).toHaveBeenCalledWith({
+      data: {
+        ownerId: 'user-1',
+        deckId: 'deck-1',
+        title: 'Deck Inbox',
+        position: 0,
+        chunkCards: {
+          create: [{ cardId: 'card-1', sequenceIndex: 0 }],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+    expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
   });
 
   it('findOne returns a shared deck with shared users', async () => {
