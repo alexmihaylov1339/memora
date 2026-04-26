@@ -56,6 +56,16 @@ export type {
 // Services
 export { deckService } from './services';
 export { cardService } from './services';
+export {
+  getCardKindDefinition,
+  getCardKindFields,
+  getCardKindOptions,
+  isSupportedCardKind,
+  parseCardKindFields,
+  resolveSupportedCardKind,
+  serializeCardKindFields,
+} from './card-kinds';
+export type { CardKindDefinition, CardKindFormValues, SupportedCardKind } from './card-kinds';
 
 // Constants
 export { DECKS_QUERY_KEYS, DECK_ENDPOINTS } from './constants';

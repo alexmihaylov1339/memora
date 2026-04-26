@@ -51,7 +51,7 @@ export interface DeckIdParams {
 export interface CardRecord {
   id: string;
   deckId: string | null;
-  kind: string;
+  kind: SupportedCardKind | string;
   fields: Record<string, unknown>;
   createdAt: string;
 }
@@ -96,3 +96,4 @@ export type RemoveDeckShareResponse = void;
 
 // Backward-compatible alias for the current decks page usage.
 export type Deck = DeckListItem;
+import type { SupportedCardKind } from '../card-kinds';

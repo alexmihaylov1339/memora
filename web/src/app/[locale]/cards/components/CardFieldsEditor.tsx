@@ -1,8 +1,11 @@
-import { CARD_KIND_OPTIONS } from '@features/decks/services/cardService';
+import {
+  getCardKindOptions,
+  type SupportedCardKind,
+} from '@features/decks/card-kinds';
 
 interface CardFieldsEditorProps {
-  kind: (typeof CARD_KIND_OPTIONS)[number];
-  onKindChange: (kind: (typeof CARD_KIND_OPTIONS)[number]) => void;
+  kind: SupportedCardKind;
+  onKindChange: (kind: SupportedCardKind) => void;
   front: string;
   onFrontChange: (value: string) => void;
   back: string;
@@ -17,6 +20,8 @@ export default function CardFieldsEditor({
   back,
   onBackChange,
 }: CardFieldsEditorProps) {
+  const kindOptions = getCardKindOptions();
+
   return (
     <>
       <div>
@@ -26,12 +31,12 @@ export default function CardFieldsEditor({
         <select
           id="kind"
           value={kind}
-          onChange={(e) => onKindChange(e.target.value as (typeof CARD_KIND_OPTIONS)[number])}
+          onChange={(e) => onKindChange(e.target.value as SupportedCardKind)}
           className="w-full rounded-md border border-[var(--border)] px-3 py-2"
         >
-          {CARD_KIND_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
+          {kindOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>

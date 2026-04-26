@@ -1,4 +1,5 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
+import type { SupportedCardKind } from '../card-kinds';
 import type {
   CardRecord,
   DeckCardMembershipMutationResult,
@@ -9,21 +10,19 @@ import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
   deckId?: string;
-  kind: string;
+  kind: SupportedCardKind;
   fields: Record<string, unknown>;
 }
 
 interface UpdateCardPayload {
   id: string;
-  kind?: string;
+  kind?: SupportedCardKind;
   fields?: Record<string, unknown>;
 }
 
 interface CardIdPayload {
   id: string;
 }
-
-export const CARD_KIND_OPTIONS = ['basic', 'cloze', 'mcq'] as const;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const api = ManageService(API_URL);

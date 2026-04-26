@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useService, type UseServiceOptions } from '@shared/hooks';
 import { DECKS_QUERY_KEYS } from '../constants';
 import { cardService } from '../services';
+import type { SupportedCardKind } from '../card-kinds';
 import type {
   CardRecord,
   DeckCardMembershipMutationResult,
@@ -11,13 +12,13 @@ import { CARD_QUERY_KEYS } from './useCardQueries';
 
 interface CreateCardParams {
   deckId?: string;
-  kind: string;
+  kind: SupportedCardKind;
   fields: Record<string, unknown>;
 }
 
 interface UpdateCardParams {
   id: string;
-  kind?: string;
+  kind?: SupportedCardKind;
   fields?: Record<string, unknown>;
 }
 

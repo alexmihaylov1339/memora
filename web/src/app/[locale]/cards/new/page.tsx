@@ -1,18 +1,30 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
 import { ProtectedRoute, FormBuilder } from '@shared/components';
 import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
-import { useCreateCardFormFields, useCreateCardMutation } from '@features/decks';
+import {
+  type CardKindFormValues,
+  getCardKindOptions,
+  resolveSupportedCardKind,
+  serializeCardKindFields,
+  type SupportedCardKind,
+  useCreateCardFormFields,
+  useCreateCardMutation,
+} from '@features/decks';
 import { CardsPageHeader } from '../components';
 
 export default function NewCardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deckIdParam = searchParams.get('deckId')?.trim() ?? '';
-  const fields = useCreateCardFormFields();
+  const initialKind = useMemo(() => resolveSupportedCardKind('basic'), []);
+  const [selectedKind, setSelectedKind] = useState<SupportedCardKind>(initialKind);
+  const kindOptions = useMemo(() => getCardKindOptions(), []);
+  const fields = useCreateCardFormFields(selectedKind);
 
   const createCard = useCreateCardMutation({
     onSuccess: (card) => {
@@ -20,18 +32,14 @@ export default function NewCardPage() {
     },
   });
 
-  const handleCreate = (values: {
-    kind: string;
-    front: string;
-    back: string;
-  }) => {
+  const handleCreate = (values: CardKindFormValues) => {
     createCard.fetch({
       deckId: deckIdParam || undefined,
-      kind: values.kind.trim(),
-      fields: {
-        front: values.front.trim(),
-        back: values.back.trim(),
-      },
+      kind: selectedKind,
+      fields: serializeCardKindFields(selectedKind, {
+        ...values,
+        kind: selectedKind,
+      }),
     });
   };
 
@@ -50,17 +58,30 @@ export default function NewCardPage() {
         />
 
         <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
-          <FormBuilder<{
-            kind: string;
-            front: string;
-            back: string;
-          }>
+          <div>
+            <label htmlFor="create-card-kind" className="mb-2 block text-xs font-semibold text-ink-strong">
+              Kind
+            </label>
+            <select
+              id="create-card-kind"
+              value={selectedKind}
+              onChange={(event) =>
+                setSelectedKind(resolveSupportedCardKind(event.target.value))
+              }
+              className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent"
+            >
+              {kindOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <FormBuilder<CardKindFormValues>
+            key={selectedKind}
             fields={fields}
-            initialValues={{
-              kind: 'basic',
-              front: '',
-              back: '',
-            }}
+            initialValues={{ kind: selectedKind }}
             onSubmit={handleCreate}
             submitLabel="Create Card"
             submitButtonClassName={BUTTON_STYLES.primarySolid}

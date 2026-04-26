@@ -1,20 +1,26 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
 import { ProtectedRoute, PageLoader, ErrorMessage, FormBuilder } from '@shared/components';
 import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import {
+  type CardKindFormValues,
+  getCardKindOptions,
+  parseCardKindFields,
+  resolveSupportedCardKind,
+  serializeCardKindFields,
+  type SupportedCardKind,
   useCardDetailQuery,
   useDeleteCardMutation,
   useEditCardFormFields,
   useUpdateCardMutation,
   type CardRecord,
 } from '@features/decks';
-import { CARD_KIND_OPTIONS } from '@features/decks/services/cardService';
 import { CardsPageHeader } from '../../components';
-import { isString, resolveSingleParam } from '@/shared/utils';
+import { resolveSingleParam } from '@/shared/utils';
 
 export default function EditCardPage() {
   const params = useParams();
@@ -61,7 +67,11 @@ export default function EditCardPage() {
 
 interface EditCardFormProps {
   card: CardRecord;
-  onUpdate: (payload: { id: string; kind: string; fields: Record<string, unknown> }) => void;
+  onUpdate: (payload: {
+    id: string;
+    kind: SupportedCardKind;
+    fields: Record<string, unknown>;
+  }) => void;
   onDelete: () => void;
   updateError?: string;
   deleteError?: string;
@@ -76,29 +86,60 @@ function EditCardForm({
   deleteError,
   isDeleting,
 }: EditCardFormProps) {
-  const fields = useEditCardFormFields();
+  const cardKind = useMemo(
+    () => resolveSupportedCardKind(card.kind),
+    [card.kind],
+  );
+  const [selectedKind, setSelectedKind] = useState<SupportedCardKind>(cardKind);
+  const kindOptions = useMemo(() => getCardKindOptions(), []);
+  const fields = useEditCardFormFields(selectedKind);
+  const parsedKindFields = useMemo(
+    () =>
+      selectedKind === cardKind
+        ? parseCardKindFields(cardKind, card.fields)
+        : parseCardKindFields(selectedKind, {}),
+    [card.fields, cardKind, selectedKind],
+  );
 
-  const handleUpdate = (values: { kind: string; front: string; back: string }) => {
+  const handleUpdate = (values: CardKindFormValues) => {
     onUpdate({
       id: card.id,
-      kind: values.kind.trim(),
-      fields: {
-        front: values.front.trim(),
-        back: values.back.trim(),
-      },
+      kind: selectedKind,
+      fields: serializeCardKindFields(selectedKind, {
+        ...values,
+        kind: selectedKind,
+      }),
     });
   };
 
   return (
     <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
-      <FormBuilder<{ kind: string; front: string; back: string }>
+      <div>
+        <label htmlFor="edit-card-kind" className="mb-2 block text-xs font-semibold text-ink-strong">
+          Kind
+        </label>
+        <select
+          id="edit-card-kind"
+          value={selectedKind}
+          onChange={(event) =>
+            setSelectedKind(resolveSupportedCardKind(event.target.value))
+          }
+          className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent"
+        >
+          {kindOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <FormBuilder<CardKindFormValues>
+        key={`${card.id}-${selectedKind}`}
         fields={fields}
         initialValues={{
-          kind: CARD_KIND_OPTIONS.includes(card.kind as (typeof CARD_KIND_OPTIONS)[number])
-            ? card.kind
-            : 'basic',
-          front: isString(card.fields.front) ? card.fields.front : '',
-          back: isString(card.fields.back) ? card.fields.back : '',
+          kind: selectedKind,
+          ...parsedKindFields,
         }}
         onSubmit={handleUpdate}
         submitLabel="Save Changes"

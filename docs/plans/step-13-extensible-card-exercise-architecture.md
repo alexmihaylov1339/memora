@@ -429,7 +429,7 @@ Verification completed:
 ### T5 - Frontend authoring registry foundation
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Replace hardcoded card field config selection with registry lookup.
@@ -453,6 +453,24 @@ Exit criteria:
 Verification checklist:
 - Create/edit forms render correctly for both kinds.
 - Switching kinds does not leak stale field values.
+
+Verification completed:
+- Added frontend authoring registry under `web/src/features/decks/card-kinds/`:
+  - kind definitions for `basic` and `cloze_text`
+  - kind option metadata
+  - `parseFields` and `serializeFields` helpers per kind
+- Replaced static card form config with registry-driven fields in:
+  - `web/src/features/decks/hooks/useCardFormFields.ts`
+- Updated card create/edit pages to use registry parse/serialize contracts:
+  - `web/src/app/[locale]/cards/new/page.tsx`
+  - `web/src/app/[locale]/cards/[id]/edit/page.tsx`
+- Kind selection now drives authoring fields, and form payload serialization is delegated to registry entries.
+- Updated related FE typing/service surfaces to align with supported kinds and registry usage:
+  - `web/src/features/decks/services/cardService.ts`
+  - `web/src/features/decks/hooks/useCardMutations.ts`
+  - `web/src/features/decks/types/index.ts`
+  - `web/src/features/decks/index.ts`
+- Verified with targeted eslint across all changed frontend files.
 
 ---
 
