@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
@@ -28,11 +29,22 @@ import {
 } from './review-grade';
 import { deriveChunkReviewState } from './chunk-progress';
 import { findChunkByCardId } from './review-access';
-import { resolveReviewKindSupport } from './review-kind-adapter';
+import {
+  resolveReviewKindSupport,
+  REVIEW_KIND_UNSUPPORTED_REASONS,
+} from './review-kind-adapter';
+import {
+  emitReviewGraded,
+  emitReviewQueueFetched,
+  emitReviewUnsupportedDetected,
+  getUnsupportedReasonCounts,
+} from './review-observability';
 export type { ChunkProgressSnapshot, ReviewQueueItem } from './review-queries';
 export type { GradeChunkReviewResult } from './review-grade';
 @Injectable()
 export class ReviewsService {
+  private readonly logger = new Logger(ReviewsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getChunkProgress(
@@ -46,7 +58,45 @@ export class ReviewsService {
     userId: string,
     now = new Date(),
   ): Promise<ReviewQueueItem[]> {
-    return loadEligibleQueueItems(this.prisma, userId, now);
+    const items = await loadEligibleQueueItems(this.prisma, userId, now);
+    emitReviewQueueFetched(this.logger, {
+      userId,
+      items,
+      generatedAt: now,
+    });
+
+    const unsupportedByReason = getUnsupportedReasonCounts(items);
+    if (
+      unsupportedByReason[
+        REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled
+      ] > 0
+    ) {
+      emitReviewUnsupportedDetected(this.logger, {
+        userId,
+        reason: REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+        source: 'queue',
+        count:
+          unsupportedByReason[
+            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled
+          ],
+        generatedAt: now,
+      });
+    }
+
+    if (
+      unsupportedByReason[REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload] > 0
+    ) {
+      emitReviewUnsupportedDetected(this.logger, {
+        userId,
+        reason: REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
+        source: 'queue',
+        count:
+          unsupportedByReason[REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload],
+        generatedAt: now,
+      });
+    }
+
+    return items;
   }
 
   async applyGradeToCard(
@@ -55,6 +105,7 @@ export class ReviewsService {
     userId: string,
     now = new Date(),
   ): Promise<GradeChunkReviewResult | null> {
+    const startedAtMs = Date.now();
     const chunk = await findChunkByCardId(this.prisma, cardId, userId);
 
     if (!chunk) {
@@ -81,6 +132,16 @@ export class ReviewsService {
       currentChunkCard.card.fields,
     );
     if (!reviewKindSupport.isReviewSupported) {
+      emitReviewUnsupportedDetected(this.logger, {
+        userId,
+        source: 'grade_attempt',
+        reason:
+          reviewKindSupport.reviewUnsupportedReason ??
+          REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+        cardId,
+        kind: currentChunkCard.card.kind,
+        generatedAt: now,
+      });
       return null;
     }
 
@@ -123,6 +184,18 @@ export class ReviewsService {
       lastGrade: grade,
       updatedAt: now,
     });
+
+    emitReviewGraded(this.logger, {
+      userId,
+      cardId,
+      kind: currentCardMode,
+      grade,
+      isReviewSupported: true,
+      reviewUnsupportedReason: null,
+      latencyMs: Date.now() - startedAtMs,
+      generatedAt: now,
+    });
+
     return buildGradeChunkReviewResult({
       cardId,
       grade,

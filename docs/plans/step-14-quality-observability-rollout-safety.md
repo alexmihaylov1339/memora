@@ -317,7 +317,7 @@ Verification completed:
 ### T5 - Backend observability instrumentation pass
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Emit structured metrics/events for:
@@ -338,6 +338,31 @@ Exit criteria:
 Verification checklist:
 - no PII-heavy payloads logged.
 - event schema fields are stable and documented.
+
+Verification completed:
+- Added shared backend structured telemetry wrapper:
+  - `api/src/common/telemetry/structured-events.ts` (new)
+- Added review-specific observability helper layer:
+  - `api/src/reviews/review-observability.ts` (new)
+  - includes:
+    - user pseudonym hashing (`userIdHash`)
+    - unsupported reason aggregation helpers
+    - structured emitters for:
+      - `review_queue_fetched`
+      - `review_graded`
+      - `review_unsupported_detected`
+- Wired observability emits into review service flows:
+  - `api/src/reviews/reviews.service.ts`
+  - queue fetch path now emits queue summary metrics and unsupported reason detections.
+  - grade apply path now emits:
+    - unsupported detection for non-reviewable kind/payload attempts
+    - grade submission event with latency and support metadata.
+- Added focused observability regression coverage:
+  - `api/src/reviews/review-observability.spec.ts` (new)
+  - validates payload shape, reason counts, pseudonymous user hashing, and no raw user id in events.
+- Verified with targeted runs:
+  - `npm test -- src/reviews/review-observability.spec.ts src/reviews/reviews.service.spec.ts` (passing)
+  - `npx eslint src/common/telemetry/structured-events.ts src/reviews/review-observability.ts src/reviews/review-observability.spec.ts src/reviews/reviews.service.ts` (passing)
 
 ---
 
