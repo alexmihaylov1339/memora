@@ -6,3 +6,4 @@ export * from './providers';
 export * from './services';
 export * from './utils';
 export * from './constants';
+export * from './analytics';

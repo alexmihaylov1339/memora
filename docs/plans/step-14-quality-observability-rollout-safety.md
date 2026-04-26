@@ -369,7 +369,7 @@ Verification completed:
 ### T6 - Frontend observability instrumentation pass
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Emit UI analytics for:
@@ -390,6 +390,33 @@ Exit criteria:
 Verification checklist:
 - no duplicate event firing on rerender.
 - event payloads avoid raw card content text.
+
+Verification completed:
+- Added shared frontend analytics tracker abstraction:
+  - `web/src/shared/analytics/tracker.ts` (new)
+  - `web/src/shared/analytics/index.ts` (new)
+  - exported via `web/src/shared/index.ts`
+- Added review UI observability constants/helpers:
+  - `web/src/features/reviews/review-observability.ts` (new)
+  - includes event keys:
+    - `review_unsupported_seen`
+    - `review_grade_clicked`
+    - `review_queue_state_changed`
+- Wired review observability instrumentation in:
+  - `web/src/features/reviews/hooks/useReviewScreen.ts`
+  - emits:
+    - unsupported render analytics (reason + metadata)
+    - grade action click analytics (grade + item metadata)
+    - queue empty/complete state analytics
+  - includes rerender dedupe guards via `useRef` keys/state snapshots.
+- Updated review exports for observability constants:
+  - `web/src/features/reviews/index.ts`
+- Added focused frontend observability regression coverage:
+  - `web/src/features/reviews/hooks/useReviewScreen.test.tsx` (new)
+  - validates:
+    - empty queue event emitted once (no duplicate on rerender)
+    - unsupported seen event emitted once (no duplicate on rerender)
+    - grade click + complete queue state events emitted after successful grade flow
 
 ---
 

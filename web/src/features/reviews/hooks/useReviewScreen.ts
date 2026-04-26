@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { trackAnalyticsEvent } from '@shared/analytics';
 import { resolveReviewRenderer } from '../review-kind-registry';
 import type { GradeReviewResponse, ReviewGrade, ReviewQueueItem } from '../types';
+import {
+  REVIEW_QUEUE_STATES,
+  REVIEW_UI_EVENTS,
+  resolveUnsupportedReason,
+  type ReviewQueueState,
+} from '../review-observability';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
 
@@ -14,28 +21,106 @@ export function useReviewScreen() {
   >(undefined);
   const [lastGradeResult, setLastGradeResult] =
     useState<GradeReviewResponse | null>(null);
+  const lastUnsupportedKeyRef = useRef<string | null>(null);
+  const lastQueueStateRef = useRef<ReviewQueueState | null>(null);
 
-  const currentItem =
-    currentItemOverride === undefined
-      ? queueQuery.result?.items[0] ?? null
-      : currentItemOverride;
-  const queueCount = queueQuery.result?.items.length ?? 0;
+  const hasQueueError = Boolean(queueQuery.error);
+  const currentItem = useMemo(
+    () =>
+      currentItemOverride === undefined
+        ? queueQuery.result?.items[0] ?? null
+        : currentItemOverride,
+    [currentItemOverride, queueQuery.result?.items],
+  );
+  const queueCount = useMemo(() => queueQuery.result?.items.length ?? 0, [
+    queueQuery.result?.items,
+  ]);
   const reviewRenderer = resolveReviewRenderer(currentItem);
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const gradeErrorMessage = gradeMutation.error?.message;
 
-  function handleRevealAnswer() {
+  useEffect(() => {
+    if (queueQuery.isLoading || hasQueueError) {
+      return;
+    }
+
+    if (!currentItem && !lastGradeResult) {
+      if (lastQueueStateRef.current === REVIEW_QUEUE_STATES.empty) {
+        return;
+      }
+      lastQueueStateRef.current = REVIEW_QUEUE_STATES.empty;
+      trackAnalyticsEvent(REVIEW_UI_EVENTS.queueStateChanged, {
+        state: REVIEW_QUEUE_STATES.empty,
+        queueCount,
+      });
+      return;
+    }
+
+    if (!currentItem && lastGradeResult) {
+      if (lastQueueStateRef.current === REVIEW_QUEUE_STATES.complete) {
+        return;
+      }
+      lastQueueStateRef.current = REVIEW_QUEUE_STATES.complete;
+      trackAnalyticsEvent(REVIEW_UI_EVENTS.queueStateChanged, {
+        state: REVIEW_QUEUE_STATES.complete,
+        queueCount,
+      });
+      return;
+    }
+
+    lastQueueStateRef.current = null;
+  }, [
+    currentItem,
+    lastGradeResult,
+    queueCount,
+    hasQueueError,
+    queueQuery.isLoading,
+  ]);
+
+  useEffect(() => {
+    if (!currentItem || !reviewRenderer || reviewRenderer.renderer !== 'unsupported') {
+      lastUnsupportedKeyRef.current = null;
+      return;
+    }
+
+    const reason = resolveUnsupportedReason(
+      reviewRenderer.reason ?? currentItem.reviewUnsupportedReason,
+    );
+    const eventKey = `${currentItem.cardId}:${reason}`;
+    if (lastUnsupportedKeyRef.current === eventKey) {
+      return;
+    }
+
+    lastUnsupportedKeyRef.current = eventKey;
+    trackAnalyticsEvent(REVIEW_UI_EVENTS.unsupportedSeen, {
+      cardId: currentItem.cardId,
+      kind: currentItem.kind,
+      reason,
+      queuePosition: currentItem.positionInChunk,
+      queueCount,
+    });
+  }, [currentItem, queueCount, reviewRenderer]);
+
+  const handleRevealAnswer = useCallback(() => {
     if (!currentItem) {
       return;
     }
 
     setRevealedCardId(currentItem.cardId);
-  }
+  }, [currentItem]);
 
-  async function handleGrade(grade: ReviewGrade) {
+  const handleGrade = useCallback(async (grade: ReviewGrade) => {
     if (!currentItem) {
       return;
     }
+
+    trackAnalyticsEvent(REVIEW_UI_EVENTS.gradeClicked, {
+      cardId: currentItem.cardId,
+      kind: currentItem.kind,
+      grade,
+      queueCount,
+      positionInChunk: currentItem.positionInChunk,
+    });
 
     const result = await gradeMutation.fetch({
       cardId: currentItem.cardId,
@@ -45,14 +130,14 @@ export function useReviewScreen() {
     setLastGradeResult(result);
     setCurrentItemOverride(result.nextActionableItem);
     setRevealedCardId(null);
-  }
+  }, [currentItem, gradeMutation, queueCount]);
 
-  async function handleRefreshQueue() {
+  const handleRefreshQueue = useCallback(async () => {
     setCurrentItemOverride(undefined);
     setLastGradeResult(null);
     setRevealedCardId(null);
     await queueQuery.refetch();
-  }
+  }, [queueQuery]);
 
   return {
     currentItem,
