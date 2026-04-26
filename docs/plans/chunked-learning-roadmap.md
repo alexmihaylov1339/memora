@@ -347,6 +347,8 @@ Handoff from Step 12:
 - Frontend renderer registry:
   - map `kind` -> review component + authoring component
 - Keep `basic` as first implemented type; stub next type(s) for proof of extensibility.
+- Extension playbook for future kinds:
+  - `docs/architecture/card-kind-extensibility.md`
 
 **Exit criteria**
 - Adding a new kind does not require rewriting core review/chunk scheduling logic.

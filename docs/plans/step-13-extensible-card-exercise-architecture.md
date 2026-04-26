@@ -613,7 +613,7 @@ Verification completed:
 ### T9 - Documentation and extension playbook
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add a concise “How to add new card kind” playbook:
@@ -633,6 +633,19 @@ Exit criteria:
 
 Verification checklist:
 - Playbook includes copy-paste skeletons and file map.
+
+Verification completed:
+- Added dedicated extensibility playbook:
+  - `docs/architecture/card-kind-extensibility.md`
+- Playbook now includes:
+  - implementation sequence
+  - backend/frontend/review checklists
+  - canonical file map
+  - copy-paste registry skeletons
+  - minimum required test matrix
+  - PR readiness checklist
+- Linked playbook from roadmap Step 13 section in:
+  - `docs/plans/chunked-learning-roadmap.md`
 
 ---
 
