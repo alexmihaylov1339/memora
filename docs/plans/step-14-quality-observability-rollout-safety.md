@@ -177,7 +177,7 @@ Verification completed:
 ### T2 - Chunk sequence integration tests (end-to-end semantics)
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - Add integration tests proving:
@@ -196,6 +196,23 @@ Exit criteria:
 Verification checklist:
 - assertions include both queue response and grade side effects.
 - seeded data includes both `basic` and `cloze_text` cards where applicable.
+
+Verification completed:
+- Extended end-to-end review progression coverage in:
+  - `api/test/app.e2e-spec.ts`
+- Upgraded flow now verifies, in one deterministic scenario:
+  - exactly one actionable review item for the tested deck/chunk at each due point
+  - sequence advance on success (`card-1 -> card-2`)
+  - loop after last-card success (`card-2 good -> next actionable card-1`)
+  - reset-on-failure semantics (`again` resets consecutive count and actionable card to index `0`)
+- Added Step 13/14 metadata compatibility assertions in queue/actionable payload checks:
+  - `isReviewSupported`
+  - `reviewUnsupportedReason`
+- Seeded both kinds in scenario setup:
+  - `basic` cards used for sequence-grade semantics
+  - additional `cloze_text` card created in-deck for kind-coverage readiness
+- Verified with scoped e2e run that includes auth bootstrap and the updated review flow:
+  - `npm run test:e2e -- -t \"auth register -> login happy path|reviews queue -> grade progression -> loop -> reset flow\"` (passing)
 
 ---
 
