@@ -154,7 +154,7 @@ Verification completed:
 ### T3 - Alert threshold calibration (7-day baseline)
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - review first-week telemetry.
@@ -169,6 +169,20 @@ Exit criteria:
 
 Verification checklist:
 - each changed threshold includes before/after rationale.
+
+Verification completed:
+- Added alert calibration evidence log:
+  - `docs/operations/review-alert-calibration-2026-04-27.md` (new)
+- Reviewed the 7-day baseline gate against current rollout evidence:
+  - T1 staging gate is still `NO-GO`.
+  - T2 canary exposure was held at `0%`.
+  - no candidate-release production telemetry baseline exists yet.
+- Kept all current thresholds unchanged and documented before/after rationale for each monitored signal:
+  - unsupported `invalid_payload` warning/critical thresholds
+  - unsupported `kind_not_review_enabled` warning/critical thresholds
+  - grade latency warning/critical thresholds
+  - queue fetch anomaly threshold
+- Updated `docs/operations/review-observability.md` with calibration status and a link to the T3 evidence log.
 
 ---
 

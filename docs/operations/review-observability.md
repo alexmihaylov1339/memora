@@ -96,6 +96,12 @@ Canonical event definitions live in:
 
 Use 15-minute rolling windows unless stated otherwise.
 
+Calibration status:
+- Current thresholds are provisional Step 14 gates.
+- Step 15 T3 reviewed the first calibration window on 2026-04-27 and kept thresholds unchanged because production canary exposure was held at `0%`.
+- Calibration evidence: `docs/operations/review-alert-calibration-2026-04-27.md`
+- Re-open threshold tuning after 7 consecutive production days with candidate-release telemetry.
+
 ### A1) Unsupported reason spike (`invalid_payload`)
 - Condition:
   - `invalid_payload` rate > 2% of queue items for 15 minutes
