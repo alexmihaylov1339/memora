@@ -83,6 +83,7 @@ Status:
 What to do:
 - analyze Step 15 metrics/incidents and rank top friction points.
 - produce severity-impact matrix tied to user outcomes.
+- start from the Step 15 reliability debt triage list and retire or reschedule each scheduled next-step item.
 
 Suggested files:
 - `docs/plans/step-16-post-rollout-productization-and-scale.md`
@@ -265,4 +266,3 @@ Reasoning:
 - extensibility path is proven with current architecture constraints.
 - scale/reliability posture is documented and action-ready.
 - roadmap continuation is explicit, not ad-hoc.
-

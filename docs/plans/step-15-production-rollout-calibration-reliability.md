@@ -296,7 +296,7 @@ Verification completed:
 ### T7 - Reliability debt triage
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - classify issues discovered during rollout/calibration into:
@@ -313,6 +313,14 @@ Exit criteria:
 
 Verification checklist:
 - each item has severity, owner, and due step.
+
+Verification completed:
+- Added Step 15 reliability debt triage below with prioritized categories:
+  - must-fix before broad expansion
+  - scheduled next-step debt
+  - accepted low-risk debt
+- Each item includes severity, owner, source evidence, and due step.
+- Cross-linked Step 16 T1 so post-rollout prioritization starts from the Step 15 debt list.
 
 ---
 
@@ -356,3 +364,36 @@ Reasoning:
 - alert thresholds are tuned from real data.
 - FE/BE contract drift is automatically guarded in CI.
 - SLOs and reliability debt are documented with owners and next-step actions.
+
+---
+
+## Reliability debt triage
+
+Triage date: 2026-04-27
+Triage owner: Backend + Frontend + On-call
+
+### Must-fix before broad expansion
+
+| ID | Debt | Severity | Owner | Source evidence | Due step | Required action |
+|---|---|---|---|---|---|---|
+| S15-D1 | Real staging monitor evidence is missing, so staging -> canary promotion remains blocked | Critical | Release owner + On-call | `docs/operations/review-rollout-dry-run-2026-04-26.md` Phase 1 `FAIL (blocked / no-go)` | Step 15 T8 before broad expansion | Run 60-minute staging monitor window and attach queue, grade latency, unsupported reason split, and alert-board snapshots |
+| S15-D2 | Production canary has not received candidate-release traffic | Critical | Release owner + On-call | `docs/operations/review-rollout-canary-2026-04-27.md` effective exposure `0%` and canary `NO-GO` | Step 15 T8 before broad expansion | Retry 5% canary only after S15-D1 is green; capture 45-minute monitor evidence and promote/rollback decision |
+| S15-D3 | Alert threshold calibration is still provisional because no 7-day live baseline exists | High | Backend + On-call | `docs/operations/review-alert-calibration-2026-04-27.md` thresholds frozen due to blocked live baseline | Step 15 T8 before broad expansion | Collect 7 consecutive production days after canary starts; update before/after threshold rationale |
+| S15-D4 | Production SLO baselines are service-level mocked-persistence values, not live API measurements | High | Backend + Frontend | `docs/operations/review-observability.md` SLO baseline interpretation notes live validation still required | Step 15 T8 before broad expansion | Attach live queue/grade p50/p95 values from canary or staging API dashboard before expansion |
+| S15-D5 | Rollback playbook still uses generic deployment-command placeholders | High | Release owner | `docs/operations/review-incident-rollback-drill-2026-04-27.md` follow-up item | Step 15 T8 before broad expansion | Replace generic commands with platform-specific show/promote/pause/rollback commands or link approved ops tool runbook |
+
+### Scheduled next-step debt
+
+| ID | Debt | Severity | Owner | Source evidence | Due step | Required action |
+|---|---|---|---|---|---|---|
+| S15-D6 | Alert precision has no live false-positive/false-negative history yet | Medium | On-call | `docs/operations/review-alert-calibration-2026-04-27.md` requires alert precision evidence after baseline exists | Step 16 T1 | Include alert-page count, false positives, and incident outcomes in post-rollout signal review |
+| S15-D7 | Product/backend still need real card-kind mix data before tuning `kind_not_review_enabled` thresholds | Medium | Product + Backend | `docs/operations/review-alert-calibration-2026-04-27.md` keeps kind threshold unchanged until actual traffic is observed | Step 16 T1 | Rank unsupported-kind friction with traffic evidence and decide whether UX or card-kind onboarding work is higher leverage |
+| S15-D8 | Performance smoke covers service-level mocked persistence, not capacity envelope or database behavior | Medium | Backend | `docs/operations/review-observability.md` baseline interpretation and `api/src/reviews/review-performance.spec.ts` | Step 16 T5 | Define throughput/capacity envelope with live or integration-level measurements and mitigation paths |
+| S15-D9 | Future rollout logs should include explicit rollback hash/version fields | Low | Backend | `docs/operations/review-incident-rollback-drill-2026-04-27.md` follow-up item | Step 16 T1 | Add hash/version fields to the next rollout/canary/drill evidence template |
+
+### Accepted low-risk debt
+
+| ID | Debt | Severity | Owner | Source evidence | Due step | Acceptance rationale |
+|---|---|---|---|---|---|---|
+| S15-D10 | T4 rollback drill was tabletop rather than a real deployment rollback | Low | On-call + Release owner | `docs/operations/review-incident-rollback-drill-2026-04-27.md` status `tabletop rollback simulation` | Accepted until first live canary retry | Safe because production exposure is still `0%`; repeat with real deployment tooling during first live canary or incident |
+| S15-D11 | Local performance smoke uses broad 50ms p95 guardrails that are much looser than measured sub-millisecond baselines | Low | Backend | `api/src/reviews/review-performance.spec.ts` and `docs/operations/review-observability.md` local baseline | Accepted through Step 15 | Keeps CI stable across machines while production SLOs remain documented separately |
