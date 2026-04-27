@@ -182,6 +182,7 @@ Store these artifacts for auditability:
 Execution log location:
 - `docs/operations/review-rollout-dry-run-2026-04-26.md` (Step 15 T1 evidence)
 - `docs/operations/review-rollout-canary-2026-04-27.md` (Step 15 T2 canary gate evidence)
+- `docs/operations/review-incident-rollback-drill-2026-04-27.md` (Step 15 T4 rollback drill evidence)
 
 ---
 

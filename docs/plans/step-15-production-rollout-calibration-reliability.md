@@ -189,7 +189,7 @@ Verification completed:
 ### T4 - Incident simulation and rollback drill
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - run one controlled incident simulation.
@@ -204,6 +204,19 @@ Exit criteria:
 
 Verification checklist:
 - communication chain, ownership, and timestamps are recorded.
+
+Verification completed:
+- Added controlled rollback drill evidence log:
+  - `docs/operations/review-incident-rollback-drill-2026-04-27.md` (new)
+- Exercised the playbook rollback trigger:
+  - simulated `invalid_payload` rate `>= 5%` for 15 minutes
+  - confirmed rollback decision path, rollout freeze, rollback execution, health validation, communication, and follow-up capture
+- Recorded communication chain, role ownership, and timestamps:
+  - critical alert acknowledged in 2 minutes
+  - rollout frozen in 6 minutes
+  - simulated rollback completed in 18 minutes
+  - post-rollback health validation completed in 28 minutes
+- Updated rollout playbook evidence package references to include the T4 drill artifact.
 
 ---
 
