@@ -92,6 +92,29 @@ Canonical event definitions live in:
 
 ---
 
+## SLOs and performance baselines
+
+Production SLOs:
+
+| Path | User outcome | SLO target | Warning threshold | Critical threshold | Owner |
+|---|---|---:|---:|---:|---|
+| `GET /v1/reviews/queue` | learner can start or refresh a review session quickly | p95 `<= 750ms` over 7 days | p95 `> 1000ms` for 15m | p95 `> 1500ms` for 15m | Backend + Frontend |
+| `POST /v1/reviews/:cardId/grade` | learner can submit a grade and see the next state quickly | p95 `<= 1000ms` over 7 days | p95 `> 1200ms` for 15m | p95 `>= 2000ms` for 15m | Backend |
+
+Initial service-level baseline:
+
+| Timestamp | Environment | Command | Path | Iterations | p50 | p95 | Notes |
+|---|---|---|---|---:|---:|---:|---|
+| 2026-04-27 12:10 EEST | local mocked persistence | `cd api && npm run test:review-performance` | queue fetch service path | 100 | `0.087ms` | `0.149ms` | 50 due chunks, observability emitters mocked |
+| 2026-04-27 12:10 EEST | local mocked persistence | `cd api && npm run test:review-performance` | grade submit service path | 100 | `0.014ms` | `0.065ms` | due basic card, transaction/persistence mocked |
+
+Baseline interpretation:
+- local mocked-persistence numbers are regression smoke values, not production capacity proof.
+- production SLO validation still requires live API/dashboard measurements after canary exposure starts.
+- keep `api/src/reviews/review-performance.spec.ts` aligned with the queue and grade paths whenever review persistence or scheduling logic changes.
+
+---
+
 ## Alert rules
 
 Use 15-minute rolling windows unless stated otherwise.

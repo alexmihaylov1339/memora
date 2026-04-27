@@ -260,7 +260,7 @@ Verification completed:
 ### T6 - SLO definition and performance verification
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - lock SLOs for queue fetch and grade submit latency.
@@ -275,6 +275,21 @@ Exit criteria:
 
 Verification checklist:
 - measured values are attached to SLO table with timestamp.
+
+Verification completed:
+- Added explicit queue and grade production SLO targets to:
+  - `docs/operations/review-observability.md`
+- Added first service-level performance baseline to the SLO table:
+  - timestamp: `2026-04-27 12:10 EEST`
+  - command: `cd api && npm run test:review-performance`
+  - queue fetch baseline: p50 `0.087ms`, p95 `0.149ms`
+  - grade submit baseline: p50 `0.014ms`, p95 `0.065ms`
+- Added repeatable local performance smoke coverage:
+  - `api/src/reviews/review-performance.spec.ts` (new)
+  - `api/package.json`: `npm run test:review-performance`
+- Verification:
+  - `cd api && npm run test:review-performance` passes
+  - `cd api && npx eslint src/reviews/review-performance.spec.ts` passes
 
 ---
 
