@@ -1,0 +1,73 @@
+name: Review Contract Guardrails
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/review-contracts.yml"
+      - "api/src/reviews/**"
+      - "api/package.json"
+      - "api/package-lock.json"
+      - "web/src/features/reviews/**"
+      - "web/src/app/**/review/**"
+      - "web/package.json"
+      - "web/package-lock.json"
+      - "docs/architecture/card-kind-contract-strategy.md"
+  workflow_dispatch:
+
+jobs:
+  backend-review-contracts:
+    name: Backend review contracts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend review contract suite
+        run: >
+          npx jest --runInBand --runTestsByPath
+          src/reviews/dto/review-queue-response.dto.spec.ts
+          src/reviews/reviews.controller.spec.ts
+          src/reviews/reviews.service.spec.ts
+
+  frontend-review-contracts:
+    name: Frontend review contracts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend review contract suite
+        run: >
+          npx jest --runInBand --runTestsByPath
+          src/features/reviews/services/reviewService.test.ts
+          src/features/reviews/review-kind-registry.test.ts
+          src/features/reviews/hooks/useReviewScreen.test.tsx
+          src/app/[locale]/review/components/ReviewScreen.test.tsx

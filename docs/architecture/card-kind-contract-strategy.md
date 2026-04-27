@@ -153,3 +153,16 @@ Adopt this checklist as required for any card-kind contract change:
 
 This is the default until a Phase 2 trigger is hit and approved.
 
+## CI enforcement
+
+Step 15 added automatic PR guardrails for review contract drift:
+
+- Workflow: `.github/workflows/review-contracts.yml`
+- Backend command: `cd api && npm run test:review-contract`
+- Frontend command: `cd web && npm run test:review-contract`
+
+The workflow runs on review API/UI contract paths and invokes the required test
+files explicitly, so a PR fails if either side of the review contract suite
+fails or a required test file is missing. Keep the named local scripts and the
+workflow paths updated whenever contract-critical tests are added, renamed, or
+moved.

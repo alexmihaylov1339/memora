@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "test:review-contract": "jest --runInBand --runTestsByPath src/features/reviews/services/reviewService.test.ts src/features/reviews/review-kind-registry.test.ts src/features/reviews/hooks/useReviewScreen.test.tsx src/app/[locale]/review/components/ReviewScreen.test.tsx",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "validate": "npm run lint && npm test"

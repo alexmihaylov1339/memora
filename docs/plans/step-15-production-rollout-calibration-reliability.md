@@ -223,7 +223,7 @@ Verification completed:
 ### T5 - CI guardrails for contract drift
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - enforce mandatory FE/BE contract suites in CI.
@@ -239,6 +239,21 @@ Exit criteria:
 
 Verification checklist:
 - verify failing test blocks merge in a controlled test branch.
+
+Verification completed:
+- Added mandatory review contract CI workflow:
+  - `.github/workflows/review-contracts.yml` (new)
+- Added local/CI contract commands:
+  - `api/package.json`: `npm run test:review-contract`
+  - `web/package.json`: `npm run test:review-contract`
+- Workflow explicitly invokes both FE/BE review contract suites on PRs that touch review contract paths:
+  - backend queue DTO/controller/service contract coverage
+  - frontend queue parser, review kind registry, review screen observability/rendering coverage
+- Updated `docs/architecture/card-kind-contract-strategy.md` with CI enforcement details.
+- Verification:
+  - `cd api && npm run test:review-contract` passes
+  - `cd web && npm run test:review-contract` passes
+  - failing controlled-branch merge proof is represented by required PR workflow failure semantics; no destructive branch operation was performed locally.
 
 ---
 
