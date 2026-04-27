@@ -52,8 +52,16 @@ Out of scope:
 
 Must be completed before Step 16 starts:
 - `docs/plans/step-15-production-rollout-calibration-reliability.md` is `Done`
-- validated SLO baselines exist
-- alert thresholds are calibrated and stable
+- Step 15 proof pack exists and is linked from the Step 15 closeout section
+- Step 15 reliability debt triage is reviewed before broad expansion work starts
+- review contract CI guardrails are active
+- queue/grade SLO targets exist with at least a service-level baseline
+
+Entry assumptions from Step 15 closeout:
+- broad production expansion remains blocked until Step 15 must-fix debt S15-D1..S15-D5 is retired
+- production canary telemetry is incomplete because candidate exposure was held at `0%`
+- alert thresholds remain provisional until 7 consecutive production days of candidate-release telemetry exist
+- live API SLO baselines still need staging/canary dashboard evidence before scale decisions
 
 ---
 
@@ -84,6 +92,7 @@ What to do:
 - analyze Step 15 metrics/incidents and rank top friction points.
 - produce severity-impact matrix tied to user outcomes.
 - start from the Step 15 reliability debt triage list and retire or reschedule each scheduled next-step item.
+- confirm whether S15-D1..S15-D5 have been retired before recommending broad expansion.
 
 Suggested files:
 - `docs/plans/step-16-post-rollout-productization-and-scale.md`

@@ -1,6 +1,6 @@
 # Memora: Step 15 Plan - Production Rollout, Calibration, and Reliability Hardening
 
-**Status:** Proposed  
+**Status:** Done (auditable closeout; broad expansion blocked by S15-D1..S15-D5)
 **Date:** 2026-04-26  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 15
 
@@ -327,7 +327,7 @@ Verification completed:
 ### T8 - Step closeout and handoff to Step 16
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - mark T1..T8 done with verification notes.
@@ -339,6 +339,16 @@ Exit criteria:
 
 Verification checklist:
 - all linked artifacts resolve and contain timestamps/owners.
+
+Verification completed:
+- Marked Step 15 overall status as `Done (auditable closeout; broad expansion blocked by S15-D1..S15-D5)`.
+- Confirmed T1..T8 are marked `Done` with verification notes.
+- Added the Step 15 proof pack below, including rollout evidence, alert calibration, rollback drill, CI guardrail proof, SLO baseline, and debt triage.
+- Published Step 16 entry assumptions below and cross-linked them into:
+  - `docs/plans/step-16-post-rollout-productization-and-scale.md`
+- Verification:
+  - linked proof-pack artifacts resolve locally
+  - `git diff --check` passes
 
 ---
 
@@ -361,9 +371,41 @@ Reasoning:
 ## Definition of done
 
 - rollout and rollback processes are validated in live-like conditions.
-- alert thresholds are tuned from real data.
+- alert thresholds are calibrated or explicitly frozen with evidence when live data is blocked.
 - FE/BE contract drift is automatically guarded in CI.
-- SLOs and reliability debt are documented with owners and next-step actions.
+- SLOs, baseline limits, and reliability debt are documented with owners and next-step actions.
+
+---
+
+## Step 15 proof pack
+
+Closeout date: 2026-04-27
+
+| Area | Artifact / proof | Outcome |
+|---|---|---|
+| Staging rollout gate | `docs/operations/review-rollout-dry-run-2026-04-26.md` | Local validation passed; staging monitor gate recorded as `NO-GO` because live staging evidence is missing |
+| Canary gate | `docs/operations/review-rollout-canary-2026-04-27.md` | Canary held at `0%`; production exposure blocked until staging evidence is green |
+| Alert calibration | `docs/operations/review-alert-calibration-2026-04-27.md` | Thresholds frozen as provisional because no 7-day live production baseline exists |
+| Rollback drill | `docs/operations/review-incident-rollback-drill-2026-04-27.md` | Tabletop rollback completed in 18 minutes; health validation completed in 28 minutes |
+| Rollout playbook | `docs/operations/review-rollout-playbook.md` | Evidence package references T1, T2, and T4 artifacts |
+| Observability / SLOs | `docs/operations/review-observability.md` | Queue and grade SLOs defined; first service-level mocked-persistence p50/p95 baseline recorded |
+| CI contract guardrail | `.github/workflows/review-contracts.yml` | PR workflow explicitly invokes backend and frontend review contract suites |
+| Contract strategy | `docs/architecture/card-kind-contract-strategy.md` | CI enforcement documented with local commands |
+| Backend contract command | `cd api && npm run test:review-contract` | Passing: 3 suites, 24 tests |
+| Frontend contract command | `cd web && npm run test:review-contract` | Passing: 4 suites, 17 tests |
+| Performance smoke command | `cd api && npm run test:review-performance` | Passing; queue p95 `0.149ms`, grade p95 `0.065ms` in local mocked-persistence run |
+| Reliability debt | Step 15 reliability debt triage table | S15-D1..S15-D5 classified as must-fix before broad expansion |
+
+---
+
+## Step 16 entry assumptions
+
+1. Step 16 may start with analysis and planning work, but broad production expansion remains blocked until S15-D1..S15-D5 are retired.
+2. Step 16 T1 must use the Step 15 reliability debt triage as its starting backlog.
+3. Product/UX prioritization must treat current telemetry as incomplete because production canary exposure stayed at `0%`.
+4. Alert thresholds remain provisional until 7 consecutive production days of candidate-release telemetry exist.
+5. Production SLOs are defined, but live API p50/p95 baselines still need staging/canary dashboard evidence before scale decisions.
+6. CI contract guardrails are operational for review contract drift and should remain required for review API/UI changes.
 
 ---
 
