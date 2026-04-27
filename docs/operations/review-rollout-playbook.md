@@ -179,6 +179,9 @@ Store these artifacts for auditability:
 - decision log (go/no-go checkpoints)
 - rollback log (if rollback happened)
 
+Execution log location:
+- `docs/operations/review-rollout-dry-run-2026-04-26.md` (Step 15 T1 evidence)
+
 ---
 
 ## Cross references

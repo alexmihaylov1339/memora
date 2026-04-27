@@ -83,7 +83,7 @@ Must be completed before Step 15 starts:
 ### T1 - Staging dry-run rollout execution
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - run full rollout sequence in staging using Step 14 playbook.
@@ -100,6 +100,19 @@ Exit criteria:
 Verification checklist:
 - every phase has pass/fail note and timestamp.
 - any blocked gate has a concrete remediation note.
+
+Verification completed:
+- Added rollout execution evidence log:
+  - `docs/operations/review-rollout-dry-run-2026-04-26.md` (new)
+- Recorded deterministic gate outcomes with timestamps:
+  - Phase 0 local validation: `PASS`
+  - Phase 1 staging gate: `FAIL (blocked)` with explicit blocker and remediation steps
+  - promotion decision: `NO-GO` until staging evidence is captured
+- Attached concrete command evidence in the execution log:
+  - targeted API test suite run
+  - scoped eslint run
+  - API build run
+- Updated playbook evidence section to point to the Step 15 T1 execution log artifact.
 
 ---
 
@@ -272,4 +285,3 @@ Reasoning:
 - alert thresholds are tuned from real data.
 - FE/BE contract drift is automatically guarded in CI.
 - SLOs and reliability debt are documented with owners and next-step actions.
-
