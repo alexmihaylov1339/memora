@@ -119,7 +119,7 @@ Verification completed:
 ### T2 - Canary launch with monitor windows
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - execute low-risk canary exposure.
@@ -134,6 +134,20 @@ Exit criteria:
 
 Verification checklist:
 - unsupported-rate and latency checks are explicitly attached.
+
+Verification completed:
+- Added canary gate evidence log:
+  - `docs/operations/review-rollout-canary-2026-04-27.md` (new)
+- Enforced the playbook stop condition before production exposure:
+  - T1 staging monitor evidence remains incomplete, so the canary was held at `0%`.
+  - Decision recorded as `NO-GO` for 5% production canary launch.
+  - Rollback decision recorded as `Not required` because no production traffic was routed to the candidate release.
+- Explicitly attached the T2 monitor checks and thresholds in the canary log:
+  - unsupported `invalid_payload` rate warning/critical thresholds
+  - absolute p95 grade latency thresholds
+  - canary p95 grade-latency regression threshold
+  - queue fetch volume anomaly threshold
+- Updated rollout playbook evidence package references to include the T2 canary gate log.
 
 ---
 
