@@ -17,7 +17,6 @@ export default function ReviewScreen() {
     isGrading,
     isAnswerRevealed,
     isLoading,
-    queueCount,
     reviewRenderer,
     handleRevealAnswer,
   } = useReviewScreen();
@@ -49,6 +48,7 @@ export default function ReviewScreen() {
     return (
       <ReviewUnsupportedCard
         item={currentItem}
+        onRefreshQueue={handleRefreshQueue}
         reason={reviewRenderer?.reason ?? currentItem.reviewUnsupportedReason ?? undefined}
       />
     );
@@ -59,10 +59,8 @@ export default function ReviewScreen() {
       {gradeResult && <ReviewFeedbackBanner result={gradeResult} />}
 
       <ReviewCurrentItemCard
-        item={currentItem}
         basicCardFields={reviewRenderer.basicCardFields}
         isAnswerRevealed={isAnswerRevealed}
-        queueCount={queueCount}
         onRevealAnswer={handleRevealAnswer}
       />
 

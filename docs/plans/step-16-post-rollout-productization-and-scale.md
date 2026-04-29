@@ -23,6 +23,7 @@ Step 16 outcome:
 - production signals are converted into product and architecture improvements
 - next-kind onboarding is faster and safer
 - platform has clear scale and maintenance guardrails
+- review scheduling matches the product rule that all deck cards become reviewable immediately and user-editable intervals control future timing
 
 ---
 
@@ -38,6 +39,12 @@ Step 16 outcome:
 
 In scope:
 - post-rollout UX/product improvements driven by telemetry
+- review scheduling corrections requested by product:
+  - all cards become reviewable immediately when a deck is created, a card is added to a deck, or a chunk is added to a deck
+  - cards without explicit chunk membership are covered by the deck-scoped `Deck Inbox`
+  - default intervals are visible and editable
+  - interval overrides can be configured at deck level and per review item where needed
+  - `again` and `hard` retry immediately instead of delaying review
 - extensibility hardening for additional card kinds
 - scale/performance and maintainability initiatives
 - roadmap packaging for next major product wave
@@ -119,10 +126,11 @@ Verification completed:
 ### T2 - Review UX iteration pack (telemetry-driven)
 
 Status:
-- Proposed
+- Done
 
 What to do:
-- implement UX improvements for queue clarity, unsupported handling, and completion feedback.
+- implement UX improvements for unsupported handling while keeping the review card surface focused on the prompt and answer controls.
+- do not add chunk labels, `Deck Inbox`, queue position, chunk-card position, due chips, streak summaries, last-grade stats, or interval summary UI to the review page unless explicitly requested later.
 - validate impact against baseline metrics.
 
 Suggested files:
@@ -135,6 +143,21 @@ Exit criteria:
 
 Verification checklist:
 - before/after metrics are recorded.
+
+Verification completed:
+- Implemented review UX improvements for:
+  - review card focus: removed chunk labels, queue position, chunk-card position, due chips, and streak metadata from the active review card.
+  - unsupported handling: unsupported cards now show reason, refresh action, and deck navigation without queue/streak metadata.
+  - completion state stays focused on refreshing the queue and does not show last-grade/interval stats.
+- Added regression coverage:
+  - `web/src/app/[locale]/review/components/ReviewUxIteration.test.tsx` (new)
+- Recorded before/after measurement plan below:
+  - review card focus -> `review_grade_clicked`
+  - unsupported handling -> `review_unsupported_seen`
+  - completion refresh behavior -> `review_grade_clicked` + `review_queue_state_changed`
+- Verification:
+  - `cd web && npm test -- --runTestsByPath 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx' src/features/reviews/hooks/useReviewScreen.test.tsx` passes
+  - `cd web && npx eslint 'src/app/[locale]/review/components/ReviewCurrentItemCard.tsx' 'src/app/[locale]/review/components/ReviewEmptyState.tsx' 'src/app/[locale]/review/components/ReviewFeedbackBanner.tsx' 'src/app/[locale]/review/components/ReviewUnsupportedCard.tsx' 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx'` passes
 
 ---
 
@@ -158,6 +181,45 @@ Exit criteria:
 
 Verification checklist:
 - required regression suites stay green.
+
+---
+
+### T3A - Review scheduling product corrections
+
+Status:
+- Proposed
+
+What to do:
+- enforce immediate reviewability when:
+  - a deck is created
+  - a card is added or moved into a deck
+  - a chunk is added or moved into a deck
+- ensure every affected deck card is due immediately through either its authored chunk or the deck-scoped system chunk (`Deck Inbox`).
+- make default intervals visible in the deck/review settings UI.
+- allow the user to edit default intervals at deck level.
+- allow per-item interval overrides where needed.
+- change grade scheduling so `again` and `hard` retry immediately instead of using a delayed interval such as 4 hours.
+
+Suggested files:
+- `api/src/decks/...`
+- `api/src/cards/...`
+- `api/src/chunks/...`
+- `api/src/reviews/...`
+- `web/src/app/[locale]/decks/...`
+- `web/src/features/chunks/...`
+- `web/src/features/reviews/...`
+- related API/UI tests
+
+Exit criteria:
+- new deck/card/chunk membership changes make all affected cards visible in review immediately.
+- default intervals are visible and editable.
+- deck-level and per-item interval overrides are persisted and used by review scheduling.
+- `again` and `hard` return the item to immediate review.
+
+Verification checklist:
+- backend tests cover deck create, card add/move, chunk add/move, `Deck Inbox`, editable intervals, and immediate `again`/`hard` retry.
+- frontend tests cover viewing/editing default intervals and item-level overrides.
+- e2e/API flow confirms newly added deck cards appear in review without waiting.
 
 ---
 
@@ -268,14 +330,15 @@ Verification checklist:
 1. T1 signal review
 2. T2 UX iteration pack
 3. T3 kind onboarding pilot
-4. T4 contract strategy re-check
-5. T5 performance/capacity envelope
-6. T6 automation burn-down
-7. T7 docs/onboarding consolidation
-8. T8 closeout + next-wave proposal
+4. T3A review scheduling product corrections
+5. T4 contract strategy re-check
+6. T5 performance/capacity envelope
+7. T6 automation burn-down
+8. T7 docs/onboarding consolidation
+9. T8 closeout + next-wave proposal
 
 Reasoning:
-- prioritize user impact first, then extensibility and long-term scale hardening.
+- prioritize the corrected review scheduling product rule first, then extensibility and long-term scale hardening.
 
 ---
 
@@ -318,6 +381,7 @@ Must-retire blockers before broad expansion:
 | Priority | Friction point | Severity | User impact | Evidence | Owner | Next action |
 |---|---|---|---|---|---|---|
 | P0 | Rollout cannot safely expand because staging/canary evidence is incomplete | Critical | Users cannot receive the candidate release through a proven path | T1 staging `NO-GO`; T2 canary held at `0%`; S15-D1 and S15-D2 | Release owner + On-call | Retire S15-D1/S15-D2 before any broad expansion recommendation |
+| P0 | Review scheduling does not yet match product requirement for immediate review and editable intervals | Critical | Users can add deck content and still not review it when expected; `again`/`hard` delays break the desired learning loop | User correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Implement T3A before claiming review workflow correctness |
 | P0 | Alert/SLO confidence is provisional without live telemetry | High | On-call may overreact or miss real user-impacting degradation | T3 thresholds frozen; observability baseline is local mocked persistence; S15-D3/S15-D4 | Backend + On-call | Collect live baseline and update `docs/operations/review-observability.md` |
 | P1 | Rollback execution still needs platform-specific command proof | High | Incident response depends on an operator translating generic steps under pressure | T4 tabletop drill passed but S15-D5 remains open | Release owner | Add platform command references before next live canary retry |
 | P1 | Unsupported-kind friction cannot be ranked yet | Medium | Product may invest in UX or new card-kind support without traffic evidence | S15-D7; `kind_not_review_enabled` thresholds unchanged until real card-kind mix exists | Product + Backend + Frontend | During T2/T3, pair UX review with unsupported-kind evidence collection |
@@ -341,3 +405,20 @@ Must-retire blockers before broad expansion:
 3. Use T3 to prove next-kind onboarding only after unsupported-kind evidence clarifies whether product friction is real or theoretical.
 4. Use T5 to replace mocked-persistence performance confidence with a capacity envelope.
 5. Use T8 to close or reschedule every remaining Step 15 debt item with proof.
+
+---
+
+## T2 Review UX Measurement Notes
+
+Measurement date: 2026-04-29
+
+Live before/after production metrics are not available yet because Step 15 canary exposure stayed at `0%`. T2 therefore records the measurable event surfaces now and defers live impact validation until staging/canary telemetry exists.
+
+| UX area | Before T2 baseline | T2 change | After metric to watch | Owner |
+|---|---|---|---|---|
+| Review card focus | Review UI emitted `review_queue_state_changed`, but the page risked exposing chunk, queue, due, and streak metadata as learner-facing labels | Active review card avoids internal scheduling labels and keeps focus on prompt, reveal, answer, and grade controls | Completion after `review_grade_clicked`; fewer support reports about distracting review metadata | Frontend + Product |
+| Unsupported handling | `review_unsupported_seen` captured reason/kind, while UI only displayed kind and a short reason sentence | Unsupported card exposes reason, refresh action, and deck navigation without queue/streak metadata | `review_unsupported_seen.reason` volume by kind; follow-up conversion to deck/card correction flow | Frontend + Backend |
+| Completion refresh behavior | Completion state emits `review_queue_state_changed.complete` and should stay focused on checking for the next due item | Completion state remains simple: refresh the queue without last-grade/interval stats | Completion rate after `review_grade_clicked`; refresh usage after complete state | Frontend + Product |
+
+Validation requirement:
+- When staging/canary telemetry is available, attach before/after values for the metrics above before claiming product impact.

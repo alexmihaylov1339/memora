@@ -88,25 +88,27 @@ These rules should be treated as the source of truth for implementation.
 - Later chunk cards must stay hidden until the current one is completed for this chunk review step.
 - A chunk never contributes multiple cards to the same immediate review moment.
 
-### R2 - Chunk review cadence is hardcoded for MVP
+### R2 - Chunk review cadence starts with visible defaults and must become editable
 
-- Use a hardcoded default chunk review interval sequence for MVP.
+- Use a default chunk review interval sequence as the starting point.
 - These intervals describe how often the chunk itself becomes due again after each successful review.
 - They do not mean “unlock many cards.”
-- The sequence should be easy to replace later with deck-level user settings from the UI.
+- The sequence must be visible to the user and editable at deck level.
+- The system must support item-level interval overrides where needed.
 
 Example:
 - review event 1 -> show card 1 immediately
-- next chunk review due in `4h` -> show card 2
+- `again` or `hard` -> retry immediately
+- `good` / `easy` -> schedule from the configured interval sequence
 - next chunk review due in `8h` since the last review -> show card 3
 - next chunk review due in `12h` since the last review -> show card 4
 - next chunk review due in `24h` since the last review -> show card 5
 - later steps continue through a longer default sequence such as `2d`, `3d`, `5d`, `8d`, `12d`, `20d`, `30d`, `60d`, and beyond until the default mastery-length sequence is exhausted
 
 Explanation:
-- We are intentionally hardcoding the default interval sequence in Step 4 so we can validate the review engine first.
-- We do not want deck settings, admin forms, or user customization to complicate scheduling logic yet.
-- The schedule source should still be isolated in one helper/config location so Step 7 or a later settings step can swap it to deck-specific values.
+- The default interval sequence exists so the user has sane defaults.
+- Defaults are not final authority: user-edited deck intervals and item overrides must be able to replace them.
+- The schedule source should stay isolated in one helper/config location so deck-specific values can drive review timing without rewriting the engine.
 
 ### R3 - Chunk mastery requires a long consecutive success streak
 
@@ -124,12 +126,13 @@ Explanation:
 ### R5 - Grade behavior for MVP
 
 Recommended simplified grade behavior:
-- `again`: reset chunk progress to the beginning and make the first chunk card the next card to show
-- `hard`, `good`, `easy`: advance chunk progress by one successful review and schedule the next chunk review event
+- `again`: reset chunk progress to the beginning and make the first chunk card due immediately
+- `hard`: keep the item due immediately for another review attempt
+- `good`, `easy`: advance chunk progress by one successful review and schedule the next chunk review event from the configured interval sequence
 
 Why this simplification is good for Step 4:
 - We are validating chunk progression logic first.
-- We are not yet building a full SRS tuning model.
+- We are not yet building a full SRS tuning model, but immediate retry for `again` and `hard` is a product requirement.
 
 ### R6 - UTC-only date handling
 

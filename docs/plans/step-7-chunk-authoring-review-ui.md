@@ -600,10 +600,7 @@ Subtasks:
 - Current-card UI should show:
   - front content
   - reveal/back content interaction for `basic` cards
-  - chunk title
-  - position in chunk
-  - current streak/progress summary when useful
-  - due/review context if it helps comprehension
+  - no internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, streak summaries, last grade, or interval summaries
 - Grade controls:
   - `again`
   - `hard`
@@ -684,7 +681,7 @@ Acceptance:
 Verification:
 - `useReviewScreen` now submits grades through `POST /v1/reviews/:cardId/grade` and updates the active session from `nextActionableItem` without a full page reload.
 - Grade buttons disable while grading, surface API errors, and remain locked until the answer is revealed.
-- The review screen now shows lightweight post-grade feedback for advance/reset outcomes plus next-due interval and streak details when returned.
+- The review screen now shows lightweight post-grade feedback for advance/reset outcomes without exposing internal scheduling labels, last-grade stats, streak summaries, or next-interval details.
 - When a grade response returns no `nextActionableItem`, the screen shows a completion state with a manual `Refresh Queue` action instead of guessing the next item client-side.
 - `cd web && npx tsc --noEmit` passed.
 - Focused ESLint passed for the review route, review components, and review feature hooks touched by T7.

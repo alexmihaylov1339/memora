@@ -13,7 +13,7 @@ export default function ReviewAnswerCard({
   onRevealAnswer,
 }: ReviewAnswerCardProps) {
   return (
-    <div className="mt-6 rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6">
+    <div className="rounded-xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6">
       <p className="text-xs uppercase tracking-wide text-slate-500">Front</p>
       <p className="mt-3 text-xl font-semibold leading-relaxed text-slate-900">
         {basicCardFields.front}

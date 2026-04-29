@@ -11,9 +11,13 @@
 - A learner adds one target word and multiple sentence exposures (example: 5 cards).
 - These cards belong to one chunk and are reviewed in sequence, not all at once.
 - If cards are moved/added into a deck without explicit chunk membership, the system must auto-place them in a deck-scoped system chunk (`Deck Inbox`) so they are immediately reviewable.
+- Creating a deck, adding a card into a deck, or adding a chunk into a deck must make every affected card due for review immediately.
+- The review page should not expose internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 - In each chunk review session, the learner should see exactly one next sentence/card.
 - After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
-- Chunk mastery should require a longer consecutive success streak, with a hardcoded default schedule of about 20 intervals, and mistakes should reset chunk progress to the beginning.
+- Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck level and override for individual review items where needed.
+- `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours.
+- `good` and `easy` can use the configured interval sequence.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
 
 ---
@@ -93,8 +97,9 @@
 - Scheduling policy for chunk sequence (MVP):
   - only one next card in a chunk becomes reviewable at a time
   - chunk card order cycles back to the first card after the last
-  - chunk mastery requires a hardcoded consecutive success streak backed by a default interval sequence of about 20 review steps
-  - a failed review resets chunk progress to the beginning
+  - chunk mastery requires a consecutive success streak backed by a default interval sequence that is visible and editable
+  - `again` and `hard` retry immediately; they do not wait for the normal interval sequence
+  - a failed review resets chunk progress to the beginning while keeping the item immediately due
 - Review state update rules on grade submission.
 - Deterministic time handling (UTC + consistent due-date calculation).
 
@@ -417,6 +422,7 @@ Implementation plan:
 **Deliverables**
 - Prioritize post-rollout improvements using telemetry and incidents.
 - Ship a telemetry-backed review UX iteration pack.
+- Correct review scheduling/product rules: immediate reviewability for all deck cards, editable intervals, and immediate retry for `again`/`hard`.
 - Prove next-kind onboarding readiness through a scoped pilot.
 - Re-evaluate FE/BE contract strategy using live evidence thresholds.
 - Define performance/capacity envelope and automate high-toil reliability checks.

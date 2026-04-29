@@ -60,9 +60,13 @@ Step 5 fills that gap.
 - Keep the current MVP review behavior:
   - one actionable card per chunk
   - reset on `again`
-  - advance on `hard/good/easy`
+  - retry immediately on `again` and `hard`
+  - advance on `good/easy`
   - loop after the last card
   - cards attached to a deck but not present in a user-authored chunk are still reviewable via an auto-managed deck system chunk (`Deck Inbox`)
+  - cards become reviewable immediately when a deck is created, a card is added into a deck, or a chunk is added into a deck
+  - default intervals must be visible/editable at deck level, with per-item overrides supported where needed
+- The API may return scheduling context for correctness, telemetry, and debugging, but the review page should not be required to display internal labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due state, last grade, streak, or interval summaries.
 
 ---
 
@@ -80,7 +84,8 @@ Step 5 fills that gap.
 
 - Do **not** move business logic into controllers.
 - Do **not** add review UI yet.
-- Do **not** introduce advanced analytics, deck-level schedule customization, or multi-user review ownership redesign.
+- Do **not** hide schedule assumptions from the API contract; editable intervals are a required product direction even if UI work lands later.
+- Do **not** introduce advanced analytics or multi-user review ownership redesign.
 - Do **not** let the frontend dictate queue logic.
 
 ---
@@ -98,7 +103,6 @@ In scope:
 Out of scope:
 - full review page implementation
 - chunk authoring UI
-- per-deck editable schedules
 - advanced SRS tuning
 - analytics dashboards
 
