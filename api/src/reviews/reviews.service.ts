@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { isNull } from '../common/utils/type-guards';
 import {
   computeNextDueAt,
   getChunkReviewIntervalHours,
@@ -21,14 +20,18 @@ import {
 } from './review-queries';
 import {
   buildGradeChunkReviewResult,
-  buildNextActionableItem,
-  ensureChunkReviewState,
   persistGradeSideEffects,
   type GradeChunkReviewResult,
   type ReviewPersistenceClient,
 } from './review-grade';
 import { deriveChunkReviewState } from './chunk-progress';
 import { findChunkByCardId } from './review-access';
+import {
+  findReviewableChunkForCard,
+  getCurrentReviewChunkCard,
+  getNextImmediateRetryPosition,
+  resolveNextActionableItemAfterGrade,
+} from './review-grade-flow';
 import {
   resolveReviewKindSupport,
   REVIEW_KIND_UNSUPPORTED_REASONS,
@@ -112,22 +115,20 @@ export class ReviewsService {
     now = new Date(),
   ): Promise<GradeChunkReviewResult | null> {
     const startedAtMs = Date.now();
-    const chunk = await findChunkByCardId(this.prisma, cardId, userId);
+    const reviewable = await findReviewableChunkForCard(
+      this.prisma,
+      cardId,
+      userId,
+      now,
+    );
 
-    if (!chunk) {
+    if (!reviewable) {
       return null;
     }
 
-    const state = await ensureChunkReviewState(this.prisma, chunk.id, now);
-    const snapshot = deriveChunkReviewState(chunk, now, state);
+    const { chunk, snapshot, state } = reviewable;
 
-    if (!snapshot.isDue || snapshot.currentCard?.cardId !== cardId) {
-      return null;
-    }
-
-    const currentChunkCard = isNull(snapshot.currentCard)
-      ? null
-      : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
+    const currentChunkCard = getCurrentReviewChunkCard(chunk, snapshot);
 
     if (!currentChunkCard?.card) {
       return null;
@@ -156,15 +157,17 @@ export class ReviewsService {
 
     const currentCardMode = currentCard.kind;
 
-    const wasSuccessful = grade !== 'again';
-    const nextConsecutiveSuccessCount = getNextConsecutiveSuccessCount(
-      snapshot.consecutiveSuccessCount,
-      wasSuccessful,
-    );
-    const intervalHours =
-      grade === 'again'
-        ? getChunkReviewIntervalHours(0)
-        : getChunkReviewIntervalHours(nextConsecutiveSuccessCount);
+    const isImmediateRetry = grade === 'again' || grade === 'hard';
+    const wasSuccessful = !isImmediateRetry;
+    const nextConsecutiveSuccessCount = isImmediateRetry
+      ? getNextImmediateRetryPosition(snapshot)
+      : getNextConsecutiveSuccessCount(
+          snapshot.consecutiveSuccessCount,
+          wasSuccessful,
+        );
+    const intervalHours = isImmediateRetry
+      ? 0
+      : getChunkReviewIntervalHours(nextConsecutiveSuccessCount);
     const nextDue = computeNextDueAt(now, intervalHours);
 
     const existingCardState = await this.prisma.reviewState.findUnique({
@@ -193,6 +196,17 @@ export class ReviewsService {
       lastGrade: grade,
       updatedAt: now,
     });
+    const nextActionableItem = await resolveNextActionableItemAfterGrade(
+      this.prisma,
+      {
+        cardId,
+        chunk,
+        isImmediateRetry,
+        nextSnapshot,
+        now,
+        userId,
+      },
+    );
 
     this.runObservabilitySafely('review_graded', () => {
       emitReviewGraded(this.logger, {
@@ -215,7 +229,7 @@ export class ReviewsService {
       nextConsecutiveSuccessCount,
       nextDue,
       intervalHours,
-      nextActionableItem: buildNextActionableItem(chunk, nextSnapshot),
+      nextActionableItem,
     });
   }
 

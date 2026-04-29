@@ -125,7 +125,10 @@ export function buildNextActionableItem(
 ): ReviewQueueItem | null {
   const nextChunkCard = isNull(snapshot.currentCard)
     ? null
-    : chunk.chunkCards[snapshot.currentCard.sequenceIndex];
+    : chunk.chunkCards.find(
+        (chunkCard) =>
+          chunkCard.sequenceIndex === snapshot.currentCard?.sequenceIndex,
+      );
 
   if (
     snapshot.hasMastery ||

@@ -28,9 +28,13 @@ export function buildEligibleQueueItems(
   const items = chunks
     .map((chunk) => {
       const snapshot = deriveChunkReviewState(chunk, now);
-      const currentCard = isNull(snapshot.currentCard)
+      const currentChunkCard = isNull(snapshot.currentCard)
         ? null
-        : chunk.chunkCards[snapshot.currentCard.sequenceIndex]?.card;
+        : chunk.chunkCards.find(
+            (chunkCard) =>
+              chunkCard.sequenceIndex === snapshot.currentCard?.sequenceIndex,
+          );
+      const currentCard = currentChunkCard?.card;
 
       if (
         !snapshot.isDue ||

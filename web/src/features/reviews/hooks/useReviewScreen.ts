@@ -122,15 +122,22 @@ export function useReviewScreen() {
       positionInChunk: currentItem.positionInChunk,
     });
 
+    const fallbackNextItem =
+      queueQuery.result?.items.find((item) => item.cardId !== currentItem.cardId) ??
+      null;
     const result = await gradeMutation.fetch({
       cardId: currentItem.cardId,
       grade,
     });
+    const nextItem =
+      result.nextActionableItem?.cardId === currentItem.cardId
+        ? fallbackNextItem
+        : result.nextActionableItem ?? fallbackNextItem;
 
     setLastGradeResult(result);
-    setCurrentItemOverride(result.nextActionableItem);
+    setCurrentItemOverride(nextItem);
     setRevealedCardId(null);
-  }, [currentItem, gradeMutation, queueCount]);
+  }, [currentItem, gradeMutation, queueCount, queueQuery.result?.items]);
 
   const handleRefreshQueue = useCallback(async () => {
     setCurrentItemOverride(undefined);

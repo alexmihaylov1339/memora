@@ -600,43 +600,45 @@ describe('ReviewsService', () => {
     it('advances chunk progress and logs a successful review', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
-      prisma.chunk.findFirst.mockResolvedValue({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'spielen',
-        position: 0,
-        reviewState: {
-          id: 'state-1',
-          chunkId: 'chunk-1',
-          due: new Date('2026-04-02T08:00:00.000Z'),
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-          createdAt: now,
-          updatedAt: now,
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen 1', back: 'play 1' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-2',
+              sequenceIndex: 1,
+              card: {
+                id: 'card-2',
+                kind: 'basic',
+                fields: { front: 'spielen 2', back: 'play 2' },
+                createdAt: new Date('2026-04-01T11:00:00.000Z'),
+              },
+            },
+          ],
         },
-        chunkCards: [
-          {
-            cardId: 'card-1',
-            sequenceIndex: 0,
-            card: {
-              id: 'card-1',
-              kind: 'basic',
-              fields: { front: 'spielen 1', back: 'play 1' },
-              createdAt: new Date('2026-04-01T10:00:00.000Z'),
-            },
-          },
-          {
-            cardId: 'card-2',
-            sequenceIndex: 1,
-            card: {
-              id: 'card-2',
-              kind: 'basic',
-              fields: { front: 'spielen 2', back: 'play 2' },
-              createdAt: new Date('2026-04-01T11:00:00.000Z'),
-            },
-          },
-        ],
-      });
+      ]);
       prisma.chunkReviewState.upsert.mockResolvedValue({
         id: 'state-1',
         chunkId: 'chunk-1',
@@ -759,66 +761,68 @@ describe('ReviewsService', () => {
       );
     });
 
-    it('resets chunk progress on again and schedules from the first interval', async () => {
+    it('resets chunk progress on again and retries immediately', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
-      prisma.chunk.findFirst.mockResolvedValue({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'spielen',
-        position: 0,
-        reviewState: {
-          id: 'state-1',
-          chunkId: 'chunk-1',
-          due: new Date('2026-04-02T08:00:00.000Z'),
-          consecutiveSuccessCount: 3,
-          lastGrade: 'good',
-          createdAt: now,
-          updatedAt: now,
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 3,
+            lastGrade: 'good',
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen 1', back: 'play 1' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-2',
+              sequenceIndex: 1,
+              card: {
+                id: 'card-2',
+                kind: 'basic',
+                fields: { front: 'spielen 2', back: 'play 2' },
+                createdAt: new Date('2026-04-01T11:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-3',
+              sequenceIndex: 2,
+              card: {
+                id: 'card-3',
+                kind: 'basic',
+                fields: { front: 'spielen 3', back: 'play 3' },
+                createdAt: new Date('2026-04-01T12:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-4',
+              sequenceIndex: 3,
+              card: {
+                id: 'card-4',
+                kind: 'basic',
+                fields: { front: 'spielen 4', back: 'play 4' },
+                createdAt: new Date('2026-04-01T13:00:00.000Z'),
+              },
+            },
+          ],
         },
-        chunkCards: [
-          {
-            cardId: 'card-1',
-            sequenceIndex: 0,
-            card: {
-              id: 'card-1',
-              kind: 'basic',
-              fields: { front: 'spielen 1', back: 'play 1' },
-              createdAt: new Date('2026-04-01T10:00:00.000Z'),
-            },
-          },
-          {
-            cardId: 'card-2',
-            sequenceIndex: 1,
-            card: {
-              id: 'card-2',
-              kind: 'basic',
-              fields: { front: 'spielen 2', back: 'play 2' },
-              createdAt: new Date('2026-04-01T11:00:00.000Z'),
-            },
-          },
-          {
-            cardId: 'card-3',
-            sequenceIndex: 2,
-            card: {
-              id: 'card-3',
-              kind: 'basic',
-              fields: { front: 'spielen 3', back: 'play 3' },
-              createdAt: new Date('2026-04-01T12:00:00.000Z'),
-            },
-          },
-          {
-            cardId: 'card-4',
-            sequenceIndex: 3,
-            card: {
-              id: 'card-4',
-              kind: 'basic',
-              fields: { front: 'spielen 4', back: 'play 4' },
-              createdAt: new Date('2026-04-01T13:00:00.000Z'),
-            },
-          },
-        ],
-      });
+      ]);
       prisma.chunkReviewState.upsert.mockResolvedValue({
         id: 'state-1',
         chunkId: 'chunk-1',
@@ -845,8 +849,8 @@ describe('ReviewsService', () => {
           reset: true,
           previousConsecutiveSuccessCount: 3,
           consecutiveSuccessCount: 0,
-          intervalHours: 4,
-          due: new Date('2026-04-02T13:00:00.000Z'),
+          intervalHours: 0,
+          due: now,
         }),
       );
       expect(
@@ -862,8 +866,8 @@ describe('ReviewsService', () => {
       expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
         where: { cardId: 'card-4' },
         update: {
-          due: new Date('2026-04-02T13:00:00.000Z'),
-          interval: 4,
+          due: now,
+          interval: 0,
           reps: 0,
           lapses: 1,
           lastGrade: 'again',
@@ -871,8 +875,8 @@ describe('ReviewsService', () => {
         create: {
           cardId: 'card-4',
           ease: 2.5,
-          interval: 4,
-          due: new Date('2026-04-02T13:00:00.000Z'),
+          interval: 0,
+          due: now,
           reps: 0,
           lapses: 1,
           lastGrade: 'again',
@@ -904,8 +908,310 @@ describe('ReviewsService', () => {
         expect.objectContaining({
           cardId: 'card-4',
           grade: 'again',
-          newInterval: 4,
+          newInterval: 0,
           wasCorrect: false,
+        }),
+      );
+    });
+
+    it('uses the reviewable chunk when a card belongs to multiple chunks', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-not-current',
+          deckId: 'deck-1',
+          title: 'Deck Inbox',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-not-current',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-other',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-other',
+                kind: 'basic',
+                fields: { front: 'other', back: 'other' },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-1',
+              sequenceIndex: 1,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen', back: 'play' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+        {
+          id: 'chunk-reviewable',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 1,
+          reviewState: {
+            id: 'state-2',
+            chunkId: 'chunk-reviewable',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen', back: 'play' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+      prisma.chunkReviewState.upsert
+        .mockResolvedValueOnce({
+          id: 'state-1',
+          chunkId: 'chunk-not-current',
+          due: new Date('2026-04-02T08:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .mockResolvedValueOnce({
+          id: 'state-2',
+          chunkId: 'chunk-reviewable',
+          due: new Date('2026-04-02T08:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        });
+      prisma.reviewState.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyGradeToCard(
+        'card-1',
+        'hard',
+        'user-1',
+        now,
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'hard',
+          wasSuccessful: false,
+          intervalHours: 0,
+          due: now,
+        }),
+      );
+      expect(prisma.chunkReviewState.update).toHaveBeenCalledWith({
+        where: { chunkId: 'chunk-reviewable' },
+        data: {
+          due: now,
+          consecutiveSuccessCount: 0,
+          lastGrade: 'hard',
+        },
+      });
+    });
+
+    it('moves an immediate retry behind the remaining cards in the chunk', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'one', back: 'one' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-2',
+              sequenceIndex: 1,
+              card: {
+                id: 'card-2',
+                kind: 'basic',
+                fields: { front: 'two', back: 'two' },
+                createdAt: new Date('2026-04-01T11:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-3',
+              sequenceIndex: 2,
+              card: {
+                id: 'card-3',
+                kind: 'basic',
+                fields: { front: 'three', back: 'three' },
+                createdAt: new Date('2026-04-01T12:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'chunk-1',
+        due: new Date('2026-04-02T08:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+      prisma.reviewState.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyGradeToCard(
+        'card-1',
+        'hard',
+        'user-1',
+        now,
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'hard',
+          wasSuccessful: false,
+          intervalHours: 0,
+          due: now,
+          consecutiveSuccessCount: 1,
+        }),
+      );
+      expect(result?.nextActionableItem).toEqual(
+        expect.objectContaining({
+          cardId: 'card-2',
+          positionInChunk: 1,
+          consecutiveSuccessCount: 1,
+        }),
+      );
+      expect(prisma.chunkReviewState.update).toHaveBeenCalledWith({
+        where: { chunkId: 'chunk-1' },
+        data: {
+          due: now,
+          consecutiveSuccessCount: 1,
+          lastGrade: 'hard',
+        },
+      });
+    });
+
+    it('falls back to the next due queue item when the graded chunk has no next card', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany
+        .mockResolvedValueOnce([
+          {
+            id: 'single-card-chunk',
+            deckId: 'deck-1',
+            title: 'spielen',
+            position: 0,
+            reviewState: {
+              id: 'state-1',
+              chunkId: 'single-card-chunk',
+              due: new Date('2026-04-02T08:00:00.000Z'),
+              consecutiveSuccessCount: 0,
+              lastGrade: null,
+              createdAt: now,
+              updatedAt: now,
+            },
+            chunkCards: [
+              {
+                cardId: 'card-1',
+                sequenceIndex: 0,
+                card: {
+                  id: 'card-1',
+                  kind: 'basic',
+                  fields: { front: 'spielen', back: 'play' },
+                  createdAt: new Date('2026-04-01T10:00:00.000Z'),
+                },
+              },
+            ],
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: 'next-due-chunk',
+            deckId: 'deck-1',
+            title: 'machen',
+            position: 1,
+            reviewState: {
+              id: 'state-2',
+              chunkId: 'next-due-chunk',
+              due: new Date('2026-04-02T08:30:00.000Z'),
+              consecutiveSuccessCount: 0,
+              lastGrade: null,
+              createdAt: now,
+              updatedAt: now,
+            },
+            chunkCards: [
+              {
+                cardId: 'card-2',
+                sequenceIndex: 0,
+                card: {
+                  id: 'card-2',
+                  kind: 'basic',
+                  fields: { front: 'machen', back: 'make' },
+                  createdAt: new Date('2026-04-01T11:00:00.000Z'),
+                },
+              },
+            ],
+          },
+        ]);
+      prisma.chunkReviewState.upsert.mockResolvedValue({
+        id: 'state-1',
+        chunkId: 'single-card-chunk',
+        due: new Date('2026-04-02T08:00:00.000Z'),
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+      prisma.reviewState.findUnique.mockResolvedValue(null);
+
+      const result = await service.applyGradeToCard(
+        'card-1',
+        'good',
+        'user-1',
+        now,
+      );
+
+      expect(result?.nextActionableItem).toEqual(
+        expect.objectContaining({
+          cardId: 'card-2',
+          chunkId: 'next-due-chunk',
+          kind: 'basic',
         }),
       );
     });
@@ -913,33 +1219,35 @@ describe('ReviewsService', () => {
     it('returns null when the graded card is not the current due chunk card', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
-      prisma.chunk.findFirst.mockResolvedValue({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'spielen',
-        position: 0,
-        reviewState: {
-          id: 'state-1',
-          chunkId: 'chunk-1',
-          due: new Date('2026-04-03T08:00:00.000Z'),
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-          createdAt: now,
-          updatedAt: now,
-        },
-        chunkCards: [
-          {
-            cardId: 'card-1',
-            sequenceIndex: 0,
-            card: {
-              id: 'card-1',
-              kind: 'basic',
-              fields: { front: 'spielen 1', back: 'play 1' },
-              createdAt: new Date('2026-04-01T10:00:00.000Z'),
-            },
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-03T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
           },
-        ],
-      });
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'spielen 1', back: 'play 1' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
       prisma.chunkReviewState.upsert.mockResolvedValue({
         id: 'state-1',
         chunkId: 'chunk-1',
@@ -962,36 +1270,38 @@ describe('ReviewsService', () => {
     it('returns null when the current card kind is not review-enabled', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
-      prisma.chunk.findFirst.mockResolvedValue({
-        id: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'spielen',
-        position: 0,
-        reviewState: {
-          id: 'state-1',
-          chunkId: 'chunk-1',
-          due: new Date('2026-04-02T08:00:00.000Z'),
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-          createdAt: now,
-          updatedAt: now,
-        },
-        chunkCards: [
-          {
-            cardId: 'card-1',
-            sequenceIndex: 0,
-            card: {
-              id: 'card-1',
-              kind: 'cloze_text',
-              fields: {
-                text: 'Ich {{c1::spiele}} gern Tennis.',
-                answer: 'spiele',
-              },
-              createdAt: new Date('2026-04-01T10:00:00.000Z'),
-            },
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'spielen',
+          position: 0,
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
           },
-        ],
-      });
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'cloze_text',
+                fields: {
+                  text: 'Ich {{c1::spiele}} gern Tennis.',
+                  answer: 'spiele',
+                },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
       prisma.chunkReviewState.upsert.mockResolvedValue({
         id: 'state-1',
         chunkId: 'chunk-1',

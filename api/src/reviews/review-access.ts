@@ -91,17 +91,28 @@ export async function findChunkByCardId(
   cardId: string,
   userId: string,
 ): Promise<ChunkWithCards | null> {
+  const chunks = await findChunksByCardId(prisma, cardId, userId);
+
+  return chunks[0] ?? null;
+}
+
+export async function findChunksByCardId(
+  prisma: PrismaService,
+  cardId: string,
+  userId: string,
+): Promise<ChunkWithCards[]> {
   const deckIds = await findAccessibleDeckIds(prisma, userId);
 
   if (deckIds.length === 0) {
-    return null;
+    return [];
   }
 
-  return (await prisma.chunk.findFirst({
+  return (await prisma.chunk.findMany({
     where: {
       chunkCards: { some: { cardId } },
       deckId: { in: deckIds },
     },
+    orderBy: [{ position: 'asc' }, { id: 'asc' }],
     select: {
       id: true,
       deckId: true,
@@ -134,5 +145,5 @@ export async function findChunkByCardId(
         },
       },
     },
-  })) as ChunkWithCards | null;
+  })) as ChunkWithCards[];
 }
