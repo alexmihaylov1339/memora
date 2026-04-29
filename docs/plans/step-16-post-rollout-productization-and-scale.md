@@ -86,7 +86,7 @@ Entry assumptions from Step 15 closeout:
 ### T1 - Post-rollout signal review and prioritization
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - analyze Step 15 metrics/incidents and rank top friction points.
@@ -103,6 +103,16 @@ Exit criteria:
 
 Verification checklist:
 - each priority cites concrete metric/incident evidence.
+
+Verification completed:
+- Added the post-rollout signal review and prioritization matrix below.
+- Confirmed S15-D1..S15-D5 are **not retired** and remain blockers before broad production expansion.
+- Retired or rescheduled the Step 15 scheduled next-step items:
+  - S15-D6 -> Step 16 T1/T8 signal review and closeout
+  - S15-D7 -> Step 16 T2/T3 UX and next-kind work
+  - S15-D8 -> Step 16 T5 performance/capacity envelope
+  - S15-D9 -> Step 16 T8 closeout/evidence template cleanup
+- Each priority cites concrete Step 15 evidence and has an owner.
 
 ---
 
@@ -275,3 +285,59 @@ Reasoning:
 - extensibility path is proven with current architecture constraints.
 - scale/reliability posture is documented and action-ready.
 - roadmap continuation is explicit, not ad-hoc.
+
+---
+
+## Post-rollout Signal Review And Prioritization
+
+Review date: 2026-04-29
+Review owner: Backend + Frontend + Product + On-call
+
+### Expansion Readiness
+
+Broad production expansion recommendation:
+- **Do not expand yet.**
+
+Reason:
+- Step 15 closed as auditable, but S15-D1..S15-D5 are not retired.
+- Candidate production exposure remained at `0%`.
+- Alert calibration and live API SLO baselines are still blocked by missing staging/canary telemetry.
+
+Must-retire blockers before broad expansion:
+
+| Debt ID | Status | Owner | Evidence | Required before expansion |
+|---|---|---|---|---|
+| S15-D1 | Not retired | Release owner + On-call | `docs/operations/review-rollout-dry-run-2026-04-26.md` Phase 1 `FAIL (blocked / no-go)` | Complete real 60-minute staging monitor window and attach dashboard evidence |
+| S15-D2 | Not retired | Release owner + On-call | `docs/operations/review-rollout-canary-2026-04-27.md` effective exposure `0%` | Retry 5% canary after staging gate is green and attach 45-minute monitor evidence |
+| S15-D3 | Not retired | Backend + On-call | `docs/operations/review-alert-calibration-2026-04-27.md` thresholds frozen due to blocked baseline | Collect 7 consecutive production days and recalibrate thresholds with before/after rationale |
+| S15-D4 | Not retired | Backend + Frontend | `docs/operations/review-observability.md` says local baseline is not production capacity proof | Attach live queue/grade p50/p95 values from staging/canary dashboard |
+| S15-D5 | Not retired | Release owner | `docs/operations/review-incident-rollback-drill-2026-04-27.md` follow-up for platform-specific commands | Replace generic rollout/rollback placeholders with platform-specific runbook commands |
+
+### Severity-Impact Matrix
+
+| Priority | Friction point | Severity | User impact | Evidence | Owner | Next action |
+|---|---|---|---|---|---|---|
+| P0 | Rollout cannot safely expand because staging/canary evidence is incomplete | Critical | Users cannot receive the candidate release through a proven path | T1 staging `NO-GO`; T2 canary held at `0%`; S15-D1 and S15-D2 | Release owner + On-call | Retire S15-D1/S15-D2 before any broad expansion recommendation |
+| P0 | Alert/SLO confidence is provisional without live telemetry | High | On-call may overreact or miss real user-impacting degradation | T3 thresholds frozen; observability baseline is local mocked persistence; S15-D3/S15-D4 | Backend + On-call | Collect live baseline and update `docs/operations/review-observability.md` |
+| P1 | Rollback execution still needs platform-specific command proof | High | Incident response depends on an operator translating generic steps under pressure | T4 tabletop drill passed but S15-D5 remains open | Release owner | Add platform command references before next live canary retry |
+| P1 | Unsupported-kind friction cannot be ranked yet | Medium | Product may invest in UX or new card-kind support without traffic evidence | S15-D7; `kind_not_review_enabled` thresholds unchanged until real card-kind mix exists | Product + Backend + Frontend | During T2/T3, pair UX review with unsupported-kind evidence collection |
+| P1 | Alert precision history is empty | Medium | Warning/critical routes may create noise once traffic begins | S15-D6; calibration log requires alert precision counts | On-call | Track warning/critical pages, false positives, and incident outcomes through T8 |
+| P2 | Performance envelope is service-level only | Medium | Scale decisions may be based on optimistic mocked-persistence numbers | S15-D8; `api/src/reviews/review-performance.spec.ts`; SLO notes | Backend | Use T5 to define capacity envelope with live or integration-level measurements |
+| P2 | Evidence templates lack explicit rollback hash/version fields | Low | Future audits may need extra digging to prove exact rollback artifact | S15-D9; rollback drill follow-up | Backend | Add hash/version fields during T8 closeout template cleanup |
+
+### Scheduled Debt Disposition
+
+| Step 15 debt | Disposition | Step 16 landing point | Owner | Evidence requirement |
+|---|---|---|---|---|
+| S15-D6 | Rescheduled | T1/T8 | On-call | alert-page count, false-positive count, incident outcome summary |
+| S15-D7 | Rescheduled | T2/T3 | Product + Backend + Frontend | unsupported-kind mix and UX friction evidence |
+| S15-D8 | Rescheduled | T5 | Backend | live or integration-level queue/grade p50/p95, throughput envelope, mitigation paths |
+| S15-D9 | Rescheduled | T8 | Backend | rollout/canary/drill template includes release hash/version fields |
+
+### Agreed Priority Order
+
+1. Retire rollout blockers S15-D1..S15-D5 before broad expansion.
+2. Use T2 to improve review UX only where it can be validated with queue state, unsupported handling, or completion feedback evidence.
+3. Use T3 to prove next-kind onboarding only after unsupported-kind evidence clarifies whether product friction is real or theoretical.
+4. Use T5 to replace mocked-persistence performance confidence with a capacity envelope.
+5. Use T8 to close or reschedule every remaining Step 15 debt item with proof.
