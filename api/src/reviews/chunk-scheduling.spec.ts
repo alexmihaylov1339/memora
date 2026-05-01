@@ -6,6 +6,7 @@ import {
   getChunkReviewIntervalHours,
   getNextConsecutiveSuccessCount,
   hasChunkMastery,
+  resolveChunkReviewIntervalHours,
 } from './chunk-scheduling';
 
 describe('chunk-scheduling', () => {
@@ -129,6 +130,23 @@ describe('chunk-scheduling', () => {
       );
       expect(() => getChunkReviewIntervalHours(0, [4, -1])).toThrow(
         'reviewIntervalHours must contain non-negative integers',
+      );
+    });
+  });
+
+  describe('resolveChunkReviewIntervalHours', () => {
+    it('uses valid custom deck intervals', () => {
+      expect(resolveChunkReviewIntervalHours([1, 24, 168])).toEqual([
+        1, 24, 168,
+      ]);
+    });
+
+    it('falls back to defaults for missing or malformed persisted intervals', () => {
+      expect(resolveChunkReviewIntervalHours(null)).toEqual(
+        DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS,
+      );
+      expect(resolveChunkReviewIntervalHours([1, 'bad'])).toEqual(
+        DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS,
       );
     });
   });

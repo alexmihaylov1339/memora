@@ -1,4 +1,5 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 import {
   hasExistingCards,
   hasExistingChunks,
@@ -15,6 +16,7 @@ export async function updateDeck(
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    reviewIntervalHours?: number[];
   },
   userId: string,
 ): Promise<UpdateDeckResult> {
@@ -55,6 +57,7 @@ export async function updateDeck(
       data: {
         name: data.name,
         description: data.description,
+        reviewIntervalHours: data.reviewIntervalHours,
       },
       include: {
         _count: { select: { cards: true } },
@@ -81,6 +84,9 @@ export async function updateDeck(
         id: deck.id,
         name: deck.name,
         description: deck.description ?? undefined,
+        reviewIntervalHours: resolveDeckReviewIntervalHours(
+          deck.reviewIntervalHours,
+        ),
         count: deck._count.cards,
         createdAt: deck.createdAt,
         updatedAt: deck.updatedAt,

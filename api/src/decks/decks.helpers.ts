@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
+import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 
 export interface DeckListItem {
   id: string;
@@ -12,6 +13,7 @@ export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -209,6 +211,9 @@ export function mapDeckDetail(deck: DeckWithShares): DeckDetail {
     id: deck.id,
     name: deck.name,
     description: deck.description ?? undefined,
+    reviewIntervalHours: resolveDeckReviewIntervalHours(
+      deck.reviewIntervalHours,
+    ),
     count: deck._count.cards,
     createdAt: deck.createdAt,
     updatedAt: deck.updatedAt,

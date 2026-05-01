@@ -5,9 +5,9 @@ import {
   isString,
 } from '../common/utils/type-guards';
 import {
-  DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
   getCurrentChunkCardIndex,
   hasChunkMastery,
+  resolveChunkReviewIntervalHours,
 } from './chunk-scheduling';
 
 export type PersistedChunkReviewState = {
@@ -36,6 +36,9 @@ export type ChunkWithCards = {
     };
   }>;
   reviewState?: PersistedChunkReviewState | null;
+  deck?: {
+    reviewIntervalHours: Prisma.JsonValue | null;
+  } | null;
 };
 
 export type ChunkProgressSnapshot = {
@@ -96,6 +99,10 @@ export function deriveChunkReviewState(
   persistedState?: PersistedChunkReviewState | null,
 ): ChunkProgressSnapshot {
   const rawState = persistedState ?? chunk.reviewState;
+  const reviewIntervalHours = resolveChunkReviewIntervalHours(
+    chunk.deck?.reviewIntervalHours,
+  );
+  const requiredConsecutiveSuccesses = reviewIntervalHours.length;
   const due = normalizeReviewDue(rawState?.due, now);
   const consecutiveSuccessCount = normalizeConsecutiveSuccessCount(
     rawState?.consecutiveSuccessCount,
@@ -118,8 +125,11 @@ export function deriveChunkReviewState(
     due,
     isDue: due.getTime() <= now.getTime(),
     consecutiveSuccessCount,
-    requiredConsecutiveSuccesses: DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES,
-    hasMastery: hasChunkMastery(consecutiveSuccessCount),
+    requiredConsecutiveSuccesses,
+    hasMastery: hasChunkMastery(
+      consecutiveSuccessCount,
+      requiredConsecutiveSuccesses,
+    ),
     totalCards,
     currentCard: currentCard
       ? {

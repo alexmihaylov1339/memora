@@ -20,6 +20,9 @@ export async function findChunkWithCards(
       deckId: true,
       title: true,
       position: true,
+      deck: {
+        select: { reviewIntervalHours: true },
+      },
       chunkCards: {
         orderBy: { sequenceIndex: 'asc' },
         select: {
@@ -56,6 +59,9 @@ export async function findChunksWithReviewState(
       deckId: true,
       title: true,
       position: true,
+      deck: {
+        select: { reviewIntervalHours: true },
+      },
       reviewState: {
         select: {
           id: true,
@@ -118,6 +124,9 @@ export async function findChunksByCardId(
       deckId: true,
       title: true,
       position: true,
+      deck: {
+        select: { reviewIntervalHours: true },
+      },
       reviewState: {
         select: {
           id: true,
