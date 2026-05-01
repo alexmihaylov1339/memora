@@ -443,6 +443,38 @@ Implementation plan:
 
 ---
 
+## Step 17: Production readiness completion and live baseline collection
+
+**Objective:** Retire all S15-D1..S15-D5 blockers, collect first live telemetry baselines from staging/canary, and validate Step 16 product features in real sessions — enabling safe broad production expansion.
+
+**Why now:**
+Step 16 shipped all planned product and architecture improvements. The only remaining constraint is unretired rollout blockers. Step 17 is a focused operational step, not a feature step.
+
+**Deliverables**
+- Platform-specific rollback commands added to the rollout playbook (retires S15-D5).
+- Real 60-minute staging monitor window completed with dashboard evidence (retires S15-D1).
+- 5% production canary run for 45 minutes with evidence and go/no-go decision (retires S15-D2).
+- Live p50/p95 queue and grade latency baselines attached to observability doc (retires S15-D4).
+- Alert thresholds recalibrated from 7 consecutive production days of candidate-release telemetry (retires S15-D3).
+- T3A/T3B product features validated in live sessions: immediate reviewability, deck-scoped Review, non-mutating Practice (retires S16-D2).
+- Rollout log templates updated with release hash/version fields (retires S16-D1).
+- Capacity envelope updated with live measurements (retires S16-D4).
+
+**Exit criteria**
+- All S15-D1..S15-D5 items show `Retired` with evidence links.
+- Broad production expansion recommendation changes from `Do not expand yet` to `Go`.
+- Live p50/p95 data is in the observability doc.
+
+**Constraints**
+- Staging gate (S15-D1) requires deployment control-plane access.
+- Canary gate (S15-D2) depends on staging gate being green.
+- Alert recalibration (S15-D3) depends on 7 production days after canary.
+
+Implementation plan:
+- `docs/plans/step-16-post-rollout-productization-and-scale.md` → Step 17 Next-Wave Proposal section
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -462,7 +494,8 @@ Implementation plan:
 15. Step 14
 16. Step 15
 17. Step 16
- 
+18. Step 17
+
 ---
 
 ## Notes for next planning cycle

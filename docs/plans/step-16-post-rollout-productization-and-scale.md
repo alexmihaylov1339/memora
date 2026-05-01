@@ -485,7 +485,7 @@ Verification completed:
 ### T8 - Step closeout and roadmap next-wave proposal
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - mark T1..T8 done with verification evidence.
@@ -496,6 +496,106 @@ Exit criteria:
 
 Verification checklist:
 - includes accepted debt, risks, and successor step proposal.
+
+Verification completed:
+- All tasks T1–T8 verified Done with evidence in their respective task blocks.
+- Quality gate outcomes recorded below.
+- Accepted debt and open risks documented below.
+- Step 17 next-wave proposal appended below.
+- S15-D9 (rollout log hash/version fields) formally carried to Step 17 as S16-D1.
+
+---
+
+## Step 16 Closeout
+
+Closeout date: 2026-05-01
+Closeout owner: Backend + Frontend + Product + On-call
+
+### Quality Gate Outcomes
+
+| Gate | Requirement | Outcome | Evidence |
+|---|---|---|---|
+| Product gate | At least two telemetry-backed UX improvements shipped and validated | **Met** | T2: review card focus, unsupported handling, completion state; T3B: Practice mode; T3A: immediate reviewability + editable intervals. Measurement plan recorded in T2 notes; live validation blocked by S15-D1/S15-D2. |
+| Extensibility gate | Next card-kind onboarding proven with one scoped pilot | **Met** | T3: `cloze_text` promoted to review-enabled pilot; extensibility docs updated; full FE + BE test coverage. |
+| Scale gate | Capacity/performance limits documented with mitigation paths | **Met** | T5: `docs/operations/review-capacity-envelope.md` defines throughput model, 6 scaling risks, warning signs, and response actions. |
+| Maintainability gate | Recurring operational toil reduced through automation/docs | **Met** | T6: two manual loops automated (`check:review-phase0`, `check:db-migration`); T7: `docs/README.md` onboarding guide created; two broken doc links fixed. |
+
+### Task Status Summary
+
+| Task | Status | Primary deliverable |
+|---|---|---|
+| T1 | Done | Signal review and prioritization matrix; S15-D6..D9 rescheduled |
+| T2 | Done | Review UX improvements (focus, unsupported, completion) |
+| T3 | Done | `cloze_text` review pilot; extensibility docs |
+| T3A | Done | Immediate reviewability; deck-level interval editing; `again`/`hard` immediate retry |
+| T3B | Done | Deck-scoped Review and Practice modes; separate non-mutating Practice API |
+| T4 | Done | Contract strategy re-check; stay on duplicated contracts decision with evidence |
+| T5 | Done | Capacity envelope: throughput model, 6 risks, warning signs, mitigations |
+| T6 | Done | Phase 0 gate script; DB migration guard script; playbook updated |
+| T7 | Done | `docs/README.md` onboarding guide; two broken absolute-path links fixed |
+| T8 | Done | This closeout section; Step 17 proposal |
+
+### Accepted Debt Carried to Step 17
+
+| ID | Description | Origin | Owner | Required before |
+|---|---|---|---|---|
+| S15-D1 | Real 60-minute staging monitor window not completed | Step 15 dry-run | Release owner + On-call | Any broad expansion |
+| S15-D2 | 5% production canary still at 0% exposure | Step 15 canary | Release owner + On-call | Any broad expansion |
+| S15-D3 | Alert thresholds frozen; calibration blocked by missing live telemetry | Step 15 calibration | Backend + On-call | Alert confidence |
+| S15-D4 | Live queue/grade p50/p95 baselines missing; only mocked-persistence data exists | Step 15 observability | Backend + Frontend | SLO confidence |
+| S15-D5 | Generic rollback commands in playbook; platform-specific commands not documented | Step 15 drill | Release owner | Next live incident |
+| S16-D1 | Rollout log templates missing explicit release hash/version fields | S15-D9 (rescheduled) | Backend | Next rollout log |
+| S16-D2 | T3A/T3B product features (immediate reviewability, deck-scoped Review/Practice) need live session validation | T3A/T3B notes | Backend + Frontend | Live product validation |
+| S16-D3 | Alert precision history still empty; no warning/critical page counts yet | T1 signal review P1 | On-call | Alert tuning |
+| S16-D4 | Capacity envelope is architecture-based; live measurements needed to confirm throughput estimates | T5 capacity envelope | Backend | Scale decisions |
+
+### Open Risks at Step 16 Close
+
+| Risk | Severity | Description | Mitigation path |
+|---|---|---|---|
+| Expansion blocked | Critical | S15-D1/S15-D2 must be retired before canary exposure increases. No production traffic has validated candidate release. | Step 17 T1: real staging gate, then 5% canary. |
+| Alert blind spot | High | S15-D3 thresholds are provisional. On-call may over-page or miss real incidents. | Collect 7 consecutive production days after canary; recalibrate per observability doc. |
+| Capacity model unvalidated | Medium | T5 envelope uses architectural estimates. Actual DB round-trip latency, connection saturation, and ReviewLog growth have not been measured. | Attach live p50/p95 and connection metrics during Step 17 canary window. |
+| Platform-specific rollback gap | Medium | S15-D5 still has generic deployment placeholders. An operator under incident pressure must translate them. | Add platform commands to playbook before next canary retry. |
+
+---
+
+## Step 17 Next-Wave Proposal
+
+**Proposed title:** Production Readiness Completion and Live Baseline Collection
+
+**Objective:** Retire all five S15-D1..S15-D5 blockers, collect first live telemetry baselines, and validate Step 16 product features in real sessions — making the system safe for broad production expansion.
+
+**Why this is the right next step:**
+Step 16 shipped all planned product and architecture improvements. The single remaining constraint preventing user impact is the unretired rollout blockers. Step 17 is a focused operational step, not a feature step.
+
+**Proposed tasks:**
+
+| Task | What | Exit criteria |
+|---|---|---|
+| T1 | Retire S15-D5: add platform-specific rollback commands to playbook | Playbook has exact copy/paste commands for the production platform |
+| T2 | Retire S15-D1: real 60-minute staging gate with dashboard evidence | Staging evidence attached to `review-rollout-dry-run-2026-04-26.md` |
+| T3 | Retire S15-D2: 5% canary for 45 minutes with monitor evidence | Canary evidence attached to `review-rollout-canary-2026-04-27.md`; promote/rollback decision recorded |
+| T4 | Live baseline collection: attach p50/p95 queue and grade latency | `review-observability.md` updated with real measurements (retires S15-D4) |
+| T5 | Retire S15-D3: recalibrate alert thresholds from 7 consecutive production days | `review-alert-calibration` doc updated with before/after rationale |
+| T6 | Validate T3A/T3B live: immediate reviewability + deck-scoped Review/Practice in real session | Live session evidence recorded; S16-D2 retired |
+| T7 | Fix S16-D1: add hash/version fields to rollout log templates | Rollout and canary log templates updated |
+| T8 | Step 17 closeout: update capacity envelope with live data, close S16-D3/D4 | All S15 and S16 debt retired or formally accepted with owner |
+
+**Constraints:**
+- T1 (platform commands) can start immediately; it requires no control-plane access.
+- T2 (staging gate) requires staging deployment control-plane access.
+- T3 (canary) depends on T2 being green.
+- T4/T5 (live baselines and alert tuning) depend on T3.
+- T6 depends on T3 (live sessions need candidate release at canary or higher exposure).
+
+**Success metrics:**
+- All five S15-D1..S15-D5 items show `Retired` status with evidence links.
+- `docs/operations/review-observability.md` has real p50/p95 values.
+- `docs/operations/review-alert-calibration-*.md` has a new entry with live-data rationale.
+- Broad production expansion recommendation changes from `Do not expand yet` to `Go`.
+
+**Roadmap reference:** `docs/plans/chunked-learning-roadmap.md` → Step 17
 
 ---
 
