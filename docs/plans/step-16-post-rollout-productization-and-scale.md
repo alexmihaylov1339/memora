@@ -45,7 +45,7 @@ In scope:
   - cards without explicit chunk membership are covered by the deck-scoped `Deck Inbox`
   - default intervals are visible and editable
   - default intervals can be edited during deck create/edit using friendly units such as hours and days
-  - interval overrides can be configured at deck level and per review item where needed
+  - interval overrides are configured at deck level for the first implementation; individual card/chunk overrides are future work and should inherit from the deck until then
   - `again` and `hard` retry immediately instead of delaying review
 - deck-scoped review and practice flows requested by product:
   - Review URLs include the selected deck identifier and review only due cards for that deck
@@ -204,8 +204,10 @@ What to do:
 - ensure every affected deck card is due immediately through either its authored chunk or the deck-scoped system chunk (`Deck Inbox`).
 - make default intervals visible during deck create/edit and any deck review settings UI.
 - allow the user to edit default intervals at deck level using friendly duration inputs such as hours and days.
-- allow per-item interval overrides where needed.
-- change grade scheduling so `again` and `hard` retry immediately instead of using a delayed interval such as 4 hours.
+- keep cards/chunks inheriting the selected deck's intervals for now; individual card/chunk interval overrides are future work.
+- keep the current MVP default interval sequence unless a later product decision changes it; the critical behavior is editability at deck level, immediate new-card reviewability, and immediate retry ordering.
+- change grade scheduling so `again` and `hard` retry immediately instead of using a delayed interval such as 4 hours, but place the retried item behind other currently due cards in the selected deck session.
+- when deck default intervals change, do not recalculate existing due dates immediately; apply the updated interval sequence the next time each card/chunk is graded.
 
 Suggested files:
 - `api/src/decks/...`
@@ -220,13 +222,23 @@ Suggested files:
 Exit criteria:
 - new deck/card/chunk membership changes make all affected cards visible in review immediately.
 - default intervals are visible and editable from deck create/edit.
-- deck-level and per-item interval overrides are persisted and used by review scheduling.
-- `again` and `hard` return the item to immediate review.
+- deck-level interval settings are persisted and used by future review scheduling.
+- cards/chunks inherit their deck interval settings.
+- changing deck intervals does not immediately rewrite existing due dates.
+- `again` and `hard` return the item to immediate review after the other currently due cards in the selected deck session.
 
 Verification checklist:
 - backend tests cover deck create, card add/move, chunk add/move, `Deck Inbox`, editable intervals, and immediate `again`/`hard` retry.
-- frontend tests cover viewing/editing default intervals from deck create/edit and item-level overrides.
+- frontend tests cover viewing/editing default deck intervals from deck create/edit.
 - e2e/API flow confirms newly added deck cards appear in review without waiting.
+
+Product decisions confirmed:
+- Step 16 ships deck-level interval editing only. Cards and chunks inherit their deck intervals for now.
+- Individual card/chunk interval overrides are a future enhancement where items may inherit deck intervals by default and use their own intervals only when explicitly configured.
+- The exact initial default interval sequence is not a blocking product decision for this task; preserve the current MVP default unless implementation needs a safe fallback.
+- Newly added cards/chunks should be reviewable immediately because they have not been learned yet.
+- `again` and `hard` should make the reviewed item due immediately, but it should be placed at the back of the current deck review queue.
+- Changing a deck's default intervals must not immediately update existing due dates; updated intervals apply when items are graded again.
 
 ---
 
@@ -267,6 +279,13 @@ Verification checklist:
 - frontend tests cover deck action buttons, URL construction, and mode-specific rendering.
 - e2e/API flow verifies two decks with due cards do not bleed into each other's Review mode.
 - e2e/API flow verifies Practice includes non-due cards and leaves review state unchanged.
+
+Product questions to confirm before implementation:
+- Should the routes be `/review?deckId=<deckId>` and `/practice?deckId=<deckId>`, or should Practice live under the review route as `/review?deckId=<deckId>&mode=practice`?
+- Should Practice use the same reveal UI and answer buttons as Review, with buttons acting only as local navigation, or should Practice use simpler `Next` / `Previous` controls?
+- Should Practice order follow the deck card order, chunk order, due-review order, random shuffle, or a user-selectable option?
+- Should Practice include unsupported/non-reviewable card kinds as readable cards, or only card kinds supported by the review renderer?
+- If Review mode has no due cards for the selected deck, should the empty state offer a one-click switch into Practice for that deck?
 
 ---
 

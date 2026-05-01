@@ -62,12 +62,12 @@ Step 5 fills that gap.
   - Review mode is deck-scoped; the queue contract must support `deckId` filtering so `/review?...deckId=...` reviews only one deck
   - Practice mode is separate from Review mode; it can return all cards for a deck but must not grade, log, or mutate review state
   - reset on `again`
-  - retry immediately on `again` and `hard`
+  - retry immediately on `again` and `hard`, but place the retried item behind other currently due cards in the selected deck queue
   - advance on `good/easy`
   - loop after the last card
   - cards attached to a deck but not present in a user-authored chunk are still reviewable via an auto-managed deck system chunk (`Deck Inbox`)
   - cards become reviewable immediately when a deck is created, a card is added into a deck, or a chunk is added into a deck
-  - default intervals must be visible/editable from deck create/edit using friendly units such as hours and days, with per-item overrides supported where needed
+  - default intervals must be visible/editable from deck create/edit using friendly units such as hours and days; individual card/chunk overrides are future work and should inherit from deck intervals for now
 - The API may return scheduling context for correctness, telemetry, and debugging, but the review page should not be required to display internal labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due state, last grade, streak, or interval summaries.
 
 ---

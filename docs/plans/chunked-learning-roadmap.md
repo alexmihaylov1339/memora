@@ -17,8 +17,8 @@
 - The review page should not expose internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 - In each chunk review session, the learner should see exactly one next sentence/card.
 - After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
-- Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck create/edit time using friendly units such as hours and days, and override for individual review items where needed.
-- `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours.
+- Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck create/edit time using friendly units such as hours and days. Individual card/chunk interval overrides should be added later, after deck-level intervals ship.
+- `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours, and should be placed behind the other currently due cards in that deck session.
 - `good` and `easy` can use the configured interval sequence.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
 
@@ -100,7 +100,7 @@
   - only one next card in a chunk becomes reviewable at a time
   - chunk card order cycles back to the first card after the last
   - chunk mastery requires a consecutive success streak backed by a default interval sequence that is visible and editable
-  - `again` and `hard` retry immediately; they do not wait for the normal interval sequence
+  - `again` and `hard` retry immediately; they do not wait for the normal interval sequence, but the retried item moves behind the other currently due cards in the selected deck queue
   - a failed review resets chunk progress to the beginning while keeping the item immediately due
 - Review state update rules on grade submission.
 - Deterministic time handling (UTC + consistent due-date calculation).

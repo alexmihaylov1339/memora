@@ -96,7 +96,7 @@ These rules should be treated as the source of truth for implementation.
 - The sequence must be visible to the user and editable at deck level.
 - Deck create/edit is the primary place to view and edit the default interval sequence.
 - Editing should support friendly units such as hours and days, then normalize to the scheduler's stored duration representation.
-- The system must support item-level interval overrides where needed.
+- The first configurable-interval implementation should support deck-level interval editing. Individual card/chunk interval overrides are a future extension and should inherit from the deck until that future work exists.
 
 Example:
 - review event 1 -> show card 1 immediately
@@ -109,7 +109,7 @@ Example:
 
 Explanation:
 - The default interval sequence exists so the user has sane defaults.
-- Defaults are not final authority: user-edited deck intervals and item overrides must be able to replace them.
+- Defaults are not final authority: user-edited deck intervals must replace them. Item-level overrides are planned for later and should inherit from the deck until implemented.
 - The schedule source should stay isolated in one helper/config location so deck-specific values can drive review timing without rewriting the engine.
 
 ### R3 - Chunk mastery requires a long consecutive success streak
