@@ -59,7 +59,7 @@ export default function ReviewScreen() {
       {gradeResult && <ReviewFeedbackBanner result={gradeResult} />}
 
       <ReviewCurrentItemCard
-        basicCardFields={reviewRenderer.basicCardFields}
+        reviewRenderer={reviewRenderer}
         isAnswerRevealed={isAnswerRevealed}
         onRevealAnswer={handleRevealAnswer}
       />

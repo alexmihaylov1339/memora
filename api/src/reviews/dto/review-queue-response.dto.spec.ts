@@ -39,7 +39,7 @@ describe('review-queue-response.dto', () => {
     });
   });
 
-  it('serializes deterministic unsupported reason enum values', () => {
+  it('serializes deterministic supported and unsupported kind metadata', () => {
     const items: ReviewQueueItem[] = [
       {
         cardId: 'card-cloze',
@@ -51,9 +51,8 @@ describe('review-queue-response.dto', () => {
         due: new Date('2026-04-03T10:00:00.000Z'),
         kind: 'cloze_text',
         fields: { text: 'Ich {{c1::spiele}}.', answer: 'spiele' },
-        isReviewSupported: false,
-        reviewUnsupportedReason:
-          REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+        isReviewSupported: true,
+        reviewUnsupportedReason: null,
         cardCreatedAt: new Date('2026-04-01T10:00:00.000Z'),
         consecutiveSuccessCount: 0,
       },
@@ -78,9 +77,8 @@ describe('review-queue-response.dto', () => {
       items: [
         expect.objectContaining({
           cardId: 'card-cloze',
-          isReviewSupported: false,
-          reviewUnsupportedReason:
-            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
         }),
         expect.objectContaining({
           cardId: 'card-invalid',

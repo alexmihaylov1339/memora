@@ -42,7 +42,7 @@ describe('review-kind-registry', () => {
     });
   });
 
-  it('returns unsupported for non-review-enabled kinds', () => {
+  it('resolves cloze text renderer for valid cloze text items', () => {
     expect(
       resolveReviewRenderer(
         buildItem({
@@ -50,15 +50,38 @@ describe('review-kind-registry', () => {
           fields: {
             text: 'Ich {{c1::spiele}} gern Tennis.',
             answer: 'spiele',
+            hint: 'verb',
           },
-          isReviewSupported: false,
-          reviewUnsupportedReason:
-            REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+        }),
+      ),
+    ).toEqual({
+      renderer: 'cloze_text',
+      clozeTextCardFields: {
+        prompt: 'Ich _____ gern Tennis.',
+        answer: 'spiele',
+        hint: 'verb',
+      },
+    });
+  });
+
+  it('returns unsupported for invalid cloze text payload', () => {
+    expect(
+      resolveReviewRenderer(
+        buildItem({
+          kind: 'cloze_text',
+          fields: {
+            text: 'Ich {{c1::spiele}} gern Tennis.',
+            answer: 'lerne',
+          },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
         }),
       ),
     ).toEqual({
       renderer: 'unsupported',
-      reason: REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+      reason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
     });
   });
 
@@ -82,7 +105,7 @@ describe('review-kind-registry', () => {
     expect(
       resolveReviewRenderer(
         buildItem({
-          kind: 'cloze_text',
+          kind: 'audio_gap',
           isReviewSupported: false,
           reviewUnsupportedReason: null,
         }),

@@ -8,9 +8,13 @@ export {
   resolveUnsupportedReason,
 } from './review-observability';
 export type {
-  BasicReviewCardFields,
   ReviewRendererResolution,
+  SupportedReviewRenderer,
 } from './review-kind-registry';
+export type {
+  BasicReviewCardFields,
+  ClozeTextReviewCardFields,
+} from './review-kind-fields';
 export type {
   ReviewQueueState,
 } from './review-observability';

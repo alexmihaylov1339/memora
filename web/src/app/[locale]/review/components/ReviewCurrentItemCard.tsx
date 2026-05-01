@@ -1,21 +1,21 @@
-import type { BasicReviewCardFields } from '@features/reviews';
+import type { SupportedReviewRenderer } from '@features/reviews';
 import ReviewAnswerCard from './ReviewAnswerCard';
 
 interface ReviewCurrentItemCardProps {
-  basicCardFields: BasicReviewCardFields;
+  reviewRenderer: SupportedReviewRenderer;
   isAnswerRevealed: boolean;
   onRevealAnswer: () => void;
 }
 
 export default function ReviewCurrentItemCard({
-  basicCardFields,
+  reviewRenderer,
   isAnswerRevealed,
   onRevealAnswer,
 }: ReviewCurrentItemCardProps) {
   return (
     <section className="rounded-lg border border-[var(--border)] bg-white p-6">
       <ReviewAnswerCard
-        basicCardFields={basicCardFields}
+        reviewRenderer={reviewRenderer}
         isAnswerRevealed={isAnswerRevealed}
         onRevealAnswer={onRevealAnswer}
       />

@@ -336,7 +336,7 @@ describe('ReviewsService', () => {
       ]);
     });
 
-    it('returns unsupported metadata for non-review-enabled kinds', async () => {
+    it('returns supported metadata for review-enabled cloze text cards', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
       prisma.chunk.findMany.mockResolvedValue([
@@ -370,9 +370,49 @@ describe('ReviewsService', () => {
         expect.objectContaining({
           cardId: 'card-cloze-1',
           kind: 'cloze_text',
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+        }),
+      ]);
+    });
+
+    it('returns invalid-payload metadata for malformed cloze text fields', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-invalid-cloze',
+          deckId: 'deck-1',
+          title: 'invalid cloze payload',
+          position: 0,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-invalid-cloze-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-invalid-cloze-1',
+                kind: 'cloze_text',
+                fields: {
+                  text: 'Ich {{c1::spiele}} gern Tennis.',
+                  answer: 'lerne',
+                },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-invalid-cloze-1',
+          kind: 'cloze_text',
           isReviewSupported: false,
           reviewUnsupportedReason:
-            REVIEW_KIND_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+            REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         }),
       ]);
     });
@@ -1291,10 +1331,9 @@ describe('ReviewsService', () => {
               sequenceIndex: 0,
               card: {
                 id: 'card-1',
-                kind: 'cloze_text',
+                kind: 'audio_gap',
                 fields: {
-                  text: 'Ich {{c1::spiele}} gern Tennis.',
-                  answer: 'spiele',
+                  prompt: 'Select the missing audio segment.',
                 },
                 createdAt: new Date('2026-04-01T10:00:00.000Z'),
               },

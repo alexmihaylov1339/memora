@@ -60,7 +60,10 @@ describe('review UX iteration states', () => {
   it('keeps the active review card free of scheduling metadata labels', () => {
     render(
       <ReviewCurrentItemCard
-        basicCardFields={{ front: 'spielen', back: 'to play' }}
+        reviewRenderer={{
+          renderer: 'basic',
+          basicCardFields: { front: 'spielen', back: 'to play' },
+        }}
         isAnswerRevealed={false}
         onRevealAnswer={jest.fn()}
       />,
@@ -73,6 +76,34 @@ describe('review UX iteration states', () => {
     expect(screen.queryByText(/Chunk card/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Due now/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Streak/i)).not.toBeInTheDocument();
+  });
+
+  it('renders cloze text cards with the answer hidden until reveal', async () => {
+    const user = userEvent.setup();
+    const onRevealAnswer = jest.fn();
+
+    render(
+      <ReviewCurrentItemCard
+        reviewRenderer={{
+          renderer: 'cloze_text',
+          clozeTextCardFields: {
+            prompt: 'Ich _____ gern Tennis.',
+            answer: 'spiele',
+            hint: 'verb',
+          },
+        }}
+        isAnswerRevealed={false}
+        onRevealAnswer={onRevealAnswer}
+      />,
+    );
+
+    expect(screen.getByText('Ich _____ gern Tennis.')).toBeInTheDocument();
+    expect(screen.getByText('Hint: verb')).toBeInTheDocument();
+    expect(screen.queryByText('spiele')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Reveal Answer' }));
+
+    expect(onRevealAnswer).toHaveBeenCalledTimes(1);
   });
 
   it('keeps completion feedback focused on refresh without last-grade stats', () => {

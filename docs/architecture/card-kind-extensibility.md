@@ -1,7 +1,7 @@
 # Memora Card-Kind Extensibility Playbook
 
 **Purpose:** Add a new card kind end-to-end without rewriting chunk scheduling, queue, or page shells.  
-**Last updated:** 2026-04-26  
+**Last updated:** 2026-05-01
 **Primary step reference:** `docs/plans/step-13-extensible-card-exercise-architecture.md`
 **Contract strategy reference:** `docs/architecture/card-kind-contract-strategy.md`
 
@@ -25,7 +25,7 @@ Use this exact order:
 ## Current supported kinds
 
 - `basic` (fully supported in authoring + review)
-- `cloze_text` (authoring supported; review support depends on current renderer registration)
+- `cloze_text` (fully supported in authoring + review)
 
 ---
 
@@ -54,6 +54,7 @@ Frontend authoring:
 - `web/src/app/[locale]/cards/[id]/edit/page.tsx`
 
 Frontend review:
+- `web/src/features/reviews/review-kind-fields.ts`
 - `web/src/features/reviews/review-kind-registry.ts`
 - `web/src/features/reviews/review-kind-registry.test.ts`
 - `web/src/features/reviews/types/index.ts`

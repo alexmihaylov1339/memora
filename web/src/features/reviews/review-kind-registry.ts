@@ -1,18 +1,23 @@
-import { isString } from '@shared/utils';
+import {
+  parseBasicReviewFields,
+  parseClozeTextReviewFields,
+  type BasicReviewCardFields,
+  type ClozeTextReviewCardFields,
+} from './review-kind-fields';
 import {
   REVIEW_UNSUPPORTED_REASONS,
   type ReviewQueueItem,
   type ReviewUnsupportedReason,
 } from './types';
 
-export interface BasicReviewCardFields {
-  front: string;
-  back: string;
-}
-
-type SupportedReviewRenderer = {
+type BasicReviewRenderer = {
   renderer: 'basic';
   basicCardFields: BasicReviewCardFields;
+};
+
+type ClozeTextReviewRenderer = {
+  renderer: 'cloze_text';
+  clozeTextCardFields: ClozeTextReviewCardFields;
 };
 
 type UnsupportedReviewRenderer = {
@@ -20,32 +25,13 @@ type UnsupportedReviewRenderer = {
   reason: ReviewUnsupportedReason;
 };
 
+export type SupportedReviewRenderer =
+  | BasicReviewRenderer
+  | ClozeTextReviewRenderer;
+
 export type ReviewRendererResolution =
   | SupportedReviewRenderer
   | UnsupportedReviewRenderer;
-
-function parseBasicReviewFields(
-  item: ReviewQueueItem,
-): BasicReviewCardFields | null {
-  const front = item.fields.front;
-  const back = item.fields.back;
-
-  if (!isString(front) || !isString(back)) {
-    return null;
-  }
-
-  const normalizedFront = front.trim();
-  const normalizedBack = back.trim();
-
-  if (!normalizedFront || !normalizedBack) {
-    return null;
-  }
-
-  return {
-    front: normalizedFront,
-    back: normalizedBack,
-  };
-}
 
 export function resolveReviewRenderer(
   item: ReviewQueueItem | null,
@@ -75,6 +61,21 @@ export function resolveReviewRenderer(
     return {
       renderer: 'basic',
       basicCardFields,
+    };
+  }
+
+  if (item.kind === 'cloze_text') {
+    const clozeTextCardFields = parseClozeTextReviewFields(item);
+    if (!clozeTextCardFields) {
+      return {
+        renderer: 'unsupported',
+        reason: REVIEW_UNSUPPORTED_REASONS.invalidPayload,
+      };
+    }
+
+    return {
+      renderer: 'cloze_text',
+      clozeTextCardFields,
     };
   }
 

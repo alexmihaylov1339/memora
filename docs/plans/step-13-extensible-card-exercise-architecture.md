@@ -681,6 +681,9 @@ Verification completed:
   - No aggregate observability yet for unsupported-kind queue events and invalid-payload frequency.
 - Roadmap Step 14 updated with quality/observability follow-up items discovered during Step 13.
 
+Product correction after completion:
+- Step 16 T3 promoted `cloze_text` to a review-enabled pilot kind. Step 13's unsupported-kind behavior still applies to unknown kinds and malformed persisted payloads.
+
 ---
 
 ## Implementation order recommendation

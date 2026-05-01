@@ -171,7 +171,7 @@ Verification completed:
 ### T3 - Card-kind onboarding pilot (next kind readiness)
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add one scoped pilot kind or complete a dry-run implementation checklist for the next kind.
@@ -188,6 +188,21 @@ Exit criteria:
 
 Verification checklist:
 - required regression suites stay green.
+
+Verification completed:
+- Promoted `cloze_text` from authoring-only proof kind to review-enabled pilot kind without changing queue scheduling.
+- Backend review adapter now validates `cloze_text` payloads for review support and preserves invalid-payload fallback for malformed persisted fields.
+- Frontend review registry now resolves `cloze_text` into a supported renderer payload and keeps unsupported fallback for invalid or unknown kinds.
+- Review UI renders cloze prompts with the answer hidden until reveal and supports optional hints.
+- Split review field parsing into `web/src/features/reviews/review-kind-fields.ts` after touching `review-kind-registry.ts`, keeping touched non-test files under the 150-line guideline.
+- Updated card-kind extensibility docs to mark `cloze_text` as fully supported in authoring and review.
+- Verification:
+  - `cd api && npm test -- --runTestsByPath src/reviews/review-kind-adapter.spec.ts src/reviews/dto/review-queue-response.dto.spec.ts src/reviews/reviews.service.spec.ts` passed.
+  - `cd web && npm test -- --runTestsByPath src/features/reviews/review-kind-registry.test.ts 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx'` passed.
+  - `cd api && npx tsc --noEmit --pretty false` passed.
+  - `cd api && npx eslint src/reviews/review-kind-adapter.ts src/reviews/review-kind-adapter.spec.ts src/reviews/dto/review-queue-response.dto.spec.ts src/reviews/reviews.service.spec.ts` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `cd web && npx eslint src/features/reviews/review-kind-fields.ts src/features/reviews/review-kind-registry.ts src/features/reviews/review-kind-registry.test.ts 'src/app/[locale]/review/components/ReviewAnswerCard.tsx' 'src/app/[locale]/review/components/ReviewCurrentItemCard.tsx' 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx'` passed.
 
 ---
 
