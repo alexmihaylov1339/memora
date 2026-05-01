@@ -588,6 +588,66 @@ describe('ReviewsService', () => {
       ]);
     });
 
+    it('places immediate retry items behind other due cards when due times match', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-retry',
+          deckId: 'deck-1',
+          title: 'retry',
+          position: 0,
+          reviewState: {
+            id: 'state-retry',
+            chunkId: 'chunk-retry',
+            due: now,
+            consecutiveSuccessCount: 0,
+            lastGrade: 'hard' satisfies Grade,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-retry',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-retry',
+                kind: 'basic',
+                fields: { front: 'retry', back: 'retry' },
+                createdAt: new Date('2026-04-01T09:00:00.000Z'),
+              },
+            },
+          ],
+        },
+        {
+          id: 'chunk-fresh',
+          deckId: 'deck-1',
+          title: 'fresh',
+          position: 1,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-fresh',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-fresh',
+                kind: 'basic',
+                fields: { front: 'fresh', back: 'fresh' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now),
+      ).resolves.toEqual([
+        expect.objectContaining({ cardId: 'card-fresh' }),
+        expect.objectContaining({ cardId: 'card-retry' }),
+      ]);
+    });
+
     it('gracefully handles malformed persisted chunk review state rows', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
@@ -646,6 +706,7 @@ describe('ReviewsService', () => {
           deckId: 'deck-1',
           title: 'spielen',
           position: 0,
+          deck: { reviewIntervalHours: [1, 2, 3] },
           reviewState: {
             id: 'state-1',
             chunkId: 'chunk-1',
@@ -716,8 +777,8 @@ describe('ReviewsService', () => {
           reset: false,
           previousConsecutiveSuccessCount: 0,
           consecutiveSuccessCount: 1,
-          intervalHours: 8,
-          due: new Date('2026-04-02T17:00:00.000Z'),
+          intervalHours: 2,
+          due: new Date('2026-04-02T11:00:00.000Z'),
         }),
       );
       expect(
@@ -733,7 +794,7 @@ describe('ReviewsService', () => {
       expect(prisma.chunkReviewState.update).toHaveBeenCalledWith({
         where: { chunkId: 'chunk-1' },
         data: {
-          due: new Date('2026-04-02T17:00:00.000Z'),
+          due: new Date('2026-04-02T11:00:00.000Z'),
           consecutiveSuccessCount: 1,
           lastGrade: 'good',
         },
@@ -741,8 +802,8 @@ describe('ReviewsService', () => {
       expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
         where: { cardId: 'card-1' },
         update: {
-          due: new Date('2026-04-02T17:00:00.000Z'),
-          interval: 8,
+          due: new Date('2026-04-02T11:00:00.000Z'),
+          interval: 2,
           reps: 1,
           lapses: 0,
           lastGrade: 'good',
@@ -750,8 +811,8 @@ describe('ReviewsService', () => {
         create: {
           cardId: 'card-1',
           ease: 2.5,
-          interval: 8,
-          due: new Date('2026-04-02T17:00:00.000Z'),
+          interval: 2,
+          due: new Date('2026-04-02T11:00:00.000Z'),
           reps: 1,
           lapses: 0,
           lastGrade: 'good',
@@ -792,7 +853,7 @@ describe('ReviewsService', () => {
           cardId: 'card-1',
           grade: 'good',
           oldInterval: 0,
-          newInterval: 8,
+          newInterval: 2,
           oldEase: 2.5,
           newEase: 2.5,
           mode: 'basic',

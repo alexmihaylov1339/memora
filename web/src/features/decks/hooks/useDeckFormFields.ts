@@ -26,6 +26,17 @@ export function useDeckEditFormFields(): FieldConfig[] {
         inputClassName:
           'w-full rounded-[4px] border border-line bg-white px-3 py-2 text-sm text-ink-strong outline-none resize-y focus:border-brand-accent',
       },
+      {
+        type: 'text',
+        name: 'reviewIntervalsInput',
+        label: 'Review intervals',
+        required: true,
+        placeholder: 'Example: 4h, 8h, 1d, 2d',
+        fieldWrapperClassName: 'mb-5',
+        labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
+      },
     ],
     [],
   );

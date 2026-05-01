@@ -10,6 +10,7 @@ import {
   computeNextDueAt,
   getChunkReviewIntervalHours,
   getNextConsecutiveSuccessCount,
+  resolveChunkReviewIntervalHours,
 } from './chunk-scheduling';
 import { REVIEW_ERROR_MESSAGES } from './review-errors';
 import {
@@ -165,9 +166,15 @@ export class ReviewsService {
           snapshot.consecutiveSuccessCount,
           wasSuccessful,
         );
+    const reviewIntervalHours = resolveChunkReviewIntervalHours(
+      chunk.deck?.reviewIntervalHours,
+    );
     const intervalHours = isImmediateRetry
       ? 0
-      : getChunkReviewIntervalHours(nextConsecutiveSuccessCount);
+      : getChunkReviewIntervalHours(
+          nextConsecutiveSuccessCount,
+          reviewIntervalHours,
+        );
     const nextDue = computeNextDueAt(now, intervalHours);
 
     const existingCardState = await this.prisma.reviewState.findUnique({

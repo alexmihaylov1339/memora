@@ -5,6 +5,8 @@ import { BUTTON_STYLES } from '@shared/constants';
 import {
   DeckCardSelectionPanel,
   DeckChunkSelectionPanel,
+  formatDeckReviewIntervalsInput,
+  parseDeckReviewIntervalsInput,
   useDeckEditFormFields,
 } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
@@ -14,6 +16,7 @@ interface DeckEditFormProps {
   id: string;
   name: string;
   description?: string;
+  reviewIntervalHours: number[];
   initialCards?: SearchResultItem[];
   initialChunks?: SearchResultItem[];
   onUpdate: (payload: {
@@ -22,6 +25,7 @@ interface DeckEditFormProps {
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    reviewIntervalHours?: number[];
   }) => Promise<void> | void;
   onDelete: () => void;
   isDeleting: boolean;
@@ -33,6 +37,7 @@ export default function DeckEditForm({
   id,
   name,
   description,
+  reviewIntervalHours,
   initialCards = [],
   initialChunks = [],
   onUpdate,
@@ -43,6 +48,7 @@ export default function DeckEditForm({
 }: DeckEditFormProps) {
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>(initialCards);
   const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>(initialChunks);
+  const [intervalError, setIntervalError] = useState<string | undefined>();
   const baseFields = useDeckEditFormFields();
 
   const fields = useMemo<FieldConfig[]>(
@@ -87,15 +93,30 @@ export default function DeckEditForm({
   async function handleSubmit(values: {
     name: string;
     description?: string;
+    reviewIntervalsInput: string;
     cardIds?: string[];
     chunkIds?: string[];
   }) {
+    let nextReviewIntervalHours: number[];
+    try {
+      nextReviewIntervalHours = parseDeckReviewIntervalsInput(
+        values.reviewIntervalsInput,
+      );
+      setIntervalError(undefined);
+    } catch (parseError) {
+      setIntervalError(
+        parseError instanceof Error ? parseError.message : 'Invalid intervals',
+      );
+      return;
+    }
+
     await onUpdate({
       id,
       name: values.name.trim(),
       description: values.description?.trim() || undefined,
       cardIds: values.cardIds,
       chunkIds: values.chunkIds,
+      reviewIntervalHours: nextReviewIntervalHours,
     });
   }
 
@@ -103,6 +124,7 @@ export default function DeckEditForm({
     <FormBuilder<{
       name: string;
       description?: string;
+      reviewIntervalsInput: string;
       cardIds?: string[];
       chunkIds?: string[];
     }>
@@ -111,6 +133,9 @@ export default function DeckEditForm({
       initialValues={{
         name,
         description: description ?? '',
+        reviewIntervalsInput: formatDeckReviewIntervalsInput(
+          reviewIntervalHours,
+        ),
       }}
       submitLabel="Save Changes"
       submitButtonClassName={styles.primaryButton}
@@ -122,7 +147,7 @@ export default function DeckEditForm({
       actionsContainerClassName={styles.actionRow}
       translateFields={false}
       resetOnSubmit={false}
-      errorMessage={updateError ?? deleteError}
+      errorMessage={intervalError ?? updateError ?? deleteError}
       formClassName={`${styles.container} ${styles.form}`}
     />
   );

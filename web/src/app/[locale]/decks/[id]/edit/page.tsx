@@ -52,6 +52,7 @@ export default function EditDeckPage() {
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    reviewIntervalHours?: number[];
   }): Promise<void> {
     await updateDeck.fetch(payload);
   }
@@ -80,6 +81,7 @@ export default function EditDeckPage() {
               id={deck.id}
               name={deck.name}
               description={deck.description}
+              reviewIntervalHours={deck.reviewIntervalHours}
               initialCards={cards.map(cardToSearchResultItem)}
               initialChunks={chunks.map(chunkToSearchResultItem)}
               onUpdate={handleUpdateDeck}

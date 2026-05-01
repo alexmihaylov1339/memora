@@ -97,6 +97,7 @@ describe('DecksService', () => {
       id: 'deck-1',
       name: 'Deck 1',
       description: null,
+      reviewIntervalHours: [2, 24],
       ownerId: 'user-1',
       createdAt: now,
       updatedAt: now,
@@ -105,7 +106,7 @@ describe('DecksService', () => {
     prisma.chunk.create.mockResolvedValue({ id: 'chunk-inbox-1' });
 
     await expect(
-      service.create('Deck 1', undefined, ['card-1'], [], 'user-1'),
+      service.create('Deck 1', undefined, ['card-1'], [], 'user-1', [2, 24]),
     ).resolves.toEqual(
       expect.objectContaining({
         status: 'created',
@@ -127,6 +128,14 @@ describe('DecksService', () => {
       },
     });
     expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
+    expect(prisma.deck.create).toHaveBeenCalledWith({
+      data: {
+        name: 'Deck 1',
+        description: undefined,
+        reviewIntervalHours: [2, 24],
+        ownerId: 'user-1',
+      },
+    });
 
     jest.useRealTimers();
   });
@@ -140,6 +149,7 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      reviewIntervalHours: [4, 24],
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
       _count: { cards: 3 },
@@ -165,6 +175,7 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      reviewIntervalHours: [4, 24],
       count: 3,
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
@@ -181,6 +192,40 @@ describe('DecksService', () => {
         },
       ],
     });
+  });
+
+  it('updates deck review intervals without recalculating chunk due dates', async () => {
+    const createdAt = new Date('2026-04-01T10:00:00.000Z');
+    const updatedAt = new Date('2026-04-01T11:00:00.000Z');
+
+    prisma.deck.findFirst.mockResolvedValue({ id: 'deck-1' });
+    prisma.deck.update.mockResolvedValue({
+      id: 'deck-1',
+      name: 'Deck 1',
+      description: null,
+      reviewIntervalHours: [1, 24, 168],
+      createdAt,
+      updatedAt,
+      _count: { cards: 0 },
+      shares: [],
+    });
+
+    await expect(
+      service.update('deck-1', { reviewIntervalHours: [1, 24, 168] }, 'user-1'),
+    ).resolves.toEqual({
+      status: 'updated',
+      deck: {
+        id: 'deck-1',
+        name: 'Deck 1',
+        description: undefined,
+        reviewIntervalHours: [1, 24, 168],
+        count: 0,
+        createdAt,
+        updatedAt,
+        sharedUsers: [],
+      },
+    });
+    expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
   });
 
   it('shareDeck returns not found when the deck is missing', async () => {

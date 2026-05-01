@@ -21,6 +21,8 @@
     "description": "Описание",
     "descriptionPlaceholder": "Незадължително описание",
     "namePlaceholder": "Въведете име на тестето",
+    "reviewIntervals": "Интервали за преговор",
+    "reviewIntervalsPlaceholder": "Пример: 4h, 8h, 1d, 2d",
     "createButton": "Създай тесте",
     "creating": "Създаване...",
     "refreshButton": "Обнови тестетата",

@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
+import { normalizeDeckReviewIntervalHours } from './deck-review-intervals';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
 import {
@@ -54,6 +55,9 @@ export class DecksController {
     validateCreateDeckInput(body);
     const normalizedCardIds = normalizeDeckIds(body.cardIds);
     const normalizedChunkIds = normalizeDeckIds(body.chunkIds);
+    const reviewIntervalHours = normalizeDeckReviewIntervalHours(
+      body.reviewIntervalHours,
+    );
 
     const result = await this.decks.create(
       body.name.trim(),
@@ -61,6 +65,7 @@ export class DecksController {
       normalizedCardIds,
       normalizedChunkIds,
       user.id,
+      reviewIntervalHours,
     );
 
     if (result.status === 'invalid_cards') {
@@ -103,6 +108,9 @@ export class DecksController {
     validateUpdateDeckInput(body);
     const normalizedCardIds = normalizeDeckIds(body.cardIds);
     const normalizedChunkIds = normalizeDeckIds(body.chunkIds);
+    const reviewIntervalHours = normalizeDeckReviewIntervalHours(
+      body.reviewIntervalHours,
+    );
 
     const result = await this.decks.update(
       id,
@@ -111,6 +119,7 @@ export class DecksController {
         description: body.description?.trim(),
         cardIds: normalizedCardIds,
         chunkIds: normalizedChunkIds,
+        reviewIntervalHours,
       },
       user.id,
     );

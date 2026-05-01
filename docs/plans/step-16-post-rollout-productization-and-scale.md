@@ -209,7 +209,7 @@ Verification completed:
 ### T3A - Review scheduling product corrections
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - enforce immediate reviewability when:
@@ -246,6 +246,24 @@ Verification checklist:
 - backend tests cover deck create, card add/move, chunk add/move, `Deck Inbox`, editable intervals, and immediate `again`/`hard` retry.
 - frontend tests cover viewing/editing default deck intervals from deck create/edit.
 - e2e/API flow confirms newly added deck cards appear in review without waiting.
+
+Implementation notes:
+- Added persisted deck-level review interval configuration with Prisma schema, migration, and full-schema SQL updates.
+- Deck create/edit now accepts friendly interval editing in the UI and persists normalized hour intervals.
+- Review scheduling now resolves intervals from the card/chunk deck, falling back to the existing MVP defaults.
+- New deck membership paths continue to make cards/chunks due immediately through owned chunks or `Deck Inbox`.
+- `again` and `hard` remain due immediately and refreshed queues sort immediate retries behind other currently due items.
+- Existing due dates are not recalculated when deck intervals change; updated intervals apply on the next grade.
+
+Verification:
+- `cd api && npx prisma generate` passed.
+- `cd api && npx prisma validate` passed.
+- `cd api && npm test -- --runTestsByPath src/decks/decks.service.spec.ts src/reviews/chunk-scheduling.spec.ts src/reviews/reviews.service.spec.ts` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd api && npx eslint src/decks/deck-review-intervals.ts src/decks/deck-create.ts src/decks/deck-update.ts src/decks/decks.helpers.ts src/decks/decks.service.ts src/decks/decks.controller.ts src/decks/dto/deck-validation.ts src/decks/dto/deck-response.dto.ts src/decks/decks.service.spec.ts src/reviews/chunk-scheduling.ts src/reviews/chunk-scheduling.spec.ts src/reviews/chunk-progress.ts src/reviews/review-access.ts src/reviews/review-queue.ts src/reviews/reviews.service.ts src/reviews/reviews.service.spec.ts` passed.
+- `cd web && npm test -- --runTestsByPath src/features/decks/utils/reviewIntervals.test.ts` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npx eslint src/features/decks/utils/reviewIntervals.ts src/features/decks/utils/reviewIntervals.test.ts src/features/decks/components/CreateDeckForm.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.tsx' src/features/decks/constants/formFields.ts src/features/decks/hooks/useDeckFormFields.ts` passed.
 
 Product decisions confirmed:
 - Step 16 ships deck-level interval editing only. Cards and chunks inherit their deck intervals for now.
@@ -463,7 +481,7 @@ Must-retire blockers before broad expansion:
 | Priority | Friction point | Severity | User impact | Evidence | Owner | Next action |
 |---|---|---|---|---|---|---|
 | P0 | Rollout cannot safely expand because staging/canary evidence is incomplete | Critical | Users cannot receive the candidate release through a proven path | T1 staging `NO-GO`; T2 canary held at `0%`; S15-D1 and S15-D2 | Release owner + On-call | Retire S15-D1/S15-D2 before any broad expansion recommendation |
-| P0 | Review scheduling does not yet match product requirement for immediate review and editable intervals | Critical | Users can add deck content and still not review it when expected; `again`/`hard` delays break the desired learning loop | User correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Implement T3A before claiming review workflow correctness |
+| P0 | Review scheduling product corrections shipped; live validation still needed | Critical | Users need newly added deck content reviewable immediately, editable deck intervals, and `again`/`hard` retries behind other due cards | T3A implementation and verification notes; user correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Validate T3A behavior with T3B deck-scoped sessions before broad product validation |
 | P0 | Review mode is not yet deck-scoped and Practice mode does not exist | Critical | Users can intend to review one deck but receive unrelated due cards from their profile; users lack a safe all-card training mode | User correction on 2026-05-01; README and roadmap product rules | Backend + Frontend | Implement T3B before broad product validation of deck learning flows |
 | P0 | Alert/SLO confidence is provisional without live telemetry | High | On-call may overreact or miss real user-impacting degradation | T3 thresholds frozen; observability baseline is local mocked persistence; S15-D3/S15-D4 | Backend + On-call | Collect live baseline and update `docs/operations/review-observability.md` |
 | P1 | Rollback execution still needs platform-specific command proof | High | Incident response depends on an operator translating generic steps under pressure | T4 tabletop drill passed but S15-D5 remains open | Release owner | Add platform command references before next live canary retry |

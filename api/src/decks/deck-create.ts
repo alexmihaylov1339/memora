@@ -5,6 +5,7 @@ import {
   hasExistingCards,
   hasExistingChunks,
 } from './decks.helpers';
+import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 import type { CreateDeckResult, DeckRecord } from './decks.types';
 
 export async function createDeck(
@@ -14,6 +15,7 @@ export async function createDeck(
     description?: string;
     cardIds: string[];
     chunkIds: string[];
+    reviewIntervalHours?: number[];
     userId: string;
   },
 ): Promise<CreateDeckResult> {
@@ -36,13 +38,22 @@ export async function createDeck(
       data: {
         name: input.name,
         description: input.description,
+        reviewIntervalHours: input.reviewIntervalHours,
         ownerId: input.userId,
       },
-    })) as DeckRecord;
+    })) as unknown as DeckRecord;
 
     await moveCardsToDeck(tx, deck.id, input.cardIds, input.userId);
     await moveChunksToDeck(tx, deck.id, input.chunkIds);
 
-    return { status: 'created', deck } satisfies CreateDeckResult;
+    return {
+      status: 'created',
+      deck: {
+        ...deck,
+        reviewIntervalHours: resolveDeckReviewIntervalHours(
+          deck.reviewIntervalHours,
+        ),
+      },
+    } satisfies CreateDeckResult;
   });
 }

@@ -3,4 +3,5 @@ export interface UpdateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  reviewIntervalHours?: number[];
 }

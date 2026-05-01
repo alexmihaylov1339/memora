@@ -5,6 +5,7 @@ export interface CreateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  reviewIntervalHours?: number[];
 }
 
 export interface DeckListItem {
@@ -17,6 +18,7 @@ export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  reviewIntervalHours: number[];
   createdAt: string;
   updatedAt: string;
 }
@@ -44,6 +46,7 @@ export interface UpdateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  reviewIntervalHours?: number[];
 }
 
 export interface DeckIdParams {

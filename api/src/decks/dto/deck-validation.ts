@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { normalizeDeckReviewIntervalHours } from '../deck-review-intervals';
 import { DECK_ERROR_MESSAGES } from '../deck-errors';
 import type { CreateDeckDto } from './create-deck.dto';
 import type { DeckSharePermission } from '../deck-share.types';
@@ -36,6 +37,8 @@ export function validateCreateDeckInput(body: CreateDeckDto) {
       DECK_ERROR_MESSAGES.chunkIdsMustBeUniqueStrings,
     );
   }
+
+  normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
 }
 
 export function validateUpdateDeckInput(body: UpdateDeckDto) {
@@ -44,7 +47,8 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
     (isUndefined(body.name) &&
       isUndefined(body.description) &&
       isUndefined(body.cardIds) &&
-      isUndefined(body.chunkIds))
+      isUndefined(body.chunkIds) &&
+      isUndefined(body.reviewIntervalHours))
   ) {
     throw new BadRequestException(DECK_ERROR_MESSAGES.atLeastOneFieldRequired);
   }
@@ -67,6 +71,8 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
       DECK_ERROR_MESSAGES.chunkIdsMustBeUniqueStrings,
     );
   }
+
+  normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
 }
 
 interface CreateDeckShareValidationInput {

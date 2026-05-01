@@ -1,5 +1,6 @@
 import type { FieldConfig } from '@shared/components';
 import { TRANSLATION_KEYS } from '@/i18n';
+import { formatDeckReviewIntervalsInput } from '../utils';
 
 export const createDeckFormFields: FieldConfig[] = [
   {
@@ -23,5 +24,17 @@ export const createDeckFormFields: FieldConfig[] = [
     rows: 3,
     inputClassName:
       'w-full rounded-[4px] border border-line bg-white px-3 py-2 text-sm text-ink-strong outline-none resize-y focus:border-brand-accent',
+  },
+  {
+    type: 'text',
+    name: 'reviewIntervalsInput',
+    label: TRANSLATION_KEYS.decks.reviewIntervals,
+    required: true,
+    placeholder: TRANSLATION_KEYS.decks.reviewIntervalsPlaceholder,
+    defaultValue: formatDeckReviewIntervalsInput(),
+    fieldWrapperClassName: 'mb-5',
+    labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+    inputClassName:
+      'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
   },
 ];

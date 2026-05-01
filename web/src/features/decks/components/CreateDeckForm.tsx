@@ -10,6 +10,7 @@ import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
 import { useCreateDeckMutation } from '../hooks';
 import type { CreateDeckDto } from '../types';
+import { parseDeckReviewIntervalsInput } from '../utils';
 import type { SearchResultItem } from '../../search/types';
 import { DECKS_QUERY_KEYS, createDeckFormFields } from '../constants';
 import { TRANSLATION_KEYS } from '@/i18n';
@@ -17,6 +18,10 @@ import DeckCardSelectionPanel from './DeckCardSelectionPanel';
 import DeckChunkSelectionPanel from './DeckChunkSelectionPanel';
 
 import styles from './CreateDeckForm.module.scss';
+
+interface CreateDeckFormValues extends Omit<CreateDeckDto, 'reviewIntervalHours'> {
+  reviewIntervalsInput: string;
+}
 
 export default function CreateDeckForm() {
   const router = useRouter();
@@ -80,18 +85,29 @@ export default function CreateDeckForm() {
     [selectedCards, selectedChunks],
   );
 
-  async function handleSubmit(values: CreateDeckDto) {
+  async function handleSubmit(values: CreateDeckFormValues) {
+    let reviewIntervalHours: number[];
+    try {
+      reviewIntervalHours = parseDeckReviewIntervalsInput(
+        values.reviewIntervalsInput,
+      );
+    } catch (parseError) {
+      error(parseError instanceof Error ? parseError.message : 'Invalid intervals');
+      return;
+    }
+
     await createDeck.fetch({
       name: values.name.trim(),
       description: values.description?.trim() || undefined,
       cardIds: values.cardIds,
       chunkIds: values.chunkIds,
+      reviewIntervalHours,
     });
   }
 
   return (
     <div className={styles.container}>
-      <FormBuilder<CreateDeckDto>
+      <FormBuilder<CreateDeckFormValues>
         fields={fields}
         onSubmit={handleSubmit}
         submitLabel={createDeck.isLoading ? t(TRANSLATION_KEYS.decks.creating) : t(TRANSLATION_KEYS.decks.createButton)}

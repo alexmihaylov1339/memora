@@ -8,6 +8,7 @@ export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -21,6 +21,10 @@ export type ReviewQueueItem = {
   consecutiveSuccessCount: number;
 };
 
+type SortableReviewQueueItem = ReviewQueueItem & {
+  isImmediateRetryPending: boolean;
+};
+
 export function buildEligibleQueueItems(
   chunks: ChunkWithCards[],
   now: Date,
@@ -64,7 +68,9 @@ export function buildEligibleQueueItems(
         reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
         cardCreatedAt: currentCard.createdAt,
         consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
-      } satisfies ReviewQueueItem;
+        isImmediateRetryPending:
+          snapshot.lastGrade === 'again' || snapshot.lastGrade === 'hard',
+      } satisfies SortableReviewQueueItem;
     })
     .filter(isNotNull);
 
@@ -72,6 +78,10 @@ export function buildEligibleQueueItems(
     const dueDiff = left.due.getTime() - right.due.getTime();
     if (dueDiff !== 0) {
       return dueDiff;
+    }
+
+    if (left.isImmediateRetryPending !== right.isImmediateRetryPending) {
+      return left.isImmediateRetryPending ? 1 : -1;
     }
 
     const createdAtDiff =
@@ -83,5 +93,23 @@ export function buildEligibleQueueItems(
     return left.cardId.localeCompare(right.cardId);
   });
 
-  return items;
+  return items.map(toReviewQueueItem);
+}
+
+function toReviewQueueItem(item: SortableReviewQueueItem): ReviewQueueItem {
+  return {
+    cardId: item.cardId,
+    deckId: item.deckId,
+    chunkId: item.chunkId,
+    chunkTitle: item.chunkTitle,
+    chunkPosition: item.chunkPosition,
+    positionInChunk: item.positionInChunk,
+    due: item.due,
+    kind: item.kind,
+    fields: item.fields,
+    isReviewSupported: item.isReviewSupported,
+    reviewUnsupportedReason: item.reviewUnsupportedReason,
+    cardCreatedAt: item.cardCreatedAt,
+    consecutiveSuccessCount: item.consecutiveSuccessCount,
+  };
 }

@@ -26,7 +26,10 @@ export {
 } from './hooks';
 
 // Utils
-// export { validateDeck } from './utils';
+export {
+  formatDeckReviewIntervalsInput,
+  parseDeckReviewIntervalsInput,
+} from './utils';
 
 // Types
 export type {

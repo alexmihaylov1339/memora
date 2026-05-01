@@ -8,6 +8,29 @@ export const DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS = [
 export const DEFAULT_CHUNK_REQUIRED_CONSECUTIVE_SUCCESSES =
   DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS.length;
 
+export function resolveChunkReviewIntervalHours(
+  reviewIntervalHours: unknown,
+): number[] {
+  if (!Array.isArray(reviewIntervalHours)) {
+    return [...DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS];
+  }
+
+  if (reviewIntervalHours.length === 0) {
+    return [...DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS];
+  }
+
+  const normalizedIntervals = reviewIntervalHours.filter(
+    (intervalHours): intervalHours is number =>
+      Number.isInteger(intervalHours) && intervalHours > 0,
+  );
+
+  if (normalizedIntervals.length !== reviewIntervalHours.length) {
+    return [...DEFAULT_CHUNK_REVIEW_INTERVAL_HOURS];
+  }
+
+  return normalizedIntervals;
+}
+
 export function getCurrentChunkCardIndex(
   consecutiveSuccessCount: number,
   totalCards: number,

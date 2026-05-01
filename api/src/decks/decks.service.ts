@@ -47,12 +47,14 @@ export class DecksService {
     cardIds: string[] = [],
     chunkIds: string[] = [],
     userId: string = '',
+    reviewIntervalHours?: number[],
   ) {
     return createDeck(this.prisma, {
       name,
       description,
       cardIds,
       chunkIds,
+      reviewIntervalHours,
       userId,
     });
   }
@@ -68,6 +70,7 @@ export class DecksService {
       description?: string;
       cardIds?: string[];
       chunkIds?: string[];
+      reviewIntervalHours?: number[];
     },
     userId: string,
   ) {
