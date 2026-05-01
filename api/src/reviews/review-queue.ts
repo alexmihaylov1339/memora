@@ -21,6 +21,11 @@ export type ReviewQueueItem = {
   consecutiveSuccessCount: number;
 };
 
+export type PracticeItem = Omit<
+  ReviewQueueItem,
+  'due' | 'consecutiveSuccessCount'
+>;
+
 type SortableReviewQueueItem = ReviewQueueItem & {
   isImmediateRetryPending: boolean;
 };

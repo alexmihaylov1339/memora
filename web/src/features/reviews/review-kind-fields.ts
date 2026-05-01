@@ -1,5 +1,5 @@
 import { isString } from '@shared/utils';
-import type { ReviewQueueItem } from './types';
+import type { ReviewRenderableItem } from './types';
 
 export interface BasicReviewCardFields {
   front: string;
@@ -13,7 +13,7 @@ export interface ClozeTextReviewCardFields {
 }
 
 export function parseBasicReviewFields(
-  item: ReviewQueueItem,
+  item: ReviewRenderableItem,
 ): BasicReviewCardFields | null {
   const front = item.fields.front;
   const back = item.fields.back;
@@ -36,7 +36,7 @@ export function parseBasicReviewFields(
 }
 
 export function parseClozeTextReviewFields(
-  item: ReviewQueueItem,
+  item: ReviewRenderableItem,
 ): ClozeTextReviewCardFields | null {
   const text = item.fields.text;
   const answer = item.fields.answer;

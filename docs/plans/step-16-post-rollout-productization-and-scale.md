@@ -278,7 +278,7 @@ Product decisions confirmed:
 ### T3B - Deck-scoped Review and Practice modes
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - make Review mode deck-scoped:
@@ -313,12 +313,31 @@ Verification checklist:
 - e2e/API flow verifies two decks with due cards do not bleed into each other's Review mode.
 - e2e/API flow verifies Practice includes non-due cards and leaves review state unchanged.
 
-Product questions to confirm before implementation:
-- Should the routes be `/review?deckId=<deckId>` and `/practice?deckId=<deckId>`, or should Practice live under the review route as `/review?deckId=<deckId>&mode=practice`?
-- Should Practice use the same reveal UI and answer buttons as Review, with buttons acting only as local navigation, or should Practice use simpler `Next` / `Previous` controls?
-- Should Practice order follow the deck card order, chunk order, due-review order, random shuffle, or a user-selectable option?
-- Should Practice include unsupported/non-reviewable card kinds as readable cards, or only card kinds supported by the review renderer?
-- If Review mode has no due cards for the selected deck, should the empty state offer a one-click switch into Practice for that deck?
+Implementation notes:
+- Review now uses `/review?deckId=<deckId>` and the queue endpoint requires deck scope.
+- Review grading carries `deckId` so next-item resolution stays inside the selected deck.
+- Practice now uses `/practice?deckId=<deckId>` with a separate non-mutating API path.
+- Practice returns all cards from the selected deck in chunk/card order, including non-due cards.
+- Practice reuses review renderers where available and uses local `Previous` / `Next` navigation instead of grade submission.
+- Unsupported practice items render as readable fallback cards without grade controls.
+- Deck grid and deck workspace actions now expose both Review and Practice for the selected deck.
+- Empty Review state offers Practice for the same deck when a deck id is present.
+
+Product decisions applied:
+- Use separate routes: `/review?deckId=<deckId>` and `/practice?deckId=<deckId>`.
+- Practice uses the reveal card UI but local navigation controls only.
+- Practice order follows chunk/card order for now.
+- Practice includes unsupported/non-reviewable kinds as readable fallback cards.
+- Empty Review can switch into Practice for the same deck.
+
+Verification completed:
+- `cd api && npm test -- --runTestsByPath src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts src/reviews/dto/review-queue-response.dto.spec.ts` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd api && npx eslint src/reviews/reviews.controller.ts src/reviews/reviews.service.ts src/reviews/review-access.ts src/reviews/review-queries.ts src/reviews/review-queue.ts src/reviews/review-practice.ts src/reviews/review-grade-application.ts src/reviews/review-grade-schedule.ts src/reviews/review-grade-flow.ts src/reviews/review-service-observability.ts src/reviews/dto/review-query.dto.ts src/reviews/dto/review-queue-response.dto.ts src/reviews/dto/review-validation.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts src/reviews/dto/review-queue-response.dto.spec.ts` passed.
+- `cd web && npm test -- --runTestsByPath src/features/reviews/services/reviewService.test.ts src/features/reviews/hooks/useReviewScreen.test.tsx 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/practice/components/PracticeScreen.test.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.test.tsx'` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npx eslint src/features/reviews/services/reviewService.ts src/features/reviews/services/reviewResponseParsers.ts src/features/reviews/services/reviewService.test.ts src/features/reviews/hooks/useReviewScreen.ts src/features/reviews/hooks/useReviewScreenObservability.ts src/features/reviews/hooks/usePracticeScreen.ts src/features/reviews/hooks/useReviewQueries.ts src/features/reviews/hooks/useReviewScreen.test.tsx src/features/reviews/types/index.ts src/features/reviews/review-kind-registry.ts src/features/reviews/review-kind-fields.ts 'src/app/[locale]/review/page.tsx' 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewEmptyState.tsx' 'src/app/[locale]/review/components/ReviewUnsupportedCard.tsx' 'src/app/[locale]/practice/page.tsx' 'src/app/[locale]/practice/components/PracticeScreen.tsx' 'src/app/[locale]/practice/components/PracticeHeader.tsx' 'src/app/[locale]/practice/components/PracticeNavigation.tsx' 'src/app/[locale]/practice/components/PracticeEmptyState.tsx' 'src/app/[locale]/practice/components/PracticeScreen.test.tsx' 'src/app/[locale]/practice/components/PracticeUnsupportedCard.tsx' 'src/app/[locale]/decks/components/useDeckGridColumns.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.test.tsx' src/shared/constants/routes.ts` passed.
+- `git diff --check` passed.
 
 ---
 
@@ -481,8 +500,8 @@ Must-retire blockers before broad expansion:
 | Priority | Friction point | Severity | User impact | Evidence | Owner | Next action |
 |---|---|---|---|---|---|---|
 | P0 | Rollout cannot safely expand because staging/canary evidence is incomplete | Critical | Users cannot receive the candidate release through a proven path | T1 staging `NO-GO`; T2 canary held at `0%`; S15-D1 and S15-D2 | Release owner + On-call | Retire S15-D1/S15-D2 before any broad expansion recommendation |
-| P0 | Review scheduling product corrections shipped; live validation still needed | Critical | Users need newly added deck content reviewable immediately, editable deck intervals, and `again`/`hard` retries behind other due cards | T3A implementation and verification notes; user correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Validate T3A behavior with T3B deck-scoped sessions before broad product validation |
-| P0 | Review mode is not yet deck-scoped and Practice mode does not exist | Critical | Users can intend to review one deck but receive unrelated due cards from their profile; users lack a safe all-card training mode | User correction on 2026-05-01; README and roadmap product rules | Backend + Frontend | Implement T3B before broad product validation of deck learning flows |
+| P0 | Review scheduling product corrections shipped; live validation still needed | Critical | Users need newly added deck content reviewable immediately, editable deck intervals, and `again`/`hard` retries behind other due cards | T3A implementation and verification notes; user correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Validate T3A behavior in live deck-scoped sessions before broad product validation |
+| P0 | Deck-scoped Review and Practice shipped; live validation still needed | Critical | Users can review only the intended deck and practice all deck cards without mutating review progress | T3B implementation and verification notes; user correction on 2026-05-01; README and roadmap product rules | Backend + Frontend | Validate Review/Practice behavior with live deck sessions before broad product validation |
 | P0 | Alert/SLO confidence is provisional without live telemetry | High | On-call may overreact or miss real user-impacting degradation | T3 thresholds frozen; observability baseline is local mocked persistence; S15-D3/S15-D4 | Backend + On-call | Collect live baseline and update `docs/operations/review-observability.md` |
 | P1 | Rollback execution still needs platform-specific command proof | High | Incident response depends on an operator translating generic steps under pressure | T4 tabletop drill passed but S15-D5 remains open | Release owner | Add platform command references before next live canary retry |
 | P1 | Unsupported-kind friction cannot be ranked yet | Medium | Product may invest in UX or new card-kind support without traffic evidence | S15-D7; `kind_not_review_enabled` thresholds unchanged until real card-kind mix exists | Product + Backend + Frontend | During T2/T3, pair UX review with unsupported-kind evidence collection |

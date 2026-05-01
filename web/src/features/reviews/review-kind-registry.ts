@@ -6,7 +6,7 @@ import {
 } from './review-kind-fields';
 import {
   REVIEW_UNSUPPORTED_REASONS,
-  type ReviewQueueItem,
+  type ReviewRenderableItem,
   type ReviewUnsupportedReason,
 } from './types';
 
@@ -34,7 +34,7 @@ export type ReviewRendererResolution =
   | UnsupportedReviewRenderer;
 
 export function resolveReviewRenderer(
-  item: ReviewQueueItem | null,
+  item: ReviewRenderableItem | null,
 ): ReviewRendererResolution | null {
   if (!item) {
     return null;

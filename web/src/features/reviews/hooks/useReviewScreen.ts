@@ -1,19 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { trackAnalyticsEvent } from '@shared/analytics';
 import { resolveReviewRenderer } from '../review-kind-registry';
 import type { GradeReviewResponse, ReviewGrade, ReviewQueueItem } from '../types';
-import {
-  REVIEW_QUEUE_STATES,
-  REVIEW_UI_EVENTS,
-  resolveUnsupportedReason,
-  type ReviewQueueState,
-} from '../review-observability';
+import { REVIEW_UI_EVENTS } from '../review-observability';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
+import { useReviewScreenObservability } from './useReviewScreenObservability';
 
-export function useReviewScreen() {
-  const queueQuery = useReviewQueueQuery();
+export function useReviewScreen(deckId: string | null) {
+  const queueQuery = useReviewQueueQuery(deckId);
   const gradeMutation = useGradeReviewMutation();
   const [revealedCardId, setRevealedCardId] = useState<string | null>(null);
   const [currentItemOverride, setCurrentItemOverride] = useState<
@@ -21,10 +17,9 @@ export function useReviewScreen() {
   >(undefined);
   const [lastGradeResult, setLastGradeResult] =
     useState<GradeReviewResponse | null>(null);
-  const lastUnsupportedKeyRef = useRef<string | null>(null);
-  const lastQueueStateRef = useRef<ReviewQueueState | null>(null);
 
   const hasQueueError = Boolean(queueQuery.error);
+  const missingDeckErrorMessage = deckId ? undefined : 'Choose a deck to review.';
   const currentItem = useMemo(
     () =>
       currentItemOverride === undefined
@@ -39,73 +34,19 @@ export function useReviewScreen() {
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const gradeErrorMessage = gradeMutation.error?.message;
 
-  useEffect(() => {
-    if (queueQuery.isLoading || hasQueueError) {
-      return;
-    }
-
-    if (!currentItem && !lastGradeResult) {
-      if (lastQueueStateRef.current === REVIEW_QUEUE_STATES.empty) {
-        return;
-      }
-      lastQueueStateRef.current = REVIEW_QUEUE_STATES.empty;
-      trackAnalyticsEvent(REVIEW_UI_EVENTS.queueStateChanged, {
-        state: REVIEW_QUEUE_STATES.empty,
-        queueCount,
-      });
-      return;
-    }
-
-    if (!currentItem && lastGradeResult) {
-      if (lastQueueStateRef.current === REVIEW_QUEUE_STATES.complete) {
-        return;
-      }
-      lastQueueStateRef.current = REVIEW_QUEUE_STATES.complete;
-      trackAnalyticsEvent(REVIEW_UI_EVENTS.queueStateChanged, {
-        state: REVIEW_QUEUE_STATES.complete,
-        queueCount,
-      });
-      return;
-    }
-
-    lastQueueStateRef.current = null;
-  }, [
+  useReviewScreenObservability({
     currentItem,
+    hasQueueError,
+    isLoading: queueQuery.isLoading,
     lastGradeResult,
     queueCount,
-    hasQueueError,
-    queueQuery.isLoading,
-  ]);
-
-  useEffect(() => {
-    if (!currentItem || !reviewRenderer || reviewRenderer.renderer !== 'unsupported') {
-      lastUnsupportedKeyRef.current = null;
-      return;
-    }
-
-    const reason = resolveUnsupportedReason(
-      reviewRenderer.reason ?? currentItem.reviewUnsupportedReason,
-    );
-    const eventKey = `${currentItem.cardId}:${reason}`;
-    if (lastUnsupportedKeyRef.current === eventKey) {
-      return;
-    }
-
-    lastUnsupportedKeyRef.current = eventKey;
-    trackAnalyticsEvent(REVIEW_UI_EVENTS.unsupportedSeen, {
-      cardId: currentItem.cardId,
-      kind: currentItem.kind,
-      reason,
-      queuePosition: currentItem.positionInChunk,
-      queueCount,
-    });
-  }, [currentItem, queueCount, reviewRenderer]);
+    reviewRenderer,
+  });
 
   const handleRevealAnswer = useCallback(() => {
     if (!currentItem) {
       return;
     }
-
     setRevealedCardId(currentItem.cardId);
   }, [currentItem]);
 
@@ -113,6 +54,10 @@ export function useReviewScreen() {
     if (!currentItem) {
       return;
     }
+    if (!deckId) {
+      return;
+    }
+    const scopedDeckId = deckId;
 
     trackAnalyticsEvent(REVIEW_UI_EVENTS.gradeClicked, {
       cardId: currentItem.cardId,
@@ -127,6 +72,7 @@ export function useReviewScreen() {
       null;
     const result = await gradeMutation.fetch({
       cardId: currentItem.cardId,
+      deckId: scopedDeckId,
       grade,
     });
     const nextItem =
@@ -137,7 +83,7 @@ export function useReviewScreen() {
     setLastGradeResult(result);
     setCurrentItemOverride(nextItem);
     setRevealedCardId(null);
-  }, [currentItem, gradeMutation, queueCount, queueQuery.result?.items]);
+  }, [currentItem, deckId, gradeMutation, queueCount, queueQuery.result?.items]);
 
   const handleRefreshQueue = useCallback(async () => {
     setCurrentItemOverride(undefined);
@@ -148,7 +94,8 @@ export function useReviewScreen() {
 
   return {
     currentItem,
-    errorMessage: queueQuery.error?.message,
+    deckId,
+    errorMessage: missingDeckErrorMessage ?? queueQuery.error?.message,
     gradeErrorMessage,
     gradeResult: lastGradeResult,
     reviewRenderer,

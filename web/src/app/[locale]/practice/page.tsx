@@ -3,17 +3,16 @@
 import { useSearchParams } from 'next/navigation';
 
 import { ProtectedRoute } from '@shared/components';
-import { ReviewPageHeader, ReviewScreen } from './components';
+import PracticeScreen from './components/PracticeScreen';
 
-export default function ReviewPage() {
+export default function PracticePage() {
   const searchParams = useSearchParams();
   const deckId = searchParams.get('deckId');
 
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-4xl p-6">
-        <ReviewPageHeader />
-        <ReviewScreen deckId={deckId} />
+        <PracticeScreen key={deckId ?? 'missing-deck'} deckId={deckId} />
       </main>
     </ProtectedRoute>
   );

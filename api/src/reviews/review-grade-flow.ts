@@ -29,8 +29,9 @@ export async function findReviewableChunkForCard(
   cardId: string,
   userId: string,
   now: Date,
+  deckId?: string,
 ): Promise<ReviewableChunkForCard | null> {
-  const chunks = await findChunksByCardId(prisma, cardId, userId);
+  const chunks = await findChunksByCardId(prisma, cardId, userId, deckId);
 
   for (const chunk of chunks) {
     const state = await ensureChunkReviewState(prisma, chunk.id, now);
@@ -79,6 +80,7 @@ export async function resolveNextActionableItemAfterGrade(
     nextSnapshot: ChunkProgressSnapshot;
     now: Date;
     userId: string;
+    deckId?: string;
   },
 ): Promise<ReviewQueueItem | null> {
   const sameChunkNextItem = buildNextActionableItem(
@@ -94,6 +96,7 @@ export async function resolveNextActionableItemAfterGrade(
     prisma,
     input.userId,
     input.now,
+    input.deckId,
   );
 
   const nextDifferentQueueItem =

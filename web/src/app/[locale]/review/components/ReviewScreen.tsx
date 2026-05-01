@@ -6,7 +6,11 @@ import ReviewFeedbackBanner from './ReviewFeedbackBanner';
 import ReviewGradeButtons from './ReviewGradeButtons';
 import ReviewUnsupportedCard from './ReviewUnsupportedCard';
 
-export default function ReviewScreen() {
+interface ReviewScreenProps {
+  deckId: string | null;
+}
+
+export default function ReviewScreen({ deckId }: ReviewScreenProps) {
   const {
     currentItem,
     errorMessage,
@@ -19,7 +23,7 @@ export default function ReviewScreen() {
     isLoading,
     reviewRenderer,
     handleRevealAnswer,
-  } = useReviewScreen();
+  } = useReviewScreen(deckId);
 
   if (isLoading) {
     return <PageLoader />;
@@ -36,12 +40,13 @@ export default function ReviewScreen() {
           title="Review step complete"
           description="No next actionable item was returned. Refresh the queue to check for the next due review."
           actionLabel="Refresh Queue"
+          practiceDeckId={deckId}
           onAction={handleRefreshQueue}
         />
       );
     }
 
-    return <ReviewEmptyState />;
+    return <ReviewEmptyState practiceDeckId={deckId} />;
   }
 
   if (!reviewRenderer || reviewRenderer.renderer === 'unsupported') {

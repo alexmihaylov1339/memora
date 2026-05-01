@@ -1,4 +1,4 @@
-import { parseReviewQueueResponse } from './reviewService';
+import { parsePracticeResponse, parseReviewQueueResponse } from './reviewService';
 import { REVIEW_UNSUPPORTED_REASONS } from '../types';
 
 describe('reviewService.parseReviewQueueResponse', () => {
@@ -101,5 +101,34 @@ describe('reviewService.parseReviewQueueResponse', () => {
         ],
       }),
     ).toThrow('Invalid review queue item contract');
+  });
+});
+
+describe('reviewService.parsePracticeResponse', () => {
+  it('parses practice items without due review metadata', () => {
+    const response = parsePracticeResponse({
+      items: [
+        {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          kind: 'basic',
+          fields: { front: 'spielen', back: 'to play' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+        },
+      ],
+    });
+
+    expect(response.items).toEqual([
+      expect.objectContaining({
+        cardId: 'card-1',
+        isReviewSupported: true,
+        reviewUnsupportedReason: null,
+      }),
+    ]);
   });
 });

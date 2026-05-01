@@ -4,11 +4,16 @@ import {
   type ChunkProgressSnapshot,
 } from './chunk-progress';
 import { findChunkWithCards, findChunksWithReviewState } from './review-access';
-import { buildEligibleQueueItems, type ReviewQueueItem } from './review-queue';
+import { buildPracticeItems } from './review-practice';
+import {
+  buildEligibleQueueItems,
+  type PracticeItem,
+  type ReviewQueueItem,
+} from './review-queue';
 import { ensureChunkReviewState } from './review-grade';
 
 export type { ChunkProgressSnapshot } from './chunk-progress';
-export type { ReviewQueueItem } from './review-queue';
+export type { PracticeItem, ReviewQueueItem } from './review-queue';
 
 export async function getChunkProgress(
   prisma: PrismaService,
@@ -29,7 +34,18 @@ export async function getEligibleQueueItems(
   prisma: PrismaService,
   userId: string,
   now = new Date(),
+  deckId?: string,
 ): Promise<ReviewQueueItem[]> {
-  const chunks = await findChunksWithReviewState(prisma, userId);
+  const chunks = await findChunksWithReviewState(prisma, userId, deckId);
   return buildEligibleQueueItems(chunks, now);
+}
+
+export async function getPracticeItems(
+  prisma: PrismaService,
+  userId: string,
+  deckId: string,
+): Promise<PracticeItem[]> {
+  const chunks = await findChunksWithReviewState(prisma, userId, deckId);
+
+  return buildPracticeItems(chunks);
 }

@@ -336,6 +336,59 @@ describe('ReviewsService', () => {
       ]);
     });
 
+    it('scopes queue retrieval to the selected deck', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-deck-2',
+          deckId: 'deck-2',
+          title: 'deck 2 only',
+          position: 0,
+          reviewState: null,
+          chunkCards: [
+            {
+              cardId: 'card-deck-2',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-deck-2',
+                kind: 'basic',
+                fields: { front: 'deck 2', back: 'only deck 2' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getEligibleQueueItems('user-1', now, 'deck-2'),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-deck-2',
+          deckId: 'deck-2',
+        }),
+      ]);
+      expect(prisma.chunk.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { deckId: { in: ['deck-2'] } },
+        }),
+      );
+    });
+
+    it('rejects queue retrieval for inaccessible decks', async () => {
+      prisma.deck.findMany.mockResolvedValue([{ id: 'deck-1' }]);
+
+      await expect(
+        service.getEligibleQueueItems(
+          'user-1',
+          new Date('2026-04-02T09:00:00.000Z'),
+          'deck-2',
+        ),
+      ).rejects.toThrow('Review deck not found');
+      expect(prisma.chunk.findMany).not.toHaveBeenCalled();
+    });
+
     it('returns supported metadata for review-enabled cloze text cards', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
@@ -693,6 +746,76 @@ describe('ReviewsService', () => {
           reviewUnsupportedReason: null,
         }),
       ]);
+    });
+  });
+
+  describe('getPracticeItems', () => {
+    it('returns every card in the selected deck without mutating review state', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-practice',
+          deckId: 'deck-1',
+          title: 'practice chunk',
+          position: 0,
+          reviewState: {
+            id: 'state-practice',
+            chunkId: 'chunk-practice',
+            due: new Date('2026-04-05T09:00:00.000Z'),
+            consecutiveSuccessCount: 4,
+            lastGrade: 'good' satisfies Grade,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'basic',
+                fields: { front: 'eins', back: 'one' },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+            {
+              cardId: 'card-2',
+              sequenceIndex: 1,
+              card: {
+                id: 'card-2',
+                kind: 'basic',
+                fields: { front: 'zwei', back: 'two' },
+                createdAt: new Date('2026-04-01T11:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      await expect(
+        service.getPracticeItems('user-1', 'deck-1'),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          isReviewSupported: true,
+        }),
+        expect.objectContaining({
+          cardId: 'card-2',
+          deckId: 'deck-1',
+          isReviewSupported: true,
+        }),
+      ]);
+      expect(prisma.chunk.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { deckId: { in: ['deck-1'] } },
+        }),
+      );
+      expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
+      expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
     });
   });
 

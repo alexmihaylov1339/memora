@@ -40,7 +40,7 @@ describe('useReviewScreen observability', () => {
       refetch: jest.fn(),
     });
 
-    const { rerender } = renderHook(() => useReviewScreen());
+    const { rerender } = renderHook(() => useReviewScreen('deck-1'));
 
     expect(mockTrackAnalyticsEvent).toHaveBeenCalledWith(
       REVIEW_UI_EVENTS.queueStateChanged,
@@ -87,7 +87,7 @@ describe('useReviewScreen observability', () => {
       refetch: jest.fn(),
     });
 
-    const { rerender } = renderHook(() => useReviewScreen());
+    const { rerender } = renderHook(() => useReviewScreen('deck-1'));
 
     const unsupportedCallsAfterInitialRender =
       mockTrackAnalyticsEvent.mock.calls.filter(
@@ -160,7 +160,7 @@ describe('useReviewScreen observability', () => {
       refetch: jest.fn(),
     });
 
-    const { result } = renderHook(() => useReviewScreen());
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
 
     await act(async () => {
       await result.current.handleGrade('good');
@@ -180,6 +180,11 @@ describe('useReviewScreen observability', () => {
         state: REVIEW_QUEUE_STATES.complete,
       }),
     );
+    expect(fetchMock).toHaveBeenCalledWith({
+      cardId: 'card-1',
+      deckId: 'deck-1',
+      grade: 'good',
+    });
   });
 
   it('moves to the next queued card when the grade response repeats the current card', async () => {
@@ -266,7 +271,7 @@ describe('useReviewScreen observability', () => {
       refetch: jest.fn(),
     });
 
-    const { result } = renderHook(() => useReviewScreen());
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
 
     await act(async () => {
       await result.current.handleGrade('hard');

@@ -41,8 +41,12 @@ export default function DeckWorkspaceHeader({
             Create New Chunk
           </DeckActionLink>
 
-          <DeckActionLink href={APP_ROUTES.review}>
+          <DeckActionLink href={APP_ROUTES.deckReview(deckId)}>
             Start Review
+          </DeckActionLink>
+
+          <DeckActionLink href={APP_ROUTES.deckPractice(deckId)}>
+            Practice Deck
           </DeckActionLink>
         </div>
       </div>

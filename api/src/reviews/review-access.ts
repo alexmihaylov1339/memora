@@ -9,6 +9,16 @@ export async function findAccessibleDeckIds(
   return getAccessibleDeckIds(prisma, userId);
 }
 
+export async function canAccessDeck(
+  prisma: PrismaService,
+  userId: string,
+  deckId: string,
+): Promise<boolean> {
+  const deckIds = await findAccessibleDeckIds(prisma, userId);
+
+  return deckIds.includes(deckId);
+}
+
 export async function findChunkWithCards(
   prisma: PrismaService,
   chunkId: string,
@@ -45,15 +55,20 @@ export async function findChunkWithCards(
 export async function findChunksWithReviewState(
   prisma: PrismaService,
   userId: string,
+  deckId?: string,
 ): Promise<ChunkWithCards[]> {
   const deckIds = await findAccessibleDeckIds(prisma, userId);
+  const scopedDeckIds = deckId
+    ? deckIds.filter((id) => id === deckId)
+    : deckIds;
 
-  if (deckIds.length === 0) {
+  if (scopedDeckIds.length === 0) {
     return [];
   }
 
   return (await prisma.chunk.findMany({
-    where: { deckId: { in: deckIds } },
+    where: { deckId: { in: scopedDeckIds } },
+    orderBy: [{ position: 'asc' }, { id: 'asc' }],
     select: {
       id: true,
       deckId: true,
@@ -96,8 +111,9 @@ export async function findChunkByCardId(
   prisma: PrismaService,
   cardId: string,
   userId: string,
+  deckId?: string,
 ): Promise<ChunkWithCards | null> {
-  const chunks = await findChunksByCardId(prisma, cardId, userId);
+  const chunks = await findChunksByCardId(prisma, cardId, userId, deckId);
 
   return chunks[0] ?? null;
 }
@@ -106,17 +122,21 @@ export async function findChunksByCardId(
   prisma: PrismaService,
   cardId: string,
   userId: string,
+  deckId?: string,
 ): Promise<ChunkWithCards[]> {
   const deckIds = await findAccessibleDeckIds(prisma, userId);
+  const scopedDeckIds = deckId
+    ? deckIds.filter((id) => id === deckId)
+    : deckIds;
 
-  if (deckIds.length === 0) {
+  if (scopedDeckIds.length === 0) {
     return [];
   }
 
   return (await prisma.chunk.findMany({
     where: {
       chunkCards: { some: { cardId } },
-      deckId: { in: deckIds },
+      deckId: { in: scopedDeckIds },
     },
     orderBy: [{ position: 'asc' }, { id: 'asc' }],
     select: {

@@ -68,6 +68,7 @@ function buildHookResult(
 ): ReturnType<typeof useReviewScreen> {
   return {
     currentItem: null,
+    deckId: 'deck-1',
     errorMessage: undefined,
     gradeErrorMessage: undefined,
     gradeResult: null,
@@ -91,7 +92,7 @@ describe('ReviewScreen', () => {
   it('renders loader while queue is loading', () => {
     mockedUseReviewScreen.mockReturnValue(buildHookResult({ isLoading: true }));
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('page-loader')).toBeInTheDocument();
   });
@@ -101,7 +102,7 @@ describe('ReviewScreen', () => {
       buildHookResult({ errorMessage: 'Queue failed' }),
     );
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('error-message')).toHaveTextContent('Queue failed');
   });
@@ -139,7 +140,7 @@ describe('ReviewScreen', () => {
       }),
     );
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('review-empty-state')).toHaveTextContent(
       'Review step complete',
@@ -174,7 +175,7 @@ describe('ReviewScreen', () => {
       }),
     );
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('review-unsupported-card')).toHaveTextContent(
       REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
@@ -202,7 +203,7 @@ describe('ReviewScreen', () => {
       }),
     );
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('review-unsupported-card')).toHaveTextContent(
       REVIEW_UNSUPPORTED_REASONS.invalidPayload,
@@ -233,7 +234,7 @@ describe('ReviewScreen', () => {
       }),
     );
 
-    render(<ReviewScreen />);
+    render(<ReviewScreen deckId="deck-1" />);
 
     expect(screen.getByTestId('review-current-item-card')).toBeInTheDocument();
     expect(screen.getByTestId('review-grade-buttons')).toBeInTheDocument();

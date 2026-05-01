@@ -1,6 +1,7 @@
-import type { ReviewQueueItem } from '../reviews.service';
+import type { PracticeItem, ReviewQueueItem } from '../reviews.service';
 import { REVIEW_KIND_UNSUPPORTED_REASONS } from '../review-kind-adapter';
 import {
+  serializePracticeResponse,
   serializeReviewQueueItem,
   serializeReviewQueueResponse,
 } from './review-queue-response.dto';
@@ -86,6 +87,41 @@ describe('review-queue-response.dto', () => {
           reviewUnsupportedReason:
             REVIEW_KIND_UNSUPPORTED_REASONS.invalidPayload,
         }),
+      ],
+    });
+  });
+
+  it('serializes practice items without review due state', () => {
+    const items: PracticeItem[] = [
+      {
+        cardId: 'card-1',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'practice',
+        chunkPosition: 0,
+        positionInChunk: 0,
+        kind: 'basic',
+        fields: { front: 'eins', back: 'one' },
+        isReviewSupported: true,
+        reviewUnsupportedReason: null,
+        cardCreatedAt: new Date('2026-04-01T10:00:00.000Z'),
+      },
+    ];
+
+    expect(serializePracticeResponse(items)).toEqual({
+      items: [
+        {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'practice',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          kind: 'basic',
+          fields: { front: 'eins', back: 'one' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+        },
       ],
     });
   });

@@ -18,6 +18,14 @@ export function validateReviewCardId(cardId: string): string {
   return cardId.trim();
 }
 
+export function validateReviewDeckId(deckId?: string): string {
+  if (!hasTrimmedText(deckId)) {
+    throw new BadRequestException(REVIEW_ERROR_MESSAGES.deckIdRequired);
+  }
+
+  return deckId.trim();
+}
+
 export function validateGradeReviewInput(body: GradeReviewDto): Grade {
   if (!body) {
     throw new BadRequestException(REVIEW_ERROR_MESSAGES.bodyRequired);

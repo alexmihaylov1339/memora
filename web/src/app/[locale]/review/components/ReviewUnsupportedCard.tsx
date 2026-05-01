@@ -1,4 +1,4 @@
-import type { ReviewQueueItem } from '@features/reviews';
+import type { ReviewRenderableItem } from '@features/reviews';
 import { REVIEW_UNSUPPORTED_REASONS } from '@features/reviews/types';
 import type { ReviewUnsupportedReason } from '@features/reviews/types';
 import { Link } from '@/i18n/navigation';
@@ -6,7 +6,7 @@ import { Button } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 
 interface ReviewUnsupportedCardProps {
-  item: ReviewQueueItem;
+  item: ReviewRenderableItem;
   onRefreshQueue: () => Promise<void> | void;
   reason?: ReviewUnsupportedReason;
 }

@@ -7,6 +7,7 @@ interface ReviewEmptyStateProps {
   actionLabel?: string;
   description?: string;
   onAction?: () => Promise<void> | void;
+  practiceDeckId?: string | null;
   title?: string;
 }
 
@@ -14,6 +15,7 @@ export default function ReviewEmptyState({
   actionLabel,
   description = 'Your review queue is empty. Create more chunks or come back when the next review is due.',
   onAction,
+  practiceDeckId,
   title = 'Nothing due right now',
 }: ReviewEmptyStateProps) {
   return (
@@ -36,6 +38,15 @@ export default function ReviewEmptyState({
             className="rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             Go to Decks
+          </Link>
+        )}
+
+        {practiceDeckId && (
+          <Link
+            href={APP_ROUTES.deckPractice(practiceDeckId)}
+            className="rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Practice Deck
           </Link>
         )}
       </div>

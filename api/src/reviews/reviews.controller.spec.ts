@@ -5,23 +5,26 @@ import { REVIEW_KIND_UNSUPPORTED_REASONS } from './review-kind-adapter';
 import { ReviewsController } from './reviews.controller';
 import type {
   GradeChunkReviewResult,
+  PracticeItem,
   ReviewQueueItem,
 } from './reviews.service';
 
 interface ReviewsServiceMock {
   getEligibleQueueItems: jest.Mock<Promise<ReviewQueueItem[]>>;
+  getPracticeItems: jest.Mock<Promise<PracticeItem[]>>;
   gradeReview: jest.Mock<
     Promise<GradeChunkReviewResult>,
-    [string, Grade, string]
+    [string, Grade, string, Date, string]
   >;
 }
 
 function createReviewsServiceMock(): ReviewsServiceMock {
   return {
     getEligibleQueueItems: jest.fn<Promise<ReviewQueueItem[]>, []>(),
+    getPracticeItems: jest.fn<Promise<PracticeItem[]>, []>(),
     gradeReview: jest.fn<
       Promise<GradeChunkReviewResult>,
-      [string, Grade, string]
+      [string, Grade, string, Date, string]
     >(),
   };
 }
@@ -56,7 +59,9 @@ describe('ReviewsController', () => {
       },
     ]);
 
-    await expect(controller.queue(mockUser)).resolves.toEqual({
+    await expect(
+      controller.queue(mockUser, { deckId: 'deck-1' }),
+    ).resolves.toEqual({
       items: [
         {
           cardId: 'card-1',
@@ -74,6 +79,11 @@ describe('ReviewsController', () => {
         },
       ],
     });
+    expect(reviewsService.getEligibleQueueItems).toHaveBeenCalledWith(
+      'user-1',
+      expect.any(Date),
+      'deck-1',
+    );
   });
 
   it('preserves unsupported review metadata enum values in queue responses', async () => {
@@ -111,7 +121,9 @@ describe('ReviewsController', () => {
       },
     ]);
 
-    await expect(controller.queue(mockUser)).resolves.toEqual({
+    await expect(
+      controller.queue(mockUser, { deckId: 'deck-1' }),
+    ).resolves.toEqual({
       items: [
         expect.objectContaining({
           cardId: 'card-cloze',
@@ -127,6 +139,47 @@ describe('ReviewsController', () => {
         }),
       ],
     });
+  });
+
+  it('returns deck-scoped practice items without due metadata', async () => {
+    reviewsService.getPracticeItems.mockResolvedValue([
+      {
+        cardId: 'card-1',
+        deckId: 'deck-1',
+        chunkId: 'chunk-1',
+        chunkTitle: 'spielen',
+        chunkPosition: 0,
+        positionInChunk: 0,
+        kind: 'basic',
+        fields: { front: 'spielen 1', back: 'play 1' },
+        isReviewSupported: true,
+        reviewUnsupportedReason: null,
+        cardCreatedAt: new Date('2026-04-02T10:00:00.000Z'),
+      },
+    ]);
+
+    await expect(
+      controller.practice(mockUser, { deckId: 'deck-1' }),
+    ).resolves.toEqual({
+      items: [
+        {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          kind: 'basic',
+          fields: { front: 'spielen 1', back: 'play 1' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+        },
+      ],
+    });
+    expect(reviewsService.getPracticeItems).toHaveBeenCalledWith(
+      'user-1',
+      'deck-1',
+    );
   });
 
   it('passes a validated enum grade to the review service', async () => {
@@ -175,7 +228,12 @@ describe('ReviewsController', () => {
     });
 
     await expect(
-      controller.grade(mockUser, { cardId: ' card-1 ' }, { grade: 'good' }),
+      controller.grade(
+        mockUser,
+        { cardId: ' card-1 ' },
+        { deckId: 'deck-1' },
+        { grade: 'good' },
+      ),
     ).resolves.toEqual({
       cardId: 'card-1',
       grade: 'good',
@@ -223,6 +281,8 @@ describe('ReviewsController', () => {
       'card-1',
       'good',
       'user-1',
+      expect.any(Date),
+      'deck-1',
     );
   });
 
@@ -258,7 +318,12 @@ describe('ReviewsController', () => {
     });
 
     await expect(
-      controller.grade(mockUser, { cardId: 'card-1' }, { grade: 'again' }),
+      controller.grade(
+        mockUser,
+        { cardId: 'card-1' },
+        { deckId: 'deck-1' },
+        { grade: 'again' },
+      ),
     ).resolves.toEqual(
       expect.objectContaining({
         cardId: 'card-1',
@@ -273,6 +338,7 @@ describe('ReviewsController', () => {
       controller.grade(
         mockUser,
         { cardId: 'card-1' },
+        { deckId: 'deck-1' },
         { grade: 'invalid-grade' as Grade },
       ),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.invalidGrade);
@@ -282,7 +348,12 @@ describe('ReviewsController', () => {
 
   it('rejects invalid card ids before calling the service', async () => {
     await expect(
-      controller.grade(mockUser, { cardId: '   ' }, { grade: 'good' }),
+      controller.grade(
+        mockUser,
+        { cardId: '   ' },
+        { deckId: 'deck-1' },
+        { grade: 'good' },
+      ),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardIdRequired);
 
     expect(reviewsService.gradeReview).not.toHaveBeenCalled();
@@ -298,11 +369,21 @@ describe('ReviewsController', () => {
       );
 
     await expect(
-      controller.grade(mockUser, { cardId: 'card-missing' }, { grade: 'good' }),
+      controller.grade(
+        mockUser,
+        { cardId: 'card-missing' },
+        { deckId: 'deck-1' },
+        { grade: 'good' },
+      ),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotFound);
 
     await expect(
-      controller.grade(mockUser, { cardId: 'card-1' }, { grade: 'good' }),
+      controller.grade(
+        mockUser,
+        { cardId: 'card-1' },
+        { deckId: 'deck-1' },
+        { grade: 'good' },
+      ),
     ).rejects.toThrow(REVIEW_ERROR_MESSAGES.cardNotReviewable);
   });
 });

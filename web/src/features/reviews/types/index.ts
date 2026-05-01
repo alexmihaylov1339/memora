@@ -8,23 +8,30 @@ export const REVIEW_UNSUPPORTED_REASONS = {
 export type ReviewUnsupportedReason =
   (typeof REVIEW_UNSUPPORTED_REASONS)[keyof typeof REVIEW_UNSUPPORTED_REASONS];
 
-export interface ReviewQueueItem {
+export interface ReviewRenderableItem {
   cardId: string;
   deckId: string;
   chunkId: string;
   chunkTitle: string;
   chunkPosition: number;
   positionInChunk: number;
-  due: string;
   kind: string;
   fields: Record<string, unknown>;
   isReviewSupported: boolean;
   reviewUnsupportedReason: ReviewUnsupportedReason | null;
+}
+
+export interface ReviewQueueItem extends ReviewRenderableItem {
+  due: string;
   consecutiveSuccessCount: number;
 }
 
 export interface ReviewQueueResponse {
   items: ReviewQueueItem[];
+}
+
+export interface PracticeResponse {
+  items: ReviewRenderableItem[];
 }
 
 export interface ChunkProgressSnapshot {
@@ -61,6 +68,7 @@ export interface GradeReviewResponse {
 
 export interface ReviewCardIdParams {
   cardId: string;
+  deckId: string;
 }
 
 export interface GradeReviewDto {

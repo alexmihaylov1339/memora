@@ -16,16 +16,27 @@ export default function useDeckGridColumns(): GridColumnDef<Deck>[] {
       {
         headerName: 'Actions',
         searchable: false,
-        cellRenderer: () => (
-          <Link
-            href={APP_ROUTES.review}
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-            className="inline-flex h-[36px] w-[168px] items-center justify-center rounded-[5px] bg-brand-accent text-base font-bold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:opacity-90"
-          >
-            Review
-          </Link>
+        cellRenderer: (deck) => (
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={APP_ROUTES.deckReview(deck.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+              className="inline-flex h-[36px] w-[96px] items-center justify-center rounded-[5px] bg-brand-accent text-sm font-bold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:opacity-90"
+            >
+              Review
+            </Link>
+            <Link
+              href={APP_ROUTES.deckPractice(deck.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+              className="inline-flex h-[36px] w-[96px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-white text-sm font-bold text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition hover:bg-slate-50"
+            >
+              Practice
+            </Link>
+          </div>
         ),
       },
     ],
