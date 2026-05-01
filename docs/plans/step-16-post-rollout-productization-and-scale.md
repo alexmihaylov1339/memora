@@ -452,7 +452,7 @@ Verification completed:
 ### T7 - Documentation and onboarding consolidation
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - consolidate architecture + operations + step docs into a clean onboarding path.
@@ -468,6 +468,17 @@ Exit criteria:
 
 Verification checklist:
 - cross-links are complete and non-broken.
+
+Verification completed:
+- Created `docs/README.md` as the central onboarding entry point covering:
+  - ordered 8-section reading path (product → repo structure → architecture patterns → planning system → common task recipes → architecture reference table → operations reference table → active blockers).
+  - common task recipes with exact commands for local dev, tests, type-check, migrations, Phase 0 gate, adding a card kind, and executing a roadmap task via `/step-task-executor`.
+  - role-based entry point table (backend, frontend, on-call, card-kind, sprint).
+  - full reference tables for all architecture and operations docs.
+- Fixed two broken absolute-path links:
+  - `README.md`: `/home/alexandar/Projects/memora/docs/plans/...` → relative `docs/plans/...`
+  - `docs/plans/chunked-learning-roadmap.md`: `/home/alexandar/Projects/memora/docs/architecture/backend-patterns.md` → `../architecture/backend-patterns.md`
+- Dry-run link validation: all 21 relative links in `docs/README.md` resolve to real files; the one anchor fragment (`#expansion-readiness`) maps to heading at line 523 of step-16 plan.
 
 ---
 

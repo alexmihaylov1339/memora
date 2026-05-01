@@ -20,4 +20,4 @@ Memora is a language-learning app centered on chunked review.
 - Pressing `again` or `hard` should make the item due immediately for the next review, not after a delayed interval such as 4 hours, but it should move behind the other due cards in the current deck session before being shown again.
 - The review page should stay focused on the card prompt and answer controls. It should not show internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 
-The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](/home/alexandar/Projects/memora/docs/plans/chunked-learning-roadmap.md) and [docs/plans/step-4-chunk-scheduling-engine.md](/home/alexandar/Projects/memora/docs/plans/step-4-chunk-scheduling-engine.md).
+The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](docs/plans/chunked-learning-roadmap.md) and [docs/plans/step-4-chunk-scheduling-engine.md](docs/plans/step-4-chunk-scheduling-engine.md).

@@ -145,7 +145,7 @@
 - Doing this before the UI step reduces churn and gives Step 7 a cleaner backend to build on.
 
 **Exit criteria**
-- The backend follows [backend-patterns.md](/home/alexandar/Projects/memora/docs/architecture/backend-patterns.md) closely enough that Step 7 can build on stable, predictable service and API contracts.
+- The backend follows [backend-patterns.md](../architecture/backend-patterns.md) closely enough that Step 7 can build on stable, predictable service and API contracts.
 
 ---
 
