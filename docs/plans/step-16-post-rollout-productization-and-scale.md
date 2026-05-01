@@ -344,7 +344,7 @@ Verification completed:
 ### T4 - Contract strategy re-check (Step 15/16 evidence based)
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - re-evaluate Phase 2 triggers in contract strategy doc.
@@ -359,6 +359,21 @@ Exit criteria:
 
 Verification checklist:
 - includes trigger status table and decision timestamp.
+
+Verification completed:
+- Re-checked the Phase 2 triggers in `docs/architecture/card-kind-contract-strategy.md`.
+- Decision timestamp: 2026-05-01.
+- Decision: stay on strict duplicated FE/BE contracts; do not start the shared package pilot yet.
+- Evidence:
+  - supported reviewable kinds are still `basic` and `cloze_text`, below the `more than 3` trigger.
+  - no quarterly pattern of contract-drift regressions is documented.
+  - Step 16 T3/T3B expanded the contract surface with `cloze_text`, deck-scoped Review, and non-mutating Practice, but the duplicated contracts stayed layer-local and covered by targeted FE/BE tests.
+- Owner:
+  - Backend + Frontend owners keep duplicated contract definitions and regression tests aligned.
+  - Step owner/reviewer re-opens Phase 2 only when a trigger becomes `Triggered`.
+- Verification:
+  - `rg -n "Step 16 T4 re-check|Phase 2 trigger status|stay on strict duplicated|shared package pilot" docs/architecture/card-kind-contract-strategy.md docs/plans/step-16-post-rollout-productization-and-scale.md` passed.
+  - `git diff --check` passed.
 
 ---
 

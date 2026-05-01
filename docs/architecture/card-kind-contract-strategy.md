@@ -2,7 +2,8 @@
 
 **Status:** Accepted  
 **Date:** 2026-04-26  
-**Step reference:** `docs/plans/step-14-quality-observability-rollout-safety.md` (T9)  
+**Step reference:** `docs/plans/step-14-quality-observability-rollout-safety.md` (T9); `docs/plans/step-16-post-rollout-productization-and-scale.md` (T4)
+**Last re-check:** 2026-05-01
 **Related:** `docs/architecture/card-kind-extensibility.md`
 
 ---
@@ -125,6 +126,44 @@ If triggered:
 1. Create a narrow shared package for transport-level schema only.
 2. Keep runtime validators in both FE and BE (shared types are not enough).
 3. Migrate one contract first (`review queue item`) as a pilot.
+
+---
+
+## Step 16 T4 re-check (2026-05-01)
+
+Decision timestamp: 2026-05-01
+
+Decision: **stay on strict duplicated FE/BE contracts**. Do not start the shared
+package pilot yet.
+
+Rationale:
+
+1. The reviewable kind count is still below the Phase 2 threshold.
+2. No contract-drift regression pattern has been documented this quarter.
+3. Step 16 T3/T3B added real contract surface area (`cloze_text`,
+   deck-scoped Review, and non-mutating Practice), but the current local
+   contract tests and CI guardrails still covered the changes without creating
+   clear packaging bottleneck evidence.
+
+### Phase 2 trigger status
+
+| Trigger | 2026-05-01 evidence | Status | Owner | Next check |
+|---|---|---|---|---|
+| More than 3 actively supported reviewable kinds | Active reviewable kinds are `basic` and `cloze_text`; unsupported fallback still handles other kinds. | Not triggered | Backend + Frontend | Next review-kind pilot or Step 17 planning |
+| More than 2 contract-drift regressions in one quarter | No documented contract-drift regressions; Step 16 contract-sensitive tests passed during T3/T3B. | Not triggered | Step owner/reviewer | Step 16 closeout |
+| Duplicated contract work becomes a frequent cross-layer bottleneck | T3/T3B required coordinated FE/BE edits, but contracts stayed layer-local and focused; no shared-package bottleneck is proven yet. | Watch, not triggered | Backend + Frontend | After the next contract-expanding feature |
+
+Owner for this decision:
+
+- Backend + Frontend owners maintain duplicated contracts and test coverage.
+- Step owner/reviewer re-opens Phase 2 only when a trigger changes from
+  `Watch` / `Not triggered` to `Triggered`.
+
+Follow-up:
+
+- Keep the Phase 2 shared package pilot conditional.
+- Re-check after the next supported review-kind expansion or any new
+  contract-drift incident.
 
 ---
 
