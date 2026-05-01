@@ -380,7 +380,7 @@ Verification completed:
 ### T5 - Performance and capacity envelope definition
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - define expected throughput envelopes for queue/grade paths.
@@ -395,6 +395,17 @@ Exit criteria:
 
 Verification checklist:
 - envelope includes warning signs and response actions.
+
+Verification completed:
+- Created `docs/operations/review-capacity-envelope.md` with:
+  - queue fetch and grade submit query analysis (steps, indexes, data volume model).
+  - service-layer throughput estimates at 10 Prisma connections (queue ~500 RPS, grade ~150 RPS).
+  - data volume growth model (tiny → large deck tiers).
+  - early-product scale comfort analysis (0–1 000 DAU well within envelope; review at 10 000 DAU).
+  - 6 documented scaling risks (R1 fan-out, R2 payload size, R3 connection pool, R4 ReviewLog growth, R5 in-process sort, R6 chunk count growth).
+  - warning signs and first-response actions table for each risk.
+  - live validation checklist gating on S15-D1/S15-D2 canary data.
+- Added `docs/operations/review-capacity-envelope.md` link to the Runbook links section of `docs/operations/review-observability.md`.
 
 ---
 

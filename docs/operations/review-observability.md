@@ -195,6 +195,7 @@ Calibration status:
 
 - Step 14 plan: `docs/plans/step-14-quality-observability-rollout-safety.md`
 - Rollout/rollback playbook: `docs/operations/review-rollout-playbook.md`
+- Capacity envelope: `docs/operations/review-capacity-envelope.md`
 
 If critical alert persists > 30 minutes:
 - open incident timeline
