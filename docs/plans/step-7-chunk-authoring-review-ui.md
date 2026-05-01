@@ -589,6 +589,10 @@ Tasks:
 Subtasks:
 - Add route:
   - `web/src/app/[locale]/review/page.tsx`
+- Current product correction:
+  - Review mode should be entered with a deck identifier in the URL, for example `/review?deckId=<deckId>` or an equivalent localized route.
+  - The review page should request and render only due cards for that deck.
+  - Practice mode should use a separate deck-scoped route/URL and must not share grade submission behavior.
 - Add `APP_ROUTES.review`
 - Add navigation entry point:
   - global nav and/or deck workspace CTA
@@ -686,6 +690,10 @@ Verification:
 - `cd web && npx tsc --noEmit` passed.
 - Focused ESLint passed for the review route, review components, and review feature hooks touched by T7.
 
+Product correction after Step 7 completion:
+- The existing `/review` shell remains the foundation, but future implementation must make Review deck-scoped through the URL.
+- Future implementation must add Practice as a separate deck-scoped, non-mutating training flow instead of extending grade submission behavior.
+
 ---
 
 ### T8 - Tests, polish, i18n, and final readiness pass
@@ -729,7 +737,8 @@ Verification:
   - deck workspace card and chunk authoring panels
   - real chunk creation flow with ordered card selection
   - chunk inspection and deletion from the deck workspace
-  - protected global review page with queue loading, reveal, grading, progression, and completion refresh handling
+  - protected review page foundation with queue loading, reveal, grading, progression, and completion refresh handling
+  - product correction after completion: later Step 16 work must scope this review page by deck URL and add separate non-mutating Practice mode
 - `cd web && npx tsc --noEmit` passed.
 - `cd web && npx eslint src` passed.
 - `cd web && npm test -- --runInBand` passed.

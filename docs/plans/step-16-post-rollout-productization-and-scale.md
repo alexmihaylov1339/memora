@@ -24,6 +24,7 @@ Step 16 outcome:
 - next-kind onboarding is faster and safer
 - platform has clear scale and maintenance guardrails
 - review scheduling matches the product rule that all deck cards become reviewable immediately and user-editable intervals control future timing
+- review and practice entry points are deck-scoped, with Review mutating due progress and Practice remaining non-mutating training
 
 ---
 
@@ -43,8 +44,14 @@ In scope:
   - all cards become reviewable immediately when a deck is created, a card is added to a deck, or a chunk is added to a deck
   - cards without explicit chunk membership are covered by the deck-scoped `Deck Inbox`
   - default intervals are visible and editable
+  - default intervals can be edited during deck create/edit using friendly units such as hours and days
   - interval overrides can be configured at deck level and per review item where needed
   - `again` and `hard` retry immediately instead of delaying review
+- deck-scoped review and practice flows requested by product:
+  - Review URLs include the selected deck identifier and review only due cards for that deck
+  - deck grids/workspaces expose `Practice` next to `Review`
+  - Practice reviews all cards in the selected deck, not only due cards
+  - Practice does not update review state, review logs, chunk review state, due dates, intervals, streaks, lapses, or mastery progress
 - extensibility hardening for additional card kinds
 - scale/performance and maintainability initiatives
 - roadmap packaging for next major product wave
@@ -195,8 +202,8 @@ What to do:
   - a card is added or moved into a deck
   - a chunk is added or moved into a deck
 - ensure every affected deck card is due immediately through either its authored chunk or the deck-scoped system chunk (`Deck Inbox`).
-- make default intervals visible in the deck/review settings UI.
-- allow the user to edit default intervals at deck level.
+- make default intervals visible during deck create/edit and any deck review settings UI.
+- allow the user to edit default intervals at deck level using friendly duration inputs such as hours and days.
 - allow per-item interval overrides where needed.
 - change grade scheduling so `again` and `hard` retry immediately instead of using a delayed interval such as 4 hours.
 
@@ -212,14 +219,54 @@ Suggested files:
 
 Exit criteria:
 - new deck/card/chunk membership changes make all affected cards visible in review immediately.
-- default intervals are visible and editable.
+- default intervals are visible and editable from deck create/edit.
 - deck-level and per-item interval overrides are persisted and used by review scheduling.
 - `again` and `hard` return the item to immediate review.
 
 Verification checklist:
 - backend tests cover deck create, card add/move, chunk add/move, `Deck Inbox`, editable intervals, and immediate `again`/`hard` retry.
-- frontend tests cover viewing/editing default intervals and item-level overrides.
+- frontend tests cover viewing/editing default intervals from deck create/edit and item-level overrides.
 - e2e/API flow confirms newly added deck cards appear in review without waiting.
+
+---
+
+### T3B - Deck-scoped Review and Practice modes
+
+Status:
+- Proposed
+
+What to do:
+- make Review mode deck-scoped:
+  - route/URL carries the selected deck id, for example `/review?deckId=<deckId>` or an equivalent localized route.
+  - queue API accepts deck scope and returns only due review items for that deck.
+  - grade progression stays inside that selected deck.
+- add Practice mode next to Review in deck grids/workspaces:
+  - Practice route/URL carries the selected deck id.
+  - Practice returns all cards in the selected deck, not just due cards.
+  - Practice uses review renderers where practical, but never calls grade submission.
+  - Practice does not mutate review state, review logs, chunk review state, due dates, intervals, streaks, lapses, or mastery progress.
+- preserve clean separation in naming, API contracts, analytics, and tests so Review and Practice cannot accidentally share mutating behavior.
+
+Suggested files:
+- `api/src/reviews/...`
+- `api/src/decks/...`
+- `web/src/app/[locale]/review/...`
+- `web/src/app/[locale]/decks/...`
+- `web/src/features/reviews/...`
+- `web/src/shared/constants/routes.ts`
+- related API/UI/e2e tests
+
+Exit criteria:
+- Review button on a deck opens a deck-scoped review session and never reviews cards from other decks.
+- Practice button on a deck opens a deck-scoped practice session containing all deck cards.
+- Practice mode can be repeated without changing due dates or review progress.
+- Review and Practice behaviors are covered by separate tests.
+
+Verification checklist:
+- backend tests cover deck-scoped queue filtering and practice no-mutation behavior.
+- frontend tests cover deck action buttons, URL construction, and mode-specific rendering.
+- e2e/API flow verifies two decks with due cards do not bleed into each other's Review mode.
+- e2e/API flow verifies Practice includes non-due cards and leaves review state unchanged.
 
 ---
 
@@ -331,14 +378,15 @@ Verification checklist:
 2. T2 UX iteration pack
 3. T3 kind onboarding pilot
 4. T3A review scheduling product corrections
-5. T4 contract strategy re-check
-6. T5 performance/capacity envelope
-7. T6 automation burn-down
-8. T7 docs/onboarding consolidation
-9. T8 closeout + next-wave proposal
+5. T3B deck-scoped Review and Practice modes
+6. T4 contract strategy re-check
+7. T5 performance/capacity envelope
+8. T6 automation burn-down
+9. T7 docs/onboarding consolidation
+10. T8 closeout + next-wave proposal
 
 Reasoning:
-- prioritize the corrected review scheduling product rule first, then extensibility and long-term scale hardening.
+- prioritize the corrected review scheduling and deck-scoped mode product rules first, then extensibility and long-term scale hardening.
 
 ---
 
@@ -382,6 +430,7 @@ Must-retire blockers before broad expansion:
 |---|---|---|---|---|---|---|
 | P0 | Rollout cannot safely expand because staging/canary evidence is incomplete | Critical | Users cannot receive the candidate release through a proven path | T1 staging `NO-GO`; T2 canary held at `0%`; S15-D1 and S15-D2 | Release owner + On-call | Retire S15-D1/S15-D2 before any broad expansion recommendation |
 | P0 | Review scheduling does not yet match product requirement for immediate review and editable intervals | Critical | Users can add deck content and still not review it when expected; `again`/`hard` delays break the desired learning loop | User correction on 2026-04-29; README and roadmap product rules | Backend + Frontend | Implement T3A before claiming review workflow correctness |
+| P0 | Review mode is not yet deck-scoped and Practice mode does not exist | Critical | Users can intend to review one deck but receive unrelated due cards from their profile; users lack a safe all-card training mode | User correction on 2026-05-01; README and roadmap product rules | Backend + Frontend | Implement T3B before broad product validation of deck learning flows |
 | P0 | Alert/SLO confidence is provisional without live telemetry | High | On-call may overreact or miss real user-impacting degradation | T3 thresholds frozen; observability baseline is local mocked persistence; S15-D3/S15-D4 | Backend + On-call | Collect live baseline and update `docs/operations/review-observability.md` |
 | P1 | Rollback execution still needs platform-specific command proof | High | Incident response depends on an operator translating generic steps under pressure | T4 tabletop drill passed but S15-D5 remains open | Release owner | Add platform command references before next live canary retry |
 | P1 | Unsupported-kind friction cannot be ranked yet | Medium | Product may invest in UX or new card-kind support without traffic evidence | S15-D7; `kind_not_review_enabled` thresholds unchanged until real card-kind mix exists | Product + Backend + Frontend | During T2/T3, pair UX review with unsupported-kind evidence collection |
@@ -402,9 +451,10 @@ Must-retire blockers before broad expansion:
 
 1. Retire rollout blockers S15-D1..S15-D5 before broad expansion.
 2. Use T2 to improve review UX only where it can be validated with queue state, unsupported handling, or completion feedback evidence.
-3. Use T3 to prove next-kind onboarding only after unsupported-kind evidence clarifies whether product friction is real or theoretical.
-4. Use T5 to replace mocked-persistence performance confidence with a capacity envelope.
-5. Use T8 to close or reschedule every remaining Step 15 debt item with proof.
+3. Use T3A and T3B to align core learning flows before product validation.
+4. Use T3 to prove next-kind onboarding only after unsupported-kind evidence clarifies whether product friction is real or theoretical.
+5. Use T5 to replace mocked-persistence performance confidence with a capacity envelope.
+6. Use T8 to close or reschedule every remaining Step 15 debt item with proof.
 
 ---
 

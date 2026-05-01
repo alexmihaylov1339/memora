@@ -59,13 +59,15 @@ Step 5 fills that gap.
 - Keep controllers thin.
 - Keep the current MVP review behavior:
   - one actionable card per chunk
+  - Review mode is deck-scoped; the queue contract must support `deckId` filtering so `/review?...deckId=...` reviews only one deck
+  - Practice mode is separate from Review mode; it can return all cards for a deck but must not grade, log, or mutate review state
   - reset on `again`
   - retry immediately on `again` and `hard`
   - advance on `good/easy`
   - loop after the last card
   - cards attached to a deck but not present in a user-authored chunk are still reviewable via an auto-managed deck system chunk (`Deck Inbox`)
   - cards become reviewable immediately when a deck is created, a card is added into a deck, or a chunk is added into a deck
-  - default intervals must be visible/editable at deck level, with per-item overrides supported where needed
+  - default intervals must be visible/editable from deck create/edit using friendly units such as hours and days, with per-item overrides supported where needed
 - The API may return scheduling context for correctness, telemetry, and debugging, but the review page should not be required to display internal labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due state, last grade, streak, or interval summaries.
 
 ---
@@ -132,6 +134,7 @@ The queue endpoint should return review items that are directly renderable by th
 
 Queue source rule:
 - queue is chunk-driven.
+- queue is deck-scoped when `deckId` is provided; the review page must provide that deck identifier in the URL and must not silently review all due profile cards.
 - cards moved/added into a deck without explicit chunk membership must be represented through an auto-managed deck chunk (`Deck Inbox`) so new cards are due immediately instead of being invisible to review.
 
 Recommended stable response shape:
@@ -165,6 +168,17 @@ Recommended stable response shape:
 - `intervalHours`
 - `chunk`
 - `nextActionableItem`
+
+### Practice API contract
+
+Practice mode is not Review mode.
+
+Required behavior:
+- practice requests are deck-scoped.
+- practice returns all cards in the selected deck, including cards that are not due for review.
+- practice does not call grade endpoints.
+- practice does not write review logs, review states, chunk review states, due dates, streaks, lapses, or intervals.
+- practice response shapes should reuse review render/card-kind metadata where practical so the same card renderer can be used safely.
 
 ---
 

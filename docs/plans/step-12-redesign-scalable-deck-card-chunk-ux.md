@@ -143,7 +143,8 @@ Locked CTA hierarchy:
   - context-specific secondary actions below/adjacent, visually subordinate
 - Deck workspace (`/decks/:id/edit`):
   - `Move Existing ...` and `Create New ...` remain explicit separate actions
-  - `Start Review` remains available and unchanged in intent
+  - `Review` remains available and must route to a deck-scoped review session
+  - `Practice` must sit next to `Review` and route to deck-scoped non-mutating training
 - Chunk create:
   - `Create Chunk` is the single primary submit action
   - selection controls (search, add/remove/reorder) are interaction controls, not competing primary CTAs
@@ -152,6 +153,10 @@ Verification completed:
 - Step 12 ownership is now explicit by route and action hierarchy.
 - Chunk parity expectations are locked in the plan (global grid + create CTA + deck-style selection flow).
 - Remaining tasks (`T2+`) can execute without re-deciding product behavior.
+
+Product correction after Step 12 completion:
+- Future UX work must preserve paired `Review` and `Practice` actions on deck grids/workspaces.
+- Practice is visually adjacent to Review but semantically separate: it trains all deck cards without changing review progress.
 
 ### T2 - Redesign global chunks page and add Create Chunk CTA
 

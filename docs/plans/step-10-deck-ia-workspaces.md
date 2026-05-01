@@ -30,7 +30,7 @@ This step should:
 
 In scope for this step:
 - deck edit workspace IA cleanup
-- action surface (`Start Review`, `Add Card`, `Add Chunk`) from deck edit workspace
+- action surface (`Review`, `Practice`, `Add Card`, `Add Chunk`) from deck edit workspace
 - card/chunk selection and management only inside edit deck form/workspace
 - remove redundant routes/endpoints/docs tied to deck-specific cards/chunks pages
 
@@ -118,7 +118,12 @@ Verification completed:
 - Removed redundant route surface is enforced: `/v1/decks/:id/cards` and `/v1/decks/:id/chunks` now return `404`.
 - Deck edit workspace wiring remains intact after route removals:
   - `web/src/app/[locale]/decks/[id]/edit/page.tsx` uses deck-filtered global cards/chunks queries
-  - workspace actions still route to add card, add chunk, and review flows
+  - workspace actions route to add card, add chunk, and review flows
+
+Product correction after Step 10 completion:
+- Deck grid/workspace action surfaces must expose `Practice` next to `Review`.
+- `Review` must deep-link to the deck-scoped review URL.
+- `Practice` must deep-link to a deck-scoped non-mutating training URL.
 
 ### T6 - Add focused regression coverage for simplified IA
 
@@ -146,4 +151,5 @@ Verification completed:
 - No dedicated deck-specific cards/chunks pages exist.
 - No dedicated deck-specific cards/chunks endpoints exist.
 - Deck content add/remove flows still work from edit workspace.
+- Deck workspaces expose both deck-scoped `Review` and deck-scoped `Practice` entry points.
 - Docs and plans reflect the simplified IA.

@@ -12,10 +12,12 @@
 - These cards belong to one chunk and are reviewed in sequence, not all at once.
 - If cards are moved/added into a deck without explicit chunk membership, the system must auto-place them in a deck-scoped system chunk (`Deck Inbox`) so they are immediately reviewable.
 - Creating a deck, adding a card into a deck, or adding a chunk into a deck must make every affected card due for review immediately.
+- Review sessions are deck-scoped: the URL must identify the deck being reviewed, and Review mode must include only due review cards from that deck.
+- Practice sessions are deck-scoped training: the deck grid/workspace must expose a `Practice` action next to `Review`, Practice mode should include all cards in that deck, and Practice mode must not update review scheduling state, logs, streaks, or due dates.
 - The review page should not expose internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 - In each chunk review session, the learner should see exactly one next sentence/card.
 - After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
-- Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck level and override for individual review items where needed.
+- Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck create/edit time using friendly units such as hours and days, and override for individual review items where needed.
 - `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours.
 - `good` and `easy` can use the configured interval sequence.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
@@ -113,15 +115,17 @@
 **Objective:** Provide stable contracts for the web review UI.
 
 **Deliverables**
-- `GET /reviews/queue` returns next due review item(s) with chunk context.
+- `GET /reviews/queue?deckId=:deckId` returns next due review item(s) for that deck with chunk context.
 - `POST /reviews/:cardId/grade` updates state/log and returns next actionable item.
+- Practice mode has a separate non-mutating API contract that can return every card in a deck for training without touching review state.
 - DTO validation + error handling for invalid order/grade submissions.
 
 **Why now**
 - UI should consume stable behavior, not define business rules.
 
 **Exit criteria**
-- Can complete sequential review cycle via API-only tests.
+- Can complete a deck-scoped sequential review cycle via API-only tests.
+- Can fetch deck-scoped practice items without updating review state.
 
 ---
 
@@ -225,7 +229,8 @@
 **Deliverables**
 - Deck edit workspace is the canonical place to manage deck cards/chunks.
 - Clear deck actions:
-  - `Start Review`
+  - `Review`
+  - `Practice`
   - `Add Card`
   - `Add Chunk`
 - Remove redundant deck-specific pages and endpoints:
@@ -241,6 +246,7 @@
 
 **Exit criteria**
 - Deck content management happens through `/decks/:id/edit` without redundant deck-specific pages.
+- Product correction after completion: `Review` must deep-link into a deck-scoped review session, and `Practice` must sit beside it as a deck-scoped, non-mutating all-card training session.
 
 ---
 

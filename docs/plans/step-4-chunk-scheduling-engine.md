@@ -25,8 +25,8 @@ Turn persisted chunk/card ordering into actual review scheduling behavior so the
 This step is backend-first. We are locking business rules before building the full review UI.
 
 Important product note for this step:
-- the repetition schedule should be hardcoded for MVP as a default interval sequence
-- the implementation should stay structured so we can later add per-deck editable schedules in the UI without rewriting the engine
+- the repetition schedule starts from sane defaults, but deck create/edit must expose those defaults as editable intervals using friendly units such as hours and days
+- the implementation should stay structured so per-deck editable schedules can drive the engine without rewriting it
 - the chunk should require a longer consecutive success streak for mastery, not just one pass through all cards
 
 ---
@@ -94,6 +94,8 @@ These rules should be treated as the source of truth for implementation.
 - These intervals describe how often the chunk itself becomes due again after each successful review.
 - They do not mean “unlock many cards.”
 - The sequence must be visible to the user and editable at deck level.
+- Deck create/edit is the primary place to view and edit the default interval sequence.
+- Editing should support friendly units such as hours and days, then normalize to the scheduler's stored duration representation.
 - The system must support item-level interval overrides where needed.
 
 Example:
@@ -128,6 +130,7 @@ Explanation:
 Recommended simplified grade behavior:
 - `again`: reset chunk progress to the beginning and make the first chunk card due immediately
 - `hard`: keep the item due immediately for another review attempt
+- Immediate retry means the item remains due now, but it should move behind other currently due cards in the same deck/session before being shown again.
 - `good`, `easy`: advance chunk progress by one successful review and schedule the next chunk review event from the configured interval sequence
 
 Why this simplification is good for Step 4:

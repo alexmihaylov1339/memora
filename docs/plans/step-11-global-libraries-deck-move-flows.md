@@ -176,7 +176,8 @@ Status:
 
 - Update workspace actions so `Add Card` / `Add Chunk` navigate to dedicated deck-context library move flows.
 - Preserve direct "create new" paths, but as explicit secondary actions.
-- Keep `Start Review` unchanged.
+- Keep the existing review action functional during this step.
+- Product correction after completion: future implementation must rename/align the action as `Review`, deep-link it to a deck-scoped review URL, and add a sibling `Practice` action for non-mutating all-card deck training.
 
 Exit criteria:
 - Deck workspace clearly separates `move existing` vs `create new`.
@@ -204,7 +205,7 @@ Verification completed:
 - Create actions remain available as secondary paths:
   - `/cards/new?deckId=<deckId>`
   - `/chunks/new?deckId=<deckId>`
-- `Start Review` action remains unchanged.
+- Review action remained functionally unchanged in this step; later Step 16 work owns the deck-scoped Review/Practice split.
 
 ### T6 - Regression coverage for membership and access boundaries
 

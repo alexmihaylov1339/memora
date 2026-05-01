@@ -14,6 +14,9 @@ Memora is a language-learning app centered on chunked review.
 - Creating a deck, adding a card into a deck, or adding a chunk into a deck must make all affected cards reviewable right away. No card should become invisible to review just because it is not in a user-authored chunk yet.
 - Cards without explicit chunk membership must be covered by an auto-managed deck system chunk (`Deck Inbox`) so they are due immediately.
 - The default review interval sequence must be visible to the user, and the user must be able to edit intervals for a deck and override/customize intervals for individual review items where needed.
+- Deck create/edit must let the user view and edit the deck's default review intervals using friendly units such as hours and days.
+- Review sessions must be deck-scoped. The review URL must identify the deck being reviewed, and Review mode should include only due review cards from that deck, not all due cards across the user's profile.
+- Deck grids/workspaces must expose both `Review` and `Practice` actions. `Practice` mode is deck-scoped training: it should include all cards in that deck, not only due cards, and it must not update review scheduling state, review logs, streaks, or due dates.
 - Pressing `again` or `hard` should make the item due immediately for the next review, not after a delayed interval such as 4 hours.
 - The review page should stay focused on the card prompt and answer controls. It should not show internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 
