@@ -23,9 +23,10 @@ This playbook assumes observability events and dashboards defined in:
 
 Before rollout starts:
 1. All Step 14 test gates pass in CI.
-2. Dashboard panels are live and receiving non-empty data in staging.
-3. Alert rules are configured and routed to on-call channels.
-4. Release notes include:
+2. DB migrations are fully applied — run `npm run check:db-migration` from the repo root; NO-GO blocks promotion.
+3. Dashboard panels are live and receiving non-empty data in staging.
+4. Alert rules are configured and routed to on-call channels.
+5. Release notes include:
    - scope of changes
    - known limitations
    - rollback owner
@@ -38,12 +39,19 @@ If any prerequisite is missing: **do not promote**.
 
 ### Phase 0: Local validation (developer)
 
-Required checks:
-- run targeted review unit/integration tests.
+Required checks — run from repo root:
+```
+npm run check:db-migration    # schema valid + all migrations applied
+npm run check:review-phase0   # API tsc + review tests + build; Web tsc + review tests
+```
+
+Both commands print GO / NO-GO. Fix any NO-GO before proceeding.
+
+Manual check (still required):
 - verify no telemetry payload leaks raw card text.
 
 Promotion rule:
-- all required local checks pass.
+- both automated checks exit 0 and manual check passes.
 
 ### Phase 1: Staging deploy (100% staging traffic)
 

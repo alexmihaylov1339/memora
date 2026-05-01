@@ -6,6 +6,8 @@
     "dev": "concurrently \"npm run start:db\" \"npm run start:be\" \"npm run start:fe\"",
     "start:fe": "npm --prefix web run dev",
     "start:be": "npm --prefix api run start:dev",
-    "start:db": "npm --prefix db run start:dev"
+    "start:db": "npm --prefix db run start:dev",
+    "check:review-phase0": "bash scripts/review-phase0-check.sh",
+    "check:db-migration": "bash scripts/db-migration-check.sh"
   }
 }

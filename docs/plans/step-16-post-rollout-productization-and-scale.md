@@ -412,7 +412,7 @@ Verification completed:
 ### T6 - Reliability automation backlog burn-down
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - automate repeated manual checks discovered in Step 15.
@@ -427,6 +427,25 @@ Exit criteria:
 
 Verification checklist:
 - automation path is documented and reproducible.
+
+Verification completed:
+- Automated loop 1 — Phase 0 pre-rollout gate (`scripts/review-phase0-check.sh`):
+  - runs API tsc, API review contract tests, API build, Web tsc, Web review contract tests in sequence.
+  - prints GO / NO-GO summary; exits 1 on first failure with actionable message.
+  - wired as `npm run check:review-phase0` from repo root.
+  - replaces the manual multi-command Phase 0 steps from `review-rollout-dry-run-2026-04-26.md`.
+- Automated loop 2 — DB migration pre-deploy guard (`scripts/db-migration-check.sh`):
+  - runs `prisma validate` then `prisma migrate status`; exits 1 if any migration is pending.
+  - prints GO / NO-GO with exact apply commands on failure.
+  - wired as `npm run check:db-migration` from repo root.
+  - directly prevents the class of 500 error caused by unapplied migrations (reproduced 2026-05-01).
+- Updated `docs/operations/review-rollout-playbook.md`:
+  - Phase 0 now references both automated commands as required checks.
+  - Release prerequisites now include `npm run check:db-migration` as step 2.
+- Verification:
+  - `npm run check:db-migration` exits 0 with GO output (schema valid, all 7 migrations applied).
+  - `npm run check:review-phase0` exits 0 with GO output (5/5 steps pass: API tsc, 34 tests, build, Web tsc, 20 tests).
+  - Both scripts are marked executable.
 
 ---
 
