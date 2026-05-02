@@ -1,9 +1,14 @@
 'use client';
 
-import { ProtectedRoute } from '@/shared/components/AuthProvider';
+import {
+  LanguageSwitcher,
+  ProtectedRoute,
+} from '@shared/components';
 
-import { UpdateAccountForm } from '@features/auth/account/components';
-import { LanguageSwitcher } from '@shared/components';
+import {
+  LogoutButton,
+  UpdateAccountForm,
+} from '@features/auth/account/components';
 
 export default function AccountPage() {
   return (
@@ -16,6 +21,7 @@ export default function AccountPage() {
 
         <div className="max-w-md">
           <UpdateAccountForm />
+          <LogoutButton />
         </div>
       </main>
     </ProtectedRoute>

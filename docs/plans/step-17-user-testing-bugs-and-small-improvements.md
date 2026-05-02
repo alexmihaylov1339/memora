@@ -129,7 +129,7 @@ Verification completed:
 ### T2 - Add hamburger navigation and account logout
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a hamburger button when the primary navigation is hidden on smaller screens.
@@ -154,6 +154,27 @@ Verification checklist:
 - frontend tests cover hamburger visibility/open/close behavior.
 - account settings logout test verifies auth service call and redirect/state update.
 - manual check at mobile and desktop widths.
+
+Verification completed:
+- Split the authenticated navigation shell into:
+  - `Navigation.tsx` as a small composer.
+  - `DesktopNavigation.tsx` for the existing desktop sidebar.
+  - `MobileNavigation.tsx` for the small-screen hamburger header and accessible drawer.
+  - `NavigationLinks.tsx` and `navigationItems.tsx` for shared link rendering and active-state logic.
+- Added a small-screen hamburger button with `aria-expanded`, `aria-controls`, and open/close labels.
+- Added an accessible mobile navigation drawer with `role="dialog"`, `aria-modal="true"`, backdrop close, close button, and close-on-link navigation.
+- Added `LogoutButton` to account settings using the existing `useLogout` flow.
+- Kept touched non-test files below the 150-line guideline:
+  - `MobileNavigation.tsx` is 75 lines.
+  - `NavigationLinks.tsx` is 48 lines.
+  - `navigationItems.tsx` is 56 lines.
+  - `LogoutButton.tsx` is 17 lines.
+  - `web/src/app/[locale]/account/page.tsx` is 29 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/shared/components/Navigation/Navigation.test.tsx src/features/auth/account/components/LogoutButton.test.tsx` passed.
+  - `cd web && npx eslint src/shared/components/Navigation/Navigation.tsx src/shared/components/Navigation/DesktopNavigation.tsx src/shared/components/Navigation/MobileNavigation.tsx src/shared/components/Navigation/NavigationLinks.tsx src/shared/components/Navigation/navigationItems.tsx src/shared/components/Navigation/Navigation.test.tsx src/features/auth/account/components/LogoutButton.tsx src/features/auth/account/components/LogoutButton.test.tsx 'src/app/[locale]/account/page.tsx'` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+- Manual browser viewport check was not run in this terminal-only pass; the automated coverage verifies hamburger visibility, open/close behavior, close-on-navigation, and logout action wiring.
 
 ---
 
