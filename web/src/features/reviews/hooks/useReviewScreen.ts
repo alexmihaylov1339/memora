@@ -4,6 +4,10 @@ import { trackAnalyticsEvent } from '@shared/analytics';
 import { resolveReviewRenderer } from '../review-kind-registry';
 import type { GradeReviewResponse, ReviewGrade, ReviewQueueItem } from '../types';
 import { REVIEW_UI_EVENTS } from '../review-observability';
+import {
+  reconcileReviewQueueAfterGrade,
+  removeReviewedItemFromQueue,
+} from './reviewOptimisticQueue';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
 import { useReviewScreenObservability } from './useReviewScreenObservability';
@@ -12,24 +16,23 @@ export function useReviewScreen(deckId: string | null) {
   const queueQuery = useReviewQueueQuery(deckId);
   const gradeMutation = useGradeReviewMutation();
   const [revealedCardId, setRevealedCardId] = useState<string | null>(null);
-  const [currentItemOverride, setCurrentItemOverride] = useState<
-    ReviewQueueItem | null | undefined
+  const [queueItemsOverride, setQueueItemsOverride] = useState<
+    ReviewQueueItem[] | undefined
   >(undefined);
   const [lastGradeResult, setLastGradeResult] =
     useState<GradeReviewResponse | null>(null);
 
   const hasQueueError = Boolean(queueQuery.error);
   const missingDeckErrorMessage = deckId ? undefined : 'Choose a deck to review.';
-  const currentItem = useMemo(
-    () =>
-      currentItemOverride === undefined
-        ? queueQuery.result?.items[0] ?? null
-        : currentItemOverride,
-    [currentItemOverride, queueQuery.result?.items],
+  const queueItems = useMemo(
+    () => queueItemsOverride ?? queueQuery.result?.items ?? [],
+    [queueItemsOverride, queueQuery.result?.items],
   );
-  const queueCount = useMemo(() => queueQuery.result?.items.length ?? 0, [
-    queueQuery.result?.items,
-  ]);
+  const currentItem = useMemo<ReviewQueueItem | null>(
+    () => (queueItems.length > 0 ? queueItems[0] : null),
+    [queueItems],
+  );
+  const queueCount = queueItems.length;
   const reviewRenderer = resolveReviewRenderer(currentItem);
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const gradeErrorMessage = gradeMutation.error?.message;
@@ -67,26 +70,33 @@ export function useReviewScreen(deckId: string | null) {
       positionInChunk: currentItem.positionInChunk,
     });
 
-    const fallbackNextItem =
-      queueQuery.result?.items.find((item) => item.cardId !== currentItem.cardId) ??
-      null;
+    const optimisticQueue = removeReviewedItemFromQueue(
+      queueItems,
+      currentItem.cardId,
+    );
+    if (optimisticQueue.length > 0) {
+      setQueueItemsOverride(optimisticQueue);
+      setRevealedCardId(null);
+    }
+
     const result = await gradeMutation.fetch({
       cardId: currentItem.cardId,
       deckId: scopedDeckId,
       grade,
     });
-    const nextItem =
-      result.nextActionableItem?.cardId === currentItem.cardId
-        ? fallbackNextItem
-        : result.nextActionableItem ?? fallbackNextItem;
+    const reconciledQueue = reconcileReviewQueueAfterGrade({
+      optimisticQueue,
+      reviewedCardId: currentItem.cardId,
+      serverNextActionableItem: result.nextActionableItem,
+    });
 
     setLastGradeResult(result);
-    setCurrentItemOverride(nextItem);
+    setQueueItemsOverride(reconciledQueue);
     setRevealedCardId(null);
-  }, [currentItem, deckId, gradeMutation, queueCount, queueQuery.result?.items]);
+  }, [currentItem, deckId, gradeMutation, queueCount, queueItems]);
 
   const handleRefreshQueue = useCallback(async () => {
-    setCurrentItemOverride(undefined);
+    setQueueItemsOverride(undefined);
     setLastGradeResult(null);
     setRevealedCardId(null);
     await queueQuery.refetch();

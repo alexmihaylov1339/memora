@@ -328,7 +328,7 @@ Verification completed:
 ### T6 - Optimistically advance after review grade
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - when a grade is clicked, immediately show the next known card from the current deck review queue.
@@ -352,6 +352,21 @@ Verification checklist:
 - hook tests cover immediate local advance.
 - hook tests cover server reconciliation to same next item and different next item.
 - hook tests cover no-local-next fallback.
+
+Verification completed:
+- Reworked `useReviewScreen` from a single current-item override to a small local queue override so the reviewed card can be removed immediately when another local card is known.
+- Added `reviewOptimisticQueue` helpers to keep the hook focused and to centralize queue removal/reconciliation rules.
+- Grade clicks now immediately show the next local deck-queue item before grade persistence resolves.
+- If no local next item is known, the current card stays visible while the existing submitting/loading path waits for the server response.
+- Server reconciliation keeps the currently visible optimistic item in place, inserts a different server `nextActionableItem` behind it, and avoids re-adding the reviewed card when the server reports an immediate retry for the same card.
+- Kept touched non-test files below the 150-line guideline:
+  - `web/src/features/reviews/hooks/useReviewScreen.ts` is 120 lines.
+  - `web/src/features/reviews/hooks/reviewOptimisticQueue.ts` is 41 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx src/features/reviews/hooks/reviewOptimisticQueue.test.ts` passed.
+  - `cd web && npx eslint src/features/reviews/hooks/useReviewScreen.ts src/features/reviews/hooks/useReviewScreen.test.tsx src/features/reviews/hooks/reviewOptimisticQueue.ts src/features/reviews/hooks/reviewOptimisticQueue.test.ts` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `git diff --check` passed.
 
 ---
 
