@@ -38,8 +38,12 @@ jest.mock('./ReviewFeedbackBanner', () => {
   return MockReviewFeedbackBanner;
 });
 jest.mock('./ReviewGradeButtons', () => {
-  function MockReviewGradeButtons() {
-    return <div data-testid="review-grade-buttons">grades</div>;
+  function MockReviewGradeButtons({ disabled }: { disabled: boolean }) {
+    return (
+      <div data-disabled={String(disabled)} data-testid="review-grade-buttons">
+        grades
+      </div>
+    );
   }
 
   return MockReviewGradeButtons;
@@ -238,5 +242,73 @@ describe('ReviewScreen', () => {
 
     expect(screen.getByTestId('review-current-item-card')).toBeInTheDocument();
     expect(screen.getByTestId('review-grade-buttons')).toBeInTheDocument();
+  });
+
+  it('keeps grade buttons enabled before answer reveal', () => {
+    mockedUseReviewScreen.mockReturnValue(
+      buildHookResult({
+        currentItem: {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          due: '2026-04-26T10:00:00.000Z',
+          kind: 'basic',
+          fields: { front: 'spielen', back: 'to play' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+          consecutiveSuccessCount: 0,
+        },
+        isAnswerRevealed: false,
+        isGrading: false,
+        reviewRenderer: {
+          renderer: 'basic',
+          basicCardFields: { front: 'spielen', back: 'to play' },
+        },
+      }),
+    );
+
+    render(<ReviewScreen deckId="deck-1" />);
+
+    expect(screen.getByTestId('review-grade-buttons')).toHaveAttribute(
+      'data-disabled',
+      'false',
+    );
+  });
+
+  it('disables grade buttons while submitting', () => {
+    mockedUseReviewScreen.mockReturnValue(
+      buildHookResult({
+        currentItem: {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          due: '2026-04-26T10:00:00.000Z',
+          kind: 'basic',
+          fields: { front: 'spielen', back: 'to play' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+          consecutiveSuccessCount: 0,
+        },
+        isAnswerRevealed: true,
+        isGrading: true,
+        reviewRenderer: {
+          renderer: 'basic',
+          basicCardFields: { front: 'spielen', back: 'to play' },
+        },
+      }),
+    );
+
+    render(<ReviewScreen deckId="deck-1" />);
+
+    expect(screen.getByTestId('review-grade-buttons')).toHaveAttribute(
+      'data-disabled',
+      'true',
+    );
   });
 });

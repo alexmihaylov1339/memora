@@ -284,7 +284,7 @@ Verification completed:
 ### T5 - Allow review grading without reveal
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - remove the requirement that the learner must reveal the back of the card before grading.
@@ -305,6 +305,23 @@ Exit criteria:
 Verification checklist:
 - frontend tests cover grade-before-reveal and grade-after-reveal.
 - regression tests confirm disabled state only applies while submitting or when there is no actionable card.
+
+Verification completed:
+- Removed the reveal prerequisite from `ReviewScreen`; grade buttons are now disabled only while a grade submission is in flight.
+- Kept `Reveal Answer` available as an optional aid on the current review card.
+- Updated review copy so it no longer describes reveal as required before grading.
+- Added focused grade-button tests proving a learner can grade immediately and cannot submit while disabled/submitting.
+- Added screen-level regression coverage proving grade buttons stay enabled before reveal and become disabled while submitting.
+- Updated review UX regression coverage so the hidden-answer copy says reveal is optional before grading.
+- Kept touched non-test files below the 150-line guideline:
+  - `web/src/app/[locale]/review/components/ReviewScreen.tsx` is 80 lines.
+  - `web/src/app/[locale]/review/components/ReviewGradeButtons.tsx` is 48 lines.
+  - `web/src/app/[locale]/review/components/ReviewAnswerCard.tsx` is 88 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath 'src/app/[locale]/review/components/ReviewGradeButtons.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx'` passed.
+  - `cd web && npx eslint 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewGradeButtons.tsx' 'src/app/[locale]/review/components/ReviewGradeButtons.test.tsx' 'src/app/[locale]/review/components/ReviewAnswerCard.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx'` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `git diff --check` passed.
 
 ---
 

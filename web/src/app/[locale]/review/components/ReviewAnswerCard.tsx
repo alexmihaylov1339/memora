@@ -79,7 +79,7 @@ export default function ReviewAnswerCard({
           </p>
         ) : (
           <p className="mt-3 text-sm text-slate-500">
-            Reveal the answer before grading the card.
+            Reveal the answer when you want to check it before grading.
           </p>
         )}
       </div>

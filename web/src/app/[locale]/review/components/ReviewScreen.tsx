@@ -70,7 +70,7 @@ export default function ReviewScreen({ deckId }: ReviewScreenProps) {
       />
 
       <ReviewGradeButtons
-        disabled={!isAnswerRevealed || isGrading}
+        disabled={isGrading}
         errorMessage={gradeErrorMessage}
         isLoading={isGrading}
         onGrade={handleGrade}

@@ -22,7 +22,7 @@ export default function ReviewGradeButtons({
         <div>
           <h3 className="text-base font-semibold text-slate-900">Grades</h3>
           <p className="mt-1 text-sm text-slate-600">
-            Reveal the answer, then grade the current card to continue the review flow.
+            Grade the current card whenever you are ready. Reveal is optional.
           </p>
         </div>
       </div>

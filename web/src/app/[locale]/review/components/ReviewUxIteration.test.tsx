@@ -99,6 +99,8 @@ describe('review UX iteration states', () => {
 
     expect(screen.getByText('Ich _____ gern Tennis.')).toBeInTheDocument();
     expect(screen.getByText('Hint: verb')).toBeInTheDocument();
+    expect(screen.getByText(/Reveal the answer when you want/i)).toBeInTheDocument();
+    expect(screen.queryByText(/before grading the card/i)).not.toBeInTheDocument();
     expect(screen.queryByText('spiele')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Reveal Answer' }));
