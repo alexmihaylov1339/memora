@@ -1,5 +1,6 @@
 import type { ReviewQueueItem } from '../types';
 import {
+  moveReviewedItemToQueueEnd,
   reconcileReviewQueueAfterGrade,
   removeReviewedItemFromQueue,
 } from './reviewOptimisticQueue';
@@ -29,6 +30,23 @@ describe('reviewOptimisticQueue', () => {
         'card-1',
       ),
     ).toEqual([buildQueueItem('card-2')]);
+  });
+
+  it('moves immediate retry items behind the other local queue items', () => {
+    expect(
+      moveReviewedItemToQueueEnd(
+        [
+          buildQueueItem('card-1'),
+          buildQueueItem('card-2'),
+          buildQueueItem('card-3'),
+        ],
+        'card-1',
+      ),
+    ).toEqual([
+      buildQueueItem('card-2'),
+      buildQueueItem('card-3'),
+      buildQueueItem('card-1'),
+    ]);
   });
 
   it('keeps the visible optimistic item and inserts a different server next item after it', () => {

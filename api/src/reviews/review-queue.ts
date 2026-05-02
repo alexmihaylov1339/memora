@@ -28,6 +28,7 @@ export type PracticeItem = Omit<
 
 type SortableReviewQueueItem = ReviewQueueItem & {
   isImmediateRetryPending: boolean;
+  reviewOrder: number;
 };
 
 export function buildEligibleQueueItems(
@@ -35,47 +36,18 @@ export function buildEligibleQueueItems(
   now: Date,
 ): ReviewQueueItem[] {
   const items = chunks
-    .map((chunk) => {
+    .flatMap((chunk) => {
       const snapshot = deriveChunkReviewState(chunk, now);
-      const currentChunkCard = isNull(snapshot.currentCard)
-        ? null
-        : chunk.chunkCards.find(
-            (chunkCard) =>
-              chunkCard.sequenceIndex === snapshot.currentCard?.sequenceIndex,
-          );
-      const currentCard = currentChunkCard?.card;
 
       if (
         !snapshot.isDue ||
         snapshot.hasMastery ||
-        isNull(snapshot.currentCard) ||
-        !currentCard
+        isNull(snapshot.currentCard)
       ) {
-        return null;
+        return [];
       }
 
-      const reviewKindSupport = resolveReviewKindSupport(
-        currentCard.kind,
-        currentCard.fields,
-      );
-
-      return {
-        cardId: currentCard.id,
-        deckId: chunk.deckId,
-        chunkId: chunk.id,
-        chunkTitle: chunk.title,
-        chunkPosition: chunk.position,
-        positionInChunk: snapshot.currentCard.sequenceIndex,
-        due: snapshot.due,
-        kind: currentCard.kind,
-        fields: currentCard.fields,
-        isReviewSupported: reviewKindSupport.isReviewSupported,
-        reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
-        cardCreatedAt: currentCard.createdAt,
-        consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
-        isImmediateRetryPending:
-          snapshot.lastGrade === 'again' || snapshot.lastGrade === 'hard',
-      } satisfies SortableReviewQueueItem;
+      return buildDueChunkQueueItems(chunk, snapshot);
     })
     .filter(isNotNull);
 
@@ -89,16 +61,71 @@ export function buildEligibleQueueItems(
       return left.isImmediateRetryPending ? 1 : -1;
     }
 
-    const createdAtDiff =
-      left.cardCreatedAt.getTime() - right.cardCreatedAt.getTime();
-    if (createdAtDiff !== 0) {
-      return createdAtDiff;
+    const chunkPositionDiff = left.chunkPosition - right.chunkPosition;
+    if (chunkPositionDiff !== 0) {
+      return chunkPositionDiff;
+    }
+
+    const reviewOrderDiff = left.reviewOrder - right.reviewOrder;
+    if (reviewOrderDiff !== 0) {
+      return reviewOrderDiff;
     }
 
     return left.cardId.localeCompare(right.cardId);
   });
 
   return items.map(toReviewQueueItem);
+}
+
+function buildDueChunkQueueItems(
+  chunk: ChunkWithCards,
+  snapshot: ReturnType<typeof deriveChunkReviewState>,
+): Array<SortableReviewQueueItem | null> {
+  if (isNull(snapshot.currentCard)) {
+    return [];
+  }
+
+  const currentCardIndex = chunk.chunkCards.findIndex(
+    (chunkCard) =>
+      chunkCard.sequenceIndex === snapshot.currentCard?.sequenceIndex,
+  );
+
+  if (currentCardIndex < 0) {
+    return [];
+  }
+
+  return chunk.chunkCards.map((_, offset) => {
+    const chunkCard =
+      chunk.chunkCards[(currentCardIndex + offset) % chunk.chunkCards.length];
+
+    if (!chunkCard?.card) {
+      return null;
+    }
+
+    const reviewKindSupport = resolveReviewKindSupport(
+      chunkCard.card.kind,
+      chunkCard.card.fields,
+    );
+
+    return {
+      cardId: chunkCard.card.id,
+      deckId: chunk.deckId,
+      chunkId: chunk.id,
+      chunkTitle: chunk.title,
+      chunkPosition: chunk.position,
+      positionInChunk: chunkCard.sequenceIndex,
+      due: snapshot.due,
+      kind: chunkCard.card.kind,
+      fields: chunkCard.card.fields,
+      isReviewSupported: reviewKindSupport.isReviewSupported,
+      reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
+      cardCreatedAt: chunkCard.card.createdAt,
+      consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
+      isImmediateRetryPending:
+        snapshot.lastGrade === 'again' || snapshot.lastGrade === 'hard',
+      reviewOrder: offset,
+    } satisfies SortableReviewQueueItem;
+  });
 }
 
 function toReviewQueueItem(item: SortableReviewQueueItem): ReviewQueueItem {

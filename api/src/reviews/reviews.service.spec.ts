@@ -234,7 +234,7 @@ describe('ReviewsService', () => {
       }
     });
 
-    it('returns only the next eligible card for each due chunk', async () => {
+    it('preloads due chunk cards in review order for fast local advance', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');
 
       prisma.chunk.findMany.mockResolvedValue([
@@ -326,9 +326,25 @@ describe('ReviewsService', () => {
           consecutiveSuccessCount: 0,
         }),
         expect.objectContaining({
+          cardId: 'card-4',
+          chunkId: 'chunk-2',
+          positionInChunk: 1,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+          consecutiveSuccessCount: 0,
+        }),
+        expect.objectContaining({
           cardId: 'card-2',
           chunkId: 'chunk-1',
           positionInChunk: 1,
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+          consecutiveSuccessCount: 1,
+        }),
+        expect.objectContaining({
+          cardId: 'card-1',
+          chunkId: 'chunk-1',
+          positionInChunk: 0,
           isReviewSupported: true,
           reviewUnsupportedReason: null,
           consecutiveSuccessCount: 1,

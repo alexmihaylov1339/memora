@@ -5,10 +5,11 @@ import { resolveReviewRenderer } from '../review-kind-registry';
 import type { GradeReviewResponse, ReviewGrade, ReviewQueueItem } from '../types';
 import { REVIEW_UI_EVENTS } from '../review-observability';
 import {
-  reconcileReviewQueueAfterGrade,
+  moveReviewedItemToQueueEnd,
   removeReviewedItemFromQueue,
 } from './reviewOptimisticQueue';
 import { useFailedGradeRetry } from './useFailedGradeRetry';
+import { useQueuedGradePersistence } from './useQueuedGradePersistence';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
 import { useReviewScreenObservability } from './useReviewScreenObservability';
@@ -47,6 +48,21 @@ export function useReviewScreen(deckId: string | null) {
     setLastGradeResult,
     setQueueItemsOverride,
   });
+  const {
+    blockingGradeCardId,
+    clearBlockingGrade,
+    persistQueuedGrade,
+    setBlockingGradeCardId,
+  } = useQueuedGradePersistence({
+    clearFailedGradeRetry,
+    deckId,
+    gradeReview: gradeMutation.grade,
+    reportFailedGrade,
+    setLastGradeResult,
+    setQueueItemsOverride,
+    setRevealedCardId,
+  });
+  const isVisibleCardSaving = currentItem?.cardId === blockingGradeCardId;
 
   useReviewScreenObservability({
     currentItem,
@@ -77,56 +93,39 @@ export function useReviewScreen(deckId: string | null) {
       positionInChunk: currentItem.positionInChunk,
     });
 
-    const optimisticQueue = removeReviewedItemFromQueue(
-      queueItems,
-      currentItem.cardId,
-    );
-    if (optimisticQueue.length > 0) {
+    const isImmediateRetry = grade === 'again' || grade === 'hard';
+    const optimisticQueue = isImmediateRetry
+      ? moveReviewedItemToQueueEnd(queueItems, currentItem.cardId)
+      : removeReviewedItemFromQueue(queueItems, currentItem.cardId);
+    const hasOptimisticNext =
+      optimisticQueue.length > 0 &&
+      optimisticQueue[0]?.cardId !== currentItem.cardId;
+    if (hasOptimisticNext) {
       setQueueItemsOverride(optimisticQueue);
       setRevealedCardId(null);
+      setBlockingGradeCardId(null);
+    } else {
+      setBlockingGradeCardId(currentItem.cardId);
     }
 
-    gradeMutation.grade(
-      {
-        cardId: currentItem.cardId,
-        deckId,
-        grade,
-      },
-      {
-        onError: (error) => {
-          reportFailedGrade(currentItem.cardId, grade, error);
-        },
-        onSuccess: (result) => {
-          const reconciledQueue = reconcileReviewQueueAfterGrade({
-            optimisticQueue,
-            reviewedCardId: currentItem.cardId,
-            serverNextActionableItem: result.nextActionableItem,
-          });
-
-          clearFailedGradeRetry();
-          setLastGradeResult(result);
-          setQueueItemsOverride(reconciledQueue);
-          setRevealedCardId(null);
-        },
-      },
-    );
+    persistQueuedGrade({ currentItem, grade, optimisticQueue });
   }, [
     currentItem,
-    clearFailedGradeRetry,
     deckId,
-    gradeMutation,
+    persistQueuedGrade,
     queueCount,
     queueItems,
-    reportFailedGrade,
+    setBlockingGradeCardId,
   ]);
 
   const handleRefreshQueue = useCallback(async () => {
     clearFailedGradeRetry();
+    clearBlockingGrade();
     setQueueItemsOverride(undefined);
     setLastGradeResult(null);
     setRevealedCardId(null);
     await queueQuery.refetch();
-  }, [clearFailedGradeRetry, queueQuery]);
+  }, [clearBlockingGrade, clearFailedGradeRetry, queueQuery]);
 
   return {
     currentItem,
@@ -136,7 +135,7 @@ export function useReviewScreen(deckId: string | null) {
     gradeErrorMessage,
     gradeResult: lastGradeResult,
     reviewRenderer,
-    isGrading: gradeMutation.isLoading,
+    isGrading: gradeMutation.isLoading && isVisibleCardSaving,
     isAnswerRevealed,
     isLoading: queueQuery.isLoading,
     isRetryingFailedGrade,

@@ -388,7 +388,7 @@ describe('useReviewScreen observability', () => {
 
     mockUseGradeReviewMutation.mockReturnValue({
       grade: gradeMock,
-      isLoading: false,
+      isLoading: true,
       error: undefined,
     });
     mockUseReviewQueueQuery.mockReturnValue({
@@ -408,6 +408,7 @@ describe('useReviewScreen observability', () => {
     });
 
     expect(result.current.currentItem?.cardId).toBe('card-2');
+    expect(result.current.isGrading).toBe(false);
 
     deferredGrade.resolve(buildGradeResponse());
     await act(async () => {

@@ -13,6 +13,22 @@ export function removeReviewedItemFromQueue(
   return items.filter((item) => item.cardId !== reviewedCardId);
 }
 
+export function moveReviewedItemToQueueEnd(
+  items: ReviewQueueItem[],
+  reviewedCardId: string,
+): ReviewQueueItem[] {
+  const reviewedItem = items.find((item) => item.cardId === reviewedCardId);
+
+  if (!reviewedItem) {
+    return items;
+  }
+
+  return [
+    ...items.filter((item) => item.cardId !== reviewedCardId),
+    reviewedItem,
+  ];
+}
+
 export function reconcileReviewQueueAfterGrade({
   optimisticQueue,
   reviewedCardId,

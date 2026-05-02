@@ -158,7 +158,8 @@ describe('review UX iteration states', () => {
       />,
     );
 
-    expect(screen.getByText('Progress advanced successfully.')).toBeInTheDocument();
+    expect(screen.getByText('Grade saved.')).toBeInTheDocument();
+    expect(screen.queryByText(/Progress/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Next review/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Streak/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Deck Inbox')).not.toBeInTheDocument();
