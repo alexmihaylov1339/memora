@@ -8,6 +8,7 @@ export interface DeckListItemDto {
   id: string;
   name: string;
   count: number;
+  dueCount: number;
 }
 
 export interface DeckDetailDto {
@@ -35,6 +36,7 @@ export function serializeDeckListItem(deck: DeckListItem): DeckListItemDto {
     id: deck.id,
     name: deck.name,
     count: deck.count,
+    dueCount: deck.dueCount,
   };
 }
 

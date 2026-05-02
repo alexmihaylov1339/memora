@@ -12,6 +12,7 @@ export interface DeckListItem {
   id: string;
   name: string;
   count: number;
+  dueCount: number;
 }
 
 export interface DeckRecord {

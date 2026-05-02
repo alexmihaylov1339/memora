@@ -181,7 +181,7 @@ Verification completed:
 ### T3 - Show total cards and due cards on the deck grid
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add separate `/decks` grid columns for `Cards` and `Due cards`.
@@ -206,6 +206,26 @@ Verification checklist:
 - backend tests cover decks with zero cards, non-due cards, due cards, and multiple decks.
 - frontend tests cover the two columns and empty/zero states.
 - query implementation avoids obvious per-deck queue-fetch loops.
+
+Verification completed:
+- Added API-provided `dueCount` to deck list items while preserving existing `count` as total cards.
+- Added `getDueCardCountsByDeck` to calculate deck-scoped due review cards in one batched chunk query for the accessible deck list.
+- Due counts use the same chunk review-state derivation as review queue eligibility and count one currently actionable card per due, non-mastered chunk.
+- Updated deck list serialization and web deck types to include `dueCount`.
+- Updated `/decks` grid columns to show separate `Cards` and `Due cards` columns.
+- Updated the deck workspace summary to use total due cards instead of total cards for “Cards due today.”
+- Kept touched non-test files below the 150-line guideline:
+  - `api/src/decks/deck-review-counts.ts` is 58 lines.
+  - `api/src/decks/deck-queries.ts` is 99 lines.
+  - `web/src/app/[locale]/decks/components/useDeckGridColumns.tsx` is 49 lines.
+  - `web/src/app/[locale]/decks/components/DecksWorkspace.tsx` is 57 lines.
+- Verification:
+  - `cd api && npm test -- --runTestsByPath src/decks/decks.service.spec.ts` passed.
+  - `cd api && npx eslint src/decks/deck-review-counts.ts src/decks/deck-queries.ts src/decks/decks.types.ts src/decks/dto/deck-response.dto.ts src/decks/decks.service.spec.ts` passed.
+  - `cd api && npx tsc --noEmit --pretty false` passed.
+  - `cd web && npm test -- --runTestsByPath 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx'` passed.
+  - `cd web && npx eslint 'src/app/[locale]/decks/components/useDeckGridColumns.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' src/features/decks/types/index.ts` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
 
 ---
 

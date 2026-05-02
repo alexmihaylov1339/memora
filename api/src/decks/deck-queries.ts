@@ -1,5 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
+import { getDueCardCountsByDeck } from './deck-review-counts';
 import {
   mapDeckDetail,
   mapDeckShareSummary,
@@ -21,11 +22,13 @@ export async function listDecks(
     where: { id: { in: deckIds } },
     include: { _count: { select: { cards: true } } },
   });
+  const dueCounts = await getDueCardCountsByDeck(prisma, deckIds);
 
   return decks.map((deck) => ({
     id: deck.id,
     name: deck.name,
     count: deck._count.cards,
+    dueCount: dueCounts.get(deck.id) ?? 0,
   }));
 }
 

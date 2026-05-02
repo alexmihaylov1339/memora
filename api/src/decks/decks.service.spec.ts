@@ -62,6 +62,9 @@ describe('DecksService', () => {
   });
 
   it('findAll returns owned and shared decks', async () => {
+    const now = new Date('2026-05-02T10:00:00.000Z');
+    jest.useFakeTimers().setSystemTime(now);
+
     prisma.deck.findMany
       .mockResolvedValueOnce([{ id: 'deck-owned' }, { id: 'deck-shared' }])
       .mockResolvedValueOnce([
@@ -79,11 +82,49 @@ describe('DecksService', () => {
     prisma.deckShare.findMany.mockResolvedValueOnce([
       { deckId: 'deck-shared' },
     ]);
+    prisma.chunk.findMany.mockResolvedValueOnce([
+      {
+        id: 'chunk-owned-due',
+        deckId: 'deck-owned',
+        title: 'Owned due',
+        position: 0,
+        deck: { reviewIntervalHours: [1, 24] },
+        reviewState: {
+          id: 'state-owned',
+          chunkId: 'chunk-owned-due',
+          due: new Date('2026-05-02T09:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [{ cardId: 'card-owned', sequenceIndex: 0 }],
+      },
+      {
+        id: 'chunk-shared-future',
+        deckId: 'deck-shared',
+        title: 'Shared future',
+        position: 0,
+        deck: { reviewIntervalHours: [1, 24] },
+        reviewState: {
+          id: 'state-shared',
+          chunkId: 'chunk-shared-future',
+          due: new Date('2026-05-02T11:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        chunkCards: [{ cardId: 'card-shared', sequenceIndex: 0 }],
+      },
+    ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
-      { id: 'deck-owned', name: 'Owned', count: 2 },
-      { id: 'deck-shared', name: 'Shared', count: 1 },
+      { id: 'deck-owned', name: 'Owned', count: 2, dueCount: 1 },
+      { id: 'deck-shared', name: 'Shared', count: 1, dueCount: 0 },
     ]);
+
+    jest.useRealTimers();
   });
 
   it('creates deck inbox chunk so newly attached cards are immediately reviewable', async () => {

@@ -14,7 +14,7 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
   const router = useRouter();
   const columnDefs = useDeckGridColumns();
 
-  const totalCards = decks.reduce((sum, deck) => sum + deck.count, 0);
+  const totalDueCards = decks.reduce((sum, deck) => sum + deck.dueCount, 0);
 
   function handleDeckRowClick(deck: Deck) {
     router.replace(APP_ROUTES.deckEdit(deck.id));
@@ -27,7 +27,7 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
           Welcome back, Alex!
         </h1>
         <p className="mt-3 text-[1.125rem] font-bold tracking-[0.01em] text-brand">
-          {totalCards} Cards due today. Don&apos;t let them pile up!
+          {totalDueCards} Cards due today. Don&apos;t let them pile up!
         </p>
       </div>
 
