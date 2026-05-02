@@ -209,22 +209,28 @@ Verification checklist:
 
 Verification completed:
 - Added API-provided `dueCount` to deck list items while preserving existing `count` as total cards.
-- Added `getDueCardCountsByDeck` to calculate deck-scoped due review cards in one batched chunk query for the accessible deck list.
-- Due counts use the same chunk review-state derivation as review queue eligibility and count one currently actionable card per due, non-mastered chunk.
+- Added `getDueCardCountsByDeck` to calculate deck-scoped due review cards in batched deck-list queries.
+- Due counts use the same chunk review-state derivation as review queue eligibility and count every card in due, non-mastered chunks because newly added deck cards must be visible as due learning work.
+- Due counts also include unchunked cards already assigned to a deck so older/local data created before deck-inbox membership backfills does not render as zero due cards.
+- Added a shared deck-inbox membership helper so deck create/update/move flows and direct card creation in a deck make affected cards immediately reviewable.
+- Added frontend deck-list response normalization so missing `dueCount` values render as `0` instead of a blank grid cell while the API contract is being refreshed locally.
 - Updated deck list serialization and web deck types to include `dueCount`.
 - Updated `/decks` grid columns to show separate `Cards` and `Due cards` columns.
 - Updated the deck workspace summary to use total due cards instead of total cards for “Cards due today.”
 - Kept touched non-test files below the 150-line guideline:
-  - `api/src/decks/deck-review-counts.ts` is 58 lines.
+  - `api/src/decks/deck-review-counts.ts` is 78 lines.
+  - `api/src/decks/deck-inbox-membership.ts` is 110 lines.
   - `api/src/decks/deck-queries.ts` is 99 lines.
   - `web/src/app/[locale]/decks/components/useDeckGridColumns.tsx` is 49 lines.
   - `web/src/app/[locale]/decks/components/DecksWorkspace.tsx` is 57 lines.
+  - `web/src/features/decks/services/deckResponseMapper.ts` is 11 lines.
 - Verification:
-  - `cd api && npm test -- --runTestsByPath src/decks/decks.service.spec.ts` passed.
-  - `cd api && npx eslint src/decks/deck-review-counts.ts src/decks/deck-queries.ts src/decks/decks.types.ts src/decks/dto/deck-response.dto.ts src/decks/decks.service.spec.ts` passed.
+  - `cd api && npm test -- --runTestsByPath src/decks/decks.service.spec.ts src/cards/cards.service.spec.ts` passed.
+  - `cd api && npx eslint src/decks/deck-inbox-membership.ts src/decks/deck-review-counts.ts src/decks/decks.helpers.ts src/decks/decks.service.spec.ts src/cards/cards.service.ts src/cards/cards.service.spec.ts` passed.
   - `cd api && npx tsc --noEmit --pretty false` passed.
-  - `cd web && npm test -- --runTestsByPath 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx'` passed.
-  - `cd web && npx eslint 'src/app/[locale]/decks/components/useDeckGridColumns.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' src/features/decks/types/index.ts` passed.
+  - `cd api && npm run build` passed and refreshed `dist` so local `start:prod` serves `dueCount`.
+  - `cd web && npm test -- --runTestsByPath 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' src/features/decks/services/deckResponseMapper.test.ts` passed.
+  - `cd web && npx eslint 'src/app/[locale]/decks/components/useDeckGridColumns.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.tsx' src/features/decks/services/deckService.ts src/features/decks/services/deckResponseMapper.ts src/features/decks/services/deckResponseMapper.test.ts` passed.
   - `cd web && npx tsc --noEmit --pretty false` passed.
 
 ---
@@ -232,7 +238,7 @@ Verification completed:
 ### T4 - Normalize pointer cursor behavior for buttons
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - ensure all enabled app buttons use `cursor: pointer`.
@@ -256,6 +262,22 @@ Verification checklist:
 - search for button styles/classes that override cursor behavior.
 - targeted frontend tests or visual assertions cover shared button and pagination controls.
 - manual smoke check on deck grid pagination.
+
+Verification completed:
+- Added a global button cursor rule in `web/src/app/globals.css` so enabled native buttons and role-button surfaces use pointer cursor, while disabled and `aria-disabled` controls use a disabled cursor.
+- Added explicit cursor classes to the shared `Button` primitive and the legacy auth-form button primitive.
+- Added pointer and disabled cursor classes to `GridPagination` controls so deck grid pagination follows the same affordance rule.
+- Added focused tests for shared `Button` enabled/disabled cursor classes and grid pagination cursor classes.
+- Kept touched non-test files below the 150-line guideline:
+  - `web/src/shared/components/Button/Button.tsx` is 27 lines.
+  - `web/src/shared/components/Grid/GridPagination.tsx` is 59 lines.
+  - `web/src/shared/components/auth-form/Button.tsx` is 32 lines.
+  - `web/src/app/globals.css` is 130 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/shared/components/Button/Button.test.tsx src/shared/components/Grid/GridPagination.test.tsx` passed.
+  - `cd web && npx eslint src/shared/components/Button/Button.tsx src/shared/components/Button/Button.test.tsx src/shared/components/Grid/GridPagination.tsx src/shared/components/Grid/GridPagination.test.tsx src/shared/components/auth-form/Button.tsx` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `git diff --check` passed.
 
 ---
 

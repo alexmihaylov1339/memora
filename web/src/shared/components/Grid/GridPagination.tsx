@@ -21,7 +21,7 @@ export default function GridPagination({
         type="button"
         onClick={onPrev}
         disabled={currentPage === 1}
-        className="flex h-[30px] w-[35px] items-center justify-center rounded-[5px] border border-line-strong bg-white text-base font-medium text-ink-subtle shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-[30px] w-[35px] cursor-pointer items-center justify-center rounded-[5px] border border-line-strong bg-white text-base font-medium text-ink-subtle shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Previous page"
       >
         &lt;
@@ -33,7 +33,7 @@ export default function GridPagination({
           type="button"
           onClick={() => onPage(page)}
           className={[
-            'flex h-[30px] w-[35px] items-center justify-center rounded-[5px] border text-base font-medium shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition',
+            'flex h-[30px] w-[35px] cursor-pointer items-center justify-center rounded-[5px] border text-base font-medium shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition',
             page === currentPage
               ? 'border-brand-accent bg-brand-accent text-white'
               : 'border-line-strong bg-white text-ink-subtle',
@@ -49,7 +49,7 @@ export default function GridPagination({
         type="button"
         onClick={onNext}
         disabled={currentPage === totalPages}
-        className="flex h-[30px] w-[35px] items-center justify-center rounded-[5px] border border-line-strong bg-white text-base font-medium text-ink-subtle shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-[30px] w-[35px] cursor-pointer items-center justify-center rounded-[5px] border border-line-strong bg-white text-base font-medium text-ink-subtle shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Next page"
       >
         &gt;

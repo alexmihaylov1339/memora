@@ -70,9 +70,21 @@ describe('Button', () => {
       expect(screen.getByRole('button')).not.toBeDisabled();
     });
 
+    it('uses pointer cursor affordance for enabled buttons', () => {
+      render(<Button>Button</Button>);
+      expect(screen.getByRole('button')).toHaveClass('cursor-pointer');
+    });
+
     it('is disabled when disabled prop is true', () => {
       render(<Button disabled>Button</Button>);
       expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('uses disabled cursor affordance for disabled buttons', () => {
+      render(<Button disabled>Button</Button>);
+      expect(screen.getByRole('button')).toHaveClass(
+        'disabled:cursor-not-allowed',
+      );
     });
 
     it('is disabled when both disabled and isLoading are true', () => {
@@ -233,4 +245,3 @@ describe('Button', () => {
     });
   });
 });
-

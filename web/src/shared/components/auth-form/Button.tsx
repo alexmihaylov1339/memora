@@ -6,7 +6,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const baseStyles =
-  'px-4 py-2 rounded font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500';
+  'cursor-pointer px-4 py-2 rounded font-semibold transition-colors disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500';
 
 const variants: Record<string, string> = {
   primary: 'bg-blue-600 text-white hover:bg-blue-700',

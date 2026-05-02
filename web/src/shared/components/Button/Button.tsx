@@ -2,6 +2,8 @@
 
 import type { ButtonProps } from './types';
 
+const BUTTON_CURSOR_CLASSES = 'cursor-pointer disabled:cursor-not-allowed';
+
 export default function Button({
   children,
   isLoading = false,
@@ -16,11 +18,10 @@ export default function Button({
     <button
       type={type}
       disabled={isDisabled}
-      className={className}
+      className={`${BUTTON_CURSOR_CLASSES} ${className}`.trim()}
       {...rest}
     >
       {isLoading ? 'Loading...' : children}
     </button>
   );
 }
-
