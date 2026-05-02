@@ -1,6 +1,6 @@
 # Memora: Step 17 Plan - User Testing Bugs and Small Improvements
 
-**Status:** Proposed  
+**Status:** Done
 **Date:** 2026-05-02  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 17
 
@@ -420,7 +420,7 @@ Verification completed:
 ### T8 - Step 17 regression pass and docs closeout
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - run a focused regression pass across shell navigation, account logout, deck grid, and review grading.
@@ -442,6 +442,32 @@ Verification checklist:
 - frontend typecheck/tests for touched areas.
 - backend tests if deck count API changes.
 - `git diff --check`.
+
+Verification completed:
+- Ran the focused Step 17 frontend regression pass across:
+  - brand logo font coverage.
+  - mobile navigation drawer behavior.
+  - account logout action.
+  - deck grid total-card and due-card columns.
+  - shared button and grid pagination cursor affordances.
+  - review grade-before-reveal behavior.
+  - optimistic review queue advance and failed-grade retry banner.
+- Ran the focused backend regression pass for deck/card flows that feed total-card and due-card counts.
+- Confirmed the root README and docs onboarding guide already describe the implemented Step 17 behavior:
+  - `Vibur` logo rule.
+  - hamburger small-screen navigation.
+  - account-settings logout.
+  - separate `Cards` and `Due cards` deck-grid counts.
+  - pointer cursor affordance for enabled buttons only.
+  - grade-before-reveal review flow.
+  - optimistic next-card advance and retry/error banner on failed grade persistence.
+- Updated docs wording so Step 17 is no longer described as future-active work.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/shared/components/BrandLogo/BrandLogo.test.tsx src/shared/components/Navigation/Navigation.test.tsx src/features/auth/account/components/LogoutButton.test.tsx src/shared/components/Button/Button.test.tsx src/shared/components/Grid/GridPagination.test.tsx 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' src/features/decks/services/deckResponseMapper.test.ts src/features/reviews/hooks/useReviewScreen.test.tsx src/features/reviews/hooks/reviewOptimisticQueue.test.ts 'src/app/[locale]/review/components/ReviewRetryGradeBanner.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewGradeButtons.test.tsx' 'src/app/[locale]/review/components/ReviewUxIteration.test.tsx'` passed.
+  - `cd api && npm test -- --runTestsByPath src/decks/decks.service.spec.ts src/cards/cards.service.spec.ts` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `cd api && npx tsc --noEmit --pretty false` passed.
+  - `git diff --check` passed.
 
 ---
 
