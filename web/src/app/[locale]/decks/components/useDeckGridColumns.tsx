@@ -15,7 +15,7 @@ export default function useDeckGridColumns(): GridColumnDef<Deck>[] {
       },
       {
         headerName: 'Due cards',
-        valueGetter: (deck) => deck.dueCount,
+        valueGetter: (deck) => deck.dueCount ?? 0,
       },
       {
         headerName: 'Actions',

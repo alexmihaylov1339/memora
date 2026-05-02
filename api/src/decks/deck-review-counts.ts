@@ -13,46 +13,70 @@ export async function getDueCardCountsByDeck(
     return new Map();
   }
 
-  const chunks = (await prisma.chunk.findMany({
-    where: { deckId: { in: deckIds } },
-    select: {
-      id: true,
-      deckId: true,
-      title: true,
-      position: true,
-      deck: {
-        select: { reviewIntervalHours: true },
-      },
-      reviewState: {
-        select: {
-          id: true,
-          chunkId: true,
-          due: true,
-          consecutiveSuccessCount: true,
-          lastGrade: true,
-          createdAt: true,
-          updatedAt: true,
+  const [chunks, unchunkedCards] = await Promise.all([
+    prisma.chunk.findMany({
+      where: { deckId: { in: deckIds } },
+      select: {
+        id: true,
+        deckId: true,
+        title: true,
+        position: true,
+        deck: {
+          select: { reviewIntervalHours: true },
+        },
+        reviewState: {
+          select: {
+            id: true,
+            chunkId: true,
+            due: true,
+            consecutiveSuccessCount: true,
+            lastGrade: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        chunkCards: {
+          orderBy: { sequenceIndex: 'asc' },
+          select: {
+            cardId: true,
+            sequenceIndex: true,
+          },
         },
       },
-      chunkCards: {
-        orderBy: { sequenceIndex: 'asc' },
-        select: {
-          cardId: true,
-          sequenceIndex: true,
+    }),
+    prisma.card.findMany({
+      where: {
+        deckId: { in: deckIds },
+        chunkCards: {
+          none: {},
         },
       },
-    },
-  })) as ChunkWithCards[];
+      select: { deckId: true },
+    }),
+  ]);
 
-  return chunks.reduce((counts, chunk) => {
+  const counts = (chunks as ChunkWithCards[]).reduce((deckCounts, chunk) => {
     const snapshot = deriveChunkReviewState(chunk, now);
 
     if (!snapshot.isDue || snapshot.hasMastery || !snapshot.currentCard) {
-      return counts;
+      return deckCounts;
     }
 
-    counts.set(chunk.deckId, (counts.get(chunk.deckId) ?? 0) + 1);
+    deckCounts.set(
+      chunk.deckId,
+      (deckCounts.get(chunk.deckId) ?? 0) + snapshot.totalCards,
+    );
 
-    return counts;
+    return deckCounts;
   }, new Map<string, number>());
+
+  for (const card of unchunkedCards) {
+    if (!card.deckId) {
+      continue;
+    }
+
+    counts.set(card.deckId, (counts.get(card.deckId) ?? 0) + 1);
+  }
+
+  return counts;
 }

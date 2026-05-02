@@ -71,12 +71,12 @@ describe('DecksService', () => {
         {
           id: 'deck-owned',
           name: 'Owned',
-          _count: { cards: 2 },
+          _count: { cards: 4 },
         },
         {
           id: 'deck-shared',
           name: 'Shared',
-          _count: { cards: 1 },
+          _count: { cards: 2 },
         },
       ]);
     prisma.deckShare.findMany.mockResolvedValueOnce([
@@ -98,7 +98,11 @@ describe('DecksService', () => {
           createdAt: now,
           updatedAt: now,
         },
-        chunkCards: [{ cardId: 'card-owned', sequenceIndex: 0 }],
+        chunkCards: [
+          { cardId: 'card-owned-1', sequenceIndex: 0 },
+          { cardId: 'card-owned-2', sequenceIndex: 1 },
+          { cardId: 'card-owned-3', sequenceIndex: 2 },
+        ],
       },
       {
         id: 'chunk-shared-future',
@@ -118,10 +122,14 @@ describe('DecksService', () => {
         chunkCards: [{ cardId: 'card-shared', sequenceIndex: 0 }],
       },
     ]);
+    prisma.card.findMany.mockResolvedValueOnce([
+      { deckId: 'deck-owned' },
+      { deckId: 'deck-shared' },
+    ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
-      { id: 'deck-owned', name: 'Owned', count: 2, dueCount: 1 },
-      { id: 'deck-shared', name: 'Shared', count: 1, dueCount: 0 },
+      { id: 'deck-owned', name: 'Owned', count: 4, dueCount: 4 },
+      { id: 'deck-shared', name: 'Shared', count: 2, dueCount: 1 },
     ]);
 
     jest.useRealTimers();

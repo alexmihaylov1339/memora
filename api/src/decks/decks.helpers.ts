@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
+import { ensureDeckInboxMembership } from './deck-inbox-membership';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 
 export interface DeckListItem {
@@ -74,111 +75,6 @@ type DeckPersistenceClient = Pick<
   PrismaService,
   'card' | 'chunk' | 'chunkReviewState' | 'deck' | 'deckShare' | 'user'
 >;
-
-const DECK_INBOX_CHUNK_TITLE = 'Deck Inbox';
-
-async function ensureDeckInboxMembership(
-  client: DeckPersistenceClient,
-  deckId: string,
-  cardIds: string[],
-  ownerId?: string,
-): Promise<void> {
-  const cardsWithoutChunkInDeck = await client.card.findMany({
-    where: {
-      id: { in: cardIds },
-      deckId,
-      chunkCards: {
-        none: {
-          chunk: {
-            deckId,
-          },
-        },
-      },
-    },
-    select: { id: true },
-    orderBy: { createdAt: 'asc' },
-  });
-
-  if (cardsWithoutChunkInDeck.length === 0) {
-    return;
-  }
-
-  const inboxChunk = await client.chunk.findFirst({
-    where: { deckId, title: DECK_INBOX_CHUNK_TITLE },
-    include: {
-      chunkCards: {
-        select: { sequenceIndex: true },
-        orderBy: { sequenceIndex: 'desc' },
-        take: 1,
-      },
-    },
-  });
-
-  if (!inboxChunk) {
-    const createdInboxChunk = await client.chunk.create({
-      data: {
-        ownerId: ownerId ?? null,
-        deckId,
-        title: DECK_INBOX_CHUNK_TITLE,
-        position: 0,
-        chunkCards: {
-          create: cardsWithoutChunkInDeck.map((card, index) => ({
-            cardId: card.id,
-            sequenceIndex: index,
-          })),
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await client.chunkReviewState.upsert({
-      where: { chunkId: createdInboxChunk.id },
-      update: {
-        due: new Date(),
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-      create: {
-        chunkId: createdInboxChunk.id,
-        due: new Date(),
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-    });
-
-    return;
-  }
-
-  const lastSequenceIndex = inboxChunk.chunkCards[0]?.sequenceIndex ?? -1;
-  await client.chunk.update({
-    where: { id: inboxChunk.id },
-    data: {
-      chunkCards: {
-        create: cardsWithoutChunkInDeck.map((card, index) => ({
-          cardId: card.id,
-          sequenceIndex: lastSequenceIndex + index + 1,
-        })),
-      },
-    },
-  });
-
-  await client.chunkReviewState.upsert({
-    where: { chunkId: inboxChunk.id },
-    update: {
-      due: new Date(),
-      consecutiveSuccessCount: 0,
-      lastGrade: null,
-    },
-    create: {
-      chunkId: inboxChunk.id,
-      due: new Date(),
-      consecutiveSuccessCount: 0,
-      lastGrade: null,
-    },
-  });
-}
 
 export async function findOwnedDeck(
   prisma: PrismaService,

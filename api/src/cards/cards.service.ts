@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
+import { ensureDeckInboxMembership } from '../decks/deck-inbox-membership';
 import { normalizeCardFields } from './card-kind-registry';
 
 export interface CardRecord {
@@ -44,14 +45,22 @@ export class CardsService {
       }
     }
 
-    return this.prisma.card.create({
-      data: {
-        ownerId: userId,
-        deckId: data.deckId ?? null,
-        kind: data.kind,
-        fields: normalizeCardFields(data.kind, data.fields),
-      },
-    }) as Promise<CardRecord>;
+    return this.prisma.$transaction(async (tx) => {
+      const card = (await tx.card.create({
+        data: {
+          ownerId: userId,
+          deckId: data.deckId ?? null,
+          kind: data.kind,
+          fields: normalizeCardFields(data.kind, data.fields),
+        },
+      })) as CardRecord;
+
+      if (data.deckId) {
+        await ensureDeckInboxMembership(tx, data.deckId, [card.id], userId);
+      }
+
+      return card;
+    });
   }
 
   async findOne(id: string, userId: string): Promise<CardRecord | null> {

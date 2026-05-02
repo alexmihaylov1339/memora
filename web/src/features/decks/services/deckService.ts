@@ -4,7 +4,6 @@ import type {
   CreateDeckShareResponse,
   CreateDeckDto,
   CreateDeckResponse,
-  Deck,
   DeckIdParams,
   DeckShareParams,
   GetDeckByIdResponse,
@@ -16,6 +15,7 @@ import type {
 import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 import { DECK_ENDPOINTS } from '../constants';
+import { mapDeckListResponse } from './deckResponseMapper';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const api = ManageService(API_URL);
@@ -39,7 +39,8 @@ export const deckService = {
     return api
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
-      .execRequest<Deck[]>();
+      .execRequest<Parameters<typeof mapDeckListResponse>[0]>()
+      .then(mapDeckListResponse);
   },
 
   /**

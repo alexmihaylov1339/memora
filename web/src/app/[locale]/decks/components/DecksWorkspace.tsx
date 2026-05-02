@@ -14,7 +14,10 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
   const router = useRouter();
   const columnDefs = useDeckGridColumns();
 
-  const totalDueCards = decks.reduce((sum, deck) => sum + deck.dueCount, 0);
+  const totalDueCards = decks.reduce(
+    (sum, deck) => sum + (deck.dueCount ?? 0),
+    0,
+  );
 
   function handleDeckRowClick(deck: Deck) {
     router.replace(APP_ROUTES.deckEdit(deck.id));
