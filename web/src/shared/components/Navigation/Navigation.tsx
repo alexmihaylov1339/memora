@@ -4,6 +4,8 @@ import { Link, usePathname } from '@/i18n/navigation';
 
 import { APP_ROUTES } from '@/shared/constants';
 
+import { BrandLogo } from '../BrandLogo';
+
 const navigationItems = [
   { label: 'Decks', href: APP_ROUTES.decks, icon: DecksIcon },
   { label: 'Chunks', href: APP_ROUTES.chunks, icon: ChunksIcon },
@@ -22,16 +24,9 @@ export default function Navigation() {
     <nav className="fixed inset-y-0 left-0 z-20 hidden w-[285px] border-r border-line-nav bg-surface-nav px-12 py-10 lg:flex lg:flex-col">
       <Link
         href={APP_ROUTES.home}
-        className="mb-16 flex items-center gap-3 self-start"
+        className="mb-16 self-start"
       >
-        <div
-          className="flex h-[52px] w-[52px] items-center justify-center rounded-[10px] bg-brand font-['Vibur'] text-[52px] leading-none text-brand-contrast"
-        >
-          m
-        </div>
-        <span className="translate-y-[-1px] font-['Vibur'] text-[54px] leading-none tracking-[0.01em] text-brand">
-          memora
-        </span>
+        <BrandLogo />
       </Link>
 
       <div className="flex flex-col gap-3">

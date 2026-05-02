@@ -1,12 +1,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Roboto_Flex, Vibur } from 'next/font/google';
 
-const vibur = Vibur({
-  subsets: ['latin'],
-  weight: '400',
-});
+import { Roboto_Flex } from 'next/font/google';
+
+import { BrandLogo } from '@/shared/components';
 
 const robotoFlex = Roboto_Flex({
   subsets: ['latin'],
@@ -30,18 +28,7 @@ export default function AuthShell({
     >
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[404px] items-center">
         <div className="w-full">
-          <div className="mb-9 flex items-center gap-[8px]">
-            <div
-              className={`${vibur.className} flex h-[63px] w-[63px] items-center justify-center rounded-[12px] bg-brand text-[64px] leading-none text-brand-contrast shadow-none`}
-            >
-              m
-            </div>
-            <span
-              className={`${vibur.className} translate-y-[-2px] text-[78px] leading-none tracking-[0.01em] text-brand sm:text-[96px]`}
-            >
-              memora
-            </span>
-          </div>
+          <BrandLogo className="mb-9" variant="auth" />
 
           <p
             className={

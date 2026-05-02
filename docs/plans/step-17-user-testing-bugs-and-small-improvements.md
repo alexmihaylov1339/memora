@@ -86,7 +86,7 @@ Step 17 outcome:
 ### T1 - Stabilize brand logo font and app shell
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - ensure every Memora logo/brand mark uses `Vibur` consistently.
@@ -108,6 +108,21 @@ Verification checklist:
 - inspect all logo/brand usages.
 - run targeted frontend tests.
 - manually verify desktop and mobile widths.
+
+Verification completed:
+- Added shared `BrandLogo` component with centralized `Vibur` font loading and `sidebar` / `auth` size variants.
+- Replaced duplicated auth-shell logo markup with `BrandLogo variant="auth"`.
+- Replaced app navigation ad-hoc `font-['Vibur']` logo markup with the shared `BrandLogo`.
+- Exported `BrandLogo` from shared components and added focused regression tests for shared font-class application and both logo variants.
+- Confirmed no remaining non-test ad-hoc `font-['Vibur']` or duplicate `Vibur` imports outside `BrandLogo`.
+- Touched non-test files remain below the 150-line guideline:
+  - `web/src/shared/components/BrandLogo/BrandLogo.tsx` is 56 lines.
+  - `web/src/features/auth/components/AuthShell.tsx` is 47 lines.
+  - `web/src/shared/components/Navigation/Navigation.tsx` is 109 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/shared/components/BrandLogo/BrandLogo.test.tsx` passed.
+  - `cd web && npx eslint src/shared/components/BrandLogo/BrandLogo.tsx src/shared/components/BrandLogo/BrandLogo.test.tsx src/features/auth/components/AuthShell.tsx src/shared/components/Navigation/Navigation.tsx src/shared/components/index.ts` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
 
 ---
 

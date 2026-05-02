@@ -1,6 +1,8 @@
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
+export { BrandLogo } from './BrandLogo';
+
 export { ErrorMessage } from './ErrorMessage';
 export type { ErrorMessageProps } from './ErrorMessage';
 
