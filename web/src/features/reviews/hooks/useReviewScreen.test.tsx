@@ -1,7 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import { trackAnalyticsEvent } from '@shared/analytics';
 import { REVIEW_QUEUE_STATES, REVIEW_UI_EVENTS } from '../review-observability';
-import type { GradeReviewResponse, ReviewQueueItem } from '../types';
+import type {
+  GradeReviewDto,
+  GradeReviewResponse,
+  ReviewCardIdParams,
+  ReviewQueueItem,
+} from '../types';
 import { useReviewScreen } from './useReviewScreen';
 
 const mockUseReviewQueueQuery = jest.fn();
@@ -87,11 +92,34 @@ function createDeferred<T>() {
   return { promise, resolve, reject };
 }
 
+type GradeMutationInput = ReviewCardIdParams & GradeReviewDto;
+
+interface GradeMutationCallbacks {
+  onError?: (error: Error) => void;
+  onSuccess?: (data: GradeReviewResponse) => void;
+}
+
+function createGradeMutationMock(
+  responses: Array<() => Promise<GradeReviewResponse>>,
+) {
+  return jest.fn(
+    (input: GradeMutationInput, callbacks?: GradeMutationCallbacks) => {
+      const response = responses.shift()?.();
+
+      if (!response) {
+        return;
+      }
+
+      void response.then(callbacks?.onSuccess, callbacks?.onError);
+    },
+  );
+}
+
 describe('useReviewScreen observability', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: jest.fn(),
+      grade: jest.fn(),
       isLoading: false,
       error: undefined,
     });
@@ -169,7 +197,8 @@ describe('useReviewScreen observability', () => {
   });
 
   it('emits grade clicked and complete queue state after successful grading', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
+    const gradeMock = createGradeMutationMock([
+      () => Promise.resolve({
       cardId: 'card-1',
       grade: 'good',
       wasSuccessful: true,
@@ -194,10 +223,11 @@ describe('useReviewScreen observability', () => {
         lastGrade: 'good',
       },
       nextActionableItem: null,
-    });
+      }),
+    ]);
 
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: fetchMock,
+      grade: gradeMock,
       isLoading: false,
       error: undefined,
     });
@@ -228,7 +258,8 @@ describe('useReviewScreen observability', () => {
     const { result } = renderHook(() => useReviewScreen('deck-1'));
 
     await act(async () => {
-      await result.current.handleGrade('good');
+      result.current.handleGrade('good');
+      await Promise.resolve();
     });
 
     expect(mockTrackAnalyticsEvent).toHaveBeenCalledWith(
@@ -245,15 +276,19 @@ describe('useReviewScreen observability', () => {
         state: REVIEW_QUEUE_STATES.complete,
       }),
     );
-    expect(fetchMock).toHaveBeenCalledWith({
-      cardId: 'card-1',
-      deckId: 'deck-1',
-      grade: 'good',
-    });
+    expect(gradeMock).toHaveBeenCalledWith(
+      {
+        cardId: 'card-1',
+        deckId: 'deck-1',
+        grade: 'good',
+      },
+      expect.any(Object),
+    );
   });
 
   it('moves to the next queued card when the grade response repeats the current card', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
+    const gradeMock = createGradeMutationMock([
+      () => Promise.resolve({
       cardId: 'card-1',
       grade: 'hard',
       wasSuccessful: false,
@@ -291,10 +326,11 @@ describe('useReviewScreen observability', () => {
         reviewUnsupportedReason: null,
         consecutiveSuccessCount: 0,
       },
-    });
+      }),
+    ]);
 
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: fetchMock,
+      grade: gradeMock,
       isLoading: false,
       error: undefined,
     });
@@ -339,7 +375,8 @@ describe('useReviewScreen observability', () => {
     const { result } = renderHook(() => useReviewScreen('deck-1'));
 
     await act(async () => {
-      await result.current.handleGrade('hard');
+      result.current.handleGrade('hard');
+      await Promise.resolve();
     });
 
     expect(result.current.currentItem?.cardId).toBe('card-2');
@@ -347,10 +384,10 @@ describe('useReviewScreen observability', () => {
 
   it('optimistically advances to the next local queue item before grade persistence resolves', async () => {
     const deferredGrade = createDeferred<GradeReviewResponse>();
-    const fetchMock = jest.fn().mockReturnValue(deferredGrade.promise);
+    const gradeMock = createGradeMutationMock([() => deferredGrade.promise]);
 
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: fetchMock,
+      grade: gradeMock,
       isLoading: false,
       error: undefined,
     });
@@ -364,10 +401,9 @@ describe('useReviewScreen observability', () => {
     });
 
     const { result } = renderHook(() => useReviewScreen('deck-1'));
-    let gradePromise!: Promise<void>;
 
     await act(async () => {
-      gradePromise = result.current.handleGrade('good');
+      result.current.handleGrade('good');
       await Promise.resolve();
     });
 
@@ -375,16 +411,16 @@ describe('useReviewScreen observability', () => {
 
     deferredGrade.resolve(buildGradeResponse());
     await act(async () => {
-      await gradePromise;
+      await deferredGrade.promise;
     });
   });
 
   it('keeps the current card visible while waiting when no local next item exists', async () => {
     const deferredGrade = createDeferred<GradeReviewResponse>();
-    const fetchMock = jest.fn().mockReturnValue(deferredGrade.promise);
+    const gradeMock = createGradeMutationMock([() => deferredGrade.promise]);
 
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: fetchMock,
+      grade: gradeMock,
       isLoading: false,
       error: undefined,
     });
@@ -398,10 +434,9 @@ describe('useReviewScreen observability', () => {
     });
 
     const { result } = renderHook(() => useReviewScreen('deck-1'));
-    let gradePromise!: Promise<void>;
 
     await act(async () => {
-      gradePromise = result.current.handleGrade('good');
+      result.current.handleGrade('good');
       await Promise.resolve();
     });
 
@@ -411,19 +446,21 @@ describe('useReviewScreen observability', () => {
       buildGradeResponse({ nextActionableItem: buildQueueItem('card-2') }),
     );
     await act(async () => {
-      await gradePromise;
+      await deferredGrade.promise;
     });
 
     expect(result.current.currentItem?.cardId).toBe('card-2');
   });
 
   it('reconciles a different server next item without jumping away from the visible optimistic card', async () => {
-    const fetchMock = jest.fn().mockResolvedValue(
-      buildGradeResponse({ nextActionableItem: buildQueueItem('card-3') }),
-    );
+    const gradeMock = createGradeMutationMock([
+      () => Promise.resolve(
+        buildGradeResponse({ nextActionableItem: buildQueueItem('card-3') }),
+      ),
+    ]);
 
     mockUseGradeReviewMutation.mockReturnValue({
-      fetch: fetchMock,
+      grade: gradeMock,
       isLoading: false,
       error: undefined,
     });
@@ -439,10 +476,171 @@ describe('useReviewScreen observability', () => {
     const { result } = renderHook(() => useReviewScreen('deck-1'));
 
     await act(async () => {
-      await result.current.handleGrade('good');
+      result.current.handleGrade('good');
+      await Promise.resolve();
     });
 
     expect(result.current.currentItem?.cardId).toBe('card-2');
     expect(result.current.queueCount).toBe(2);
+  });
+
+  it('keeps the next card visible and exposes retry when optimistic grade persistence fails', async () => {
+    const gradeMock = createGradeMutationMock([
+      () => Promise.reject(new Error('Network failed')),
+    ]);
+
+    mockUseGradeReviewMutation.mockReturnValue({
+      grade: gradeMock,
+      isLoading: false,
+      error: undefined,
+    });
+    mockUseReviewQueueQuery.mockReturnValue({
+      result: {
+        items: [buildQueueItem('card-1'), buildQueueItem('card-2')],
+      },
+      isLoading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    });
+
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
+
+    await act(async () => {
+      result.current.handleGrade('good');
+      await Promise.resolve();
+    });
+
+    expect(result.current.currentItem?.cardId).toBe('card-2');
+    expect(result.current.failedGradeRetry).toEqual({
+      cardId: 'card-1',
+      errorMessage: 'Network failed',
+      grade: 'good',
+    });
+  });
+
+  it('clears failed grade retry after retry succeeds', async () => {
+    const gradeMock = createGradeMutationMock([
+      () => Promise.reject(new Error('Network failed')),
+      () => Promise.resolve(
+        buildGradeResponse({ nextActionableItem: buildQueueItem('card-3') }),
+      ),
+    ]);
+
+    mockUseGradeReviewMutation.mockReturnValue({
+      grade: gradeMock,
+      isLoading: false,
+      error: undefined,
+    });
+    mockUseReviewQueueQuery.mockReturnValue({
+      result: {
+        items: [buildQueueItem('card-1'), buildQueueItem('card-2')],
+      },
+      isLoading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    });
+
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
+
+    await act(async () => {
+      result.current.handleGrade('hard');
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await result.current.handleRetryFailedGrade();
+      await Promise.resolve();
+    });
+
+    expect(gradeMock).toHaveBeenLastCalledWith(
+      {
+        cardId: 'card-1',
+        deckId: 'deck-1',
+        grade: 'hard',
+      },
+      expect.any(Object),
+    );
+    expect(result.current.failedGradeRetry).toBeNull();
+    expect(result.current.gradeResult?.cardId).toBe('card-1');
+    expect(result.current.currentItem?.cardId).toBe('card-2');
+  });
+
+  it('keeps failed grade retry visible with a new error when retry fails again', async () => {
+    const gradeMock = createGradeMutationMock([
+      () => Promise.reject(new Error('Network failed')),
+      () => Promise.reject(new Error('Retry failed')),
+    ]);
+
+    mockUseGradeReviewMutation.mockReturnValue({
+      grade: gradeMock,
+      isLoading: false,
+      error: undefined,
+    });
+    mockUseReviewQueueQuery.mockReturnValue({
+      result: {
+        items: [buildQueueItem('card-1'), buildQueueItem('card-2')],
+      },
+      isLoading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    });
+
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
+
+    await act(async () => {
+      result.current.handleGrade('again');
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await result.current.handleRetryFailedGrade();
+      await Promise.resolve();
+    });
+
+    expect(result.current.failedGradeRetry).toEqual({
+      cardId: 'card-1',
+      errorMessage: 'Retry failed',
+      grade: 'again',
+    });
+    expect(result.current.currentItem?.cardId).toBe('card-2');
+  });
+
+  it('prevents duplicate retry submissions while retry is in flight', async () => {
+    const deferredRetry = createDeferred<GradeReviewResponse>();
+    const gradeMock = createGradeMutationMock([
+      () => Promise.reject(new Error('Network failed')),
+      () => deferredRetry.promise,
+    ]);
+
+    mockUseGradeReviewMutation.mockReturnValue({
+      grade: gradeMock,
+      isLoading: false,
+      error: undefined,
+    });
+    mockUseReviewQueueQuery.mockReturnValue({
+      result: {
+        items: [buildQueueItem('card-1'), buildQueueItem('card-2')],
+      },
+      isLoading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    });
+
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
+
+    await act(async () => {
+      result.current.handleGrade('good');
+      await Promise.resolve();
+    });
+    await act(async () => {
+      void result.current.handleRetryFailedGrade();
+      void result.current.handleRetryFailedGrade();
+      await Promise.resolve();
+    });
+
+    expect(gradeMock).toHaveBeenCalledTimes(2);
+
+    deferredRetry.resolve(buildGradeResponse());
+    await act(async () => {
+      await deferredRetry.promise;
+    });
   });
 });

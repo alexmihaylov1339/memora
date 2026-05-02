@@ -373,7 +373,7 @@ Verification completed:
 ### T7 - Add failed optimistic grade retry banner
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - if an optimistic grade request fails, keep the learner on the next card.
@@ -397,6 +397,23 @@ Exit criteria:
 Verification checklist:
 - tests cover failed optimistic grade, retry success, retry failure, and duplicate-click protection.
 - manual check with simulated failed network/request.
+
+Verification completed:
+- Added failed optimistic grade state to the review hook so a failed grade persists enough context to retry the previous card and grade.
+- Added `useFailedGradeRetry` to keep retry orchestration separate from the main review screen hook.
+- Added `ReviewRetryGradeBanner` so failed grade persistence is visible without moving the learner back from the next card.
+- Retry re-submits the failed grade, reconciles with the server `nextActionableItem`, dismisses on success, and keeps the banner visible with the latest error on repeated failure.
+- Added synchronous duplicate-submit protection for retry while a retry is already in flight.
+- Kept touched non-test files at or below the 150-line guideline:
+  - `web/src/features/reviews/hooks/useReviewScreen.ts` is 150 lines.
+  - `web/src/features/reviews/hooks/useFailedGradeRetry.ts` is 111 lines.
+  - `web/src/app/[locale]/review/components/ReviewRetryGradeBanner.tsx` is 42 lines.
+  - `web/src/app/[locale]/review/components/ReviewScreen.tsx` is 93 lines.
+- Verification:
+  - `cd web && npm test -- --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx 'src/app/[locale]/review/components/ReviewRetryGradeBanner.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx'` passed.
+  - `cd web && npx eslint src/features/reviews/hooks/useReviewScreen.ts src/features/reviews/hooks/useFailedGradeRetry.ts src/features/reviews/hooks/useReviewScreen.test.tsx 'src/app/[locale]/review/components/ReviewScreen.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx' 'src/app/[locale]/review/components/ReviewRetryGradeBanner.tsx' 'src/app/[locale]/review/components/ReviewRetryGradeBanner.test.tsx'` passed.
+  - `cd web && npx tsc --noEmit --pretty false` passed.
+  - `git diff --check` passed.
 
 ---
 

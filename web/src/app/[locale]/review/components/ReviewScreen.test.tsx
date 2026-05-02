@@ -48,6 +48,13 @@ jest.mock('./ReviewGradeButtons', () => {
 
   return MockReviewGradeButtons;
 });
+jest.mock('./ReviewRetryGradeBanner', () => {
+  function MockReviewRetryGradeBanner() {
+    return <div data-testid="review-retry-grade-banner">retry</div>;
+  }
+
+  return MockReviewRetryGradeBanner;
+});
 jest.mock(
   './ReviewUnsupportedCard',
   () => {
@@ -74,16 +81,19 @@ function buildHookResult(
     currentItem: null,
     deckId: 'deck-1',
     errorMessage: undefined,
+    failedGradeRetry: null,
     gradeErrorMessage: undefined,
     gradeResult: null,
     reviewRenderer: null,
     isGrading: false,
     isAnswerRevealed: false,
     isLoading: false,
+    isRetryingFailedGrade: false,
     queueCount: 0,
     handleGrade: jest.fn(),
     handleRevealAnswer: jest.fn(),
     handleRefreshQueue: jest.fn(),
+    handleRetryFailedGrade: jest.fn(),
     ...overrides,
   };
 }
@@ -310,5 +320,40 @@ describe('ReviewScreen', () => {
       'data-disabled',
       'true',
     );
+  });
+
+  it('renders failed grade retry banner without replacing the current card', () => {
+    mockedUseReviewScreen.mockReturnValue(
+      buildHookResult({
+        currentItem: {
+          cardId: 'card-2',
+          deckId: 'deck-1',
+          chunkId: 'chunk-1',
+          chunkTitle: 'spielen',
+          chunkPosition: 0,
+          positionInChunk: 1,
+          due: '2026-04-26T10:00:00.000Z',
+          kind: 'basic',
+          fields: { front: 'mache', back: 'make' },
+          isReviewSupported: true,
+          reviewUnsupportedReason: null,
+          consecutiveSuccessCount: 0,
+        },
+        failedGradeRetry: {
+          cardId: 'card-1',
+          errorMessage: 'Network failed',
+          grade: 'good',
+        },
+        reviewRenderer: {
+          renderer: 'basic',
+          basicCardFields: { front: 'mache', back: 'make' },
+        },
+      }),
+    );
+
+    render(<ReviewScreen deckId="deck-1" />);
+
+    expect(screen.getByTestId('review-current-item-card')).toBeInTheDocument();
+    expect(screen.getByTestId('review-retry-grade-banner')).toBeInTheDocument();
   });
 });

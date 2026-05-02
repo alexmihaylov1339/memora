@@ -4,6 +4,7 @@ import ReviewCurrentItemCard from './ReviewCurrentItemCard';
 import ReviewEmptyState from './ReviewEmptyState';
 import ReviewFeedbackBanner from './ReviewFeedbackBanner';
 import ReviewGradeButtons from './ReviewGradeButtons';
+import ReviewRetryGradeBanner from './ReviewRetryGradeBanner';
 import ReviewUnsupportedCard from './ReviewUnsupportedCard';
 
 interface ReviewScreenProps {
@@ -14,13 +15,16 @@ export default function ReviewScreen({ deckId }: ReviewScreenProps) {
   const {
     currentItem,
     errorMessage,
+    failedGradeRetry,
     gradeErrorMessage,
     gradeResult,
     handleGrade,
     handleRefreshQueue,
+    handleRetryFailedGrade,
     isGrading,
     isAnswerRevealed,
     isLoading,
+    isRetryingFailedGrade,
     reviewRenderer,
     handleRevealAnswer,
   } = useReviewScreen(deckId);
@@ -62,6 +66,15 @@ export default function ReviewScreen({ deckId }: ReviewScreenProps) {
   return (
     <div className="space-y-6">
       {gradeResult && <ReviewFeedbackBanner result={gradeResult} />}
+      {failedGradeRetry && (
+        <ReviewRetryGradeBanner
+          cardId={failedGradeRetry.cardId}
+          errorMessage={failedGradeRetry.errorMessage}
+          grade={failedGradeRetry.grade}
+          isRetrying={isRetryingFailedGrade}
+          onRetry={handleRetryFailedGrade}
+        />
+      )}
 
       <ReviewCurrentItemCard
         reviewRenderer={reviewRenderer}

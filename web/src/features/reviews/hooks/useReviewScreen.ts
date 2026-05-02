@@ -8,6 +8,7 @@ import {
   reconcileReviewQueueAfterGrade,
   removeReviewedItemFromQueue,
 } from './reviewOptimisticQueue';
+import { useFailedGradeRetry } from './useFailedGradeRetry';
 import { useGradeReviewMutation } from './useReviewMutations';
 import { useReviewQueueQuery } from './useReviewQueries';
 import { useReviewScreenObservability } from './useReviewScreenObservability';
@@ -28,14 +29,24 @@ export function useReviewScreen(deckId: string | null) {
     () => queueItemsOverride ?? queueQuery.result?.items ?? [],
     [queueItemsOverride, queueQuery.result?.items],
   );
-  const currentItem = useMemo<ReviewQueueItem | null>(
-    () => (queueItems.length > 0 ? queueItems[0] : null),
-    [queueItems],
-  );
+  const currentItem = queueItems.length > 0 ? queueItems[0] : null;
   const queueCount = queueItems.length;
   const reviewRenderer = resolveReviewRenderer(currentItem);
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const gradeErrorMessage = gradeMutation.error?.message;
+  const {
+    clearFailedGradeRetry,
+    failedGradeRetry,
+    handleRetryFailedGrade,
+    isRetryingFailedGrade,
+    reportFailedGrade,
+  } = useFailedGradeRetry({
+    deckId,
+    gradeReview: gradeMutation.grade,
+    queueItems,
+    setLastGradeResult,
+    setQueueItemsOverride,
+  });
 
   useReviewScreenObservability({
     currentItem,
@@ -53,14 +64,10 @@ export function useReviewScreen(deckId: string | null) {
     setRevealedCardId(currentItem.cardId);
   }, [currentItem]);
 
-  const handleGrade = useCallback(async (grade: ReviewGrade) => {
-    if (!currentItem) {
+  const handleGrade = useCallback((grade: ReviewGrade) => {
+    if (!currentItem || !deckId) {
       return;
     }
-    if (!deckId) {
-      return;
-    }
-    const scopedDeckId = deckId;
 
     trackAnalyticsEvent(REVIEW_UI_EVENTS.gradeClicked, {
       cardId: currentItem.cardId,
@@ -79,42 +86,64 @@ export function useReviewScreen(deckId: string | null) {
       setRevealedCardId(null);
     }
 
-    const result = await gradeMutation.fetch({
-      cardId: currentItem.cardId,
-      deckId: scopedDeckId,
-      grade,
-    });
-    const reconciledQueue = reconcileReviewQueueAfterGrade({
-      optimisticQueue,
-      reviewedCardId: currentItem.cardId,
-      serverNextActionableItem: result.nextActionableItem,
-    });
+    gradeMutation.grade(
+      {
+        cardId: currentItem.cardId,
+        deckId,
+        grade,
+      },
+      {
+        onError: (error) => {
+          reportFailedGrade(currentItem.cardId, grade, error);
+        },
+        onSuccess: (result) => {
+          const reconciledQueue = reconcileReviewQueueAfterGrade({
+            optimisticQueue,
+            reviewedCardId: currentItem.cardId,
+            serverNextActionableItem: result.nextActionableItem,
+          });
 
-    setLastGradeResult(result);
-    setQueueItemsOverride(reconciledQueue);
-    setRevealedCardId(null);
-  }, [currentItem, deckId, gradeMutation, queueCount, queueItems]);
+          clearFailedGradeRetry();
+          setLastGradeResult(result);
+          setQueueItemsOverride(reconciledQueue);
+          setRevealedCardId(null);
+        },
+      },
+    );
+  }, [
+    currentItem,
+    clearFailedGradeRetry,
+    deckId,
+    gradeMutation,
+    queueCount,
+    queueItems,
+    reportFailedGrade,
+  ]);
 
   const handleRefreshQueue = useCallback(async () => {
+    clearFailedGradeRetry();
     setQueueItemsOverride(undefined);
     setLastGradeResult(null);
     setRevealedCardId(null);
     await queueQuery.refetch();
-  }, [queueQuery]);
+  }, [clearFailedGradeRetry, queueQuery]);
 
   return {
     currentItem,
     deckId,
     errorMessage: missingDeckErrorMessage ?? queueQuery.error?.message,
+    failedGradeRetry,
     gradeErrorMessage,
     gradeResult: lastGradeResult,
     reviewRenderer,
     isGrading: gradeMutation.isLoading,
     isAnswerRevealed,
     isLoading: queueQuery.isLoading,
+    isRetryingFailedGrade,
     queueCount,
     handleGrade,
     handleRevealAnswer,
     handleRefreshQueue,
+    handleRetryFailedGrade,
   };
 }
