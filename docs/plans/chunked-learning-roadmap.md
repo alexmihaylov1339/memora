@@ -14,12 +14,17 @@
 - Creating a deck, adding a card into a deck, or adding a chunk into a deck must make every affected card due for review immediately.
 - Review sessions are deck-scoped: the URL must identify the deck being reviewed, and Review mode must include only due review cards from that deck.
 - Practice sessions are deck-scoped training: the deck grid/workspace must expose a `Practice` action next to `Review`, Practice mode should include all cards in that deck, and Practice mode must not update review scheduling state, logs, streaks, or due dates.
+- Deck grids should show both total cards and deck-scoped due cards as separate columns.
 - The review page should not expose internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
+- The review page must allow grading immediately without requiring reveal first; reveal is optional.
+- After grading, the UI should advance to the next known card immediately and reconcile with the server response in the background. If the grade request fails, keep the learner on the next card and show a retry/error banner for the unsaved previous grade.
 - In each chunk review session, the learner should see exactly one next sentence/card.
 - After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
 - Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck create/edit time using friendly units such as hours and days. Individual card/chunk interval overrides should be added later, after deck-level intervals ship.
 - `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours, and should be placed behind the other currently due cards in that deck session.
 - `good` and `easy` can use the configured interval sequence.
+- The app shell should consistently render the Memora logo in `Vibur`, expose a hamburger menu on small screens when the main nav is hidden, and provide logout from account settings.
+- All enabled buttons should use pointer cursor affordance; disabled buttons should not.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
 
 ---
@@ -443,35 +448,35 @@ Implementation plan:
 
 ---
 
-## Step 17: Production readiness completion and live baseline collection
+## Step 17: User testing bugs and small improvements
 
-**Objective:** Retire all S15-D1..S15-D5 blockers, collect first live telemetry baselines from staging/canary, and validate Step 16 product features in real sessions — enabling safe broad production expansion.
+**Objective:** Fix the first local user-testing bugs and small UX gaps before continuing broad rollout work.
 
 **Why now:**
-Step 16 shipped all planned product and architecture improvements. The only remaining constraint is unretired rollout blockers. Step 17 is a focused operational step, not a feature step.
+Hands-on testing surfaced product-affecting issues in navigation, account logout, deck grid clarity, button affordance, and review grading speed. These fixes should land before the next operations-focused production expansion step because they affect everyday app use.
 
 **Deliverables**
-- Platform-specific rollback commands added to the rollout playbook (retires S15-D5).
-- Real 60-minute staging monitor window completed with dashboard evidence (retires S15-D1).
-- 5% production canary run for 45 minutes with evidence and go/no-go decision (retires S15-D2).
-- Live p50/p95 queue and grade latency baselines attached to observability doc (retires S15-D4).
-- Alert thresholds recalibrated from 7 consecutive production days of candidate-release telemetry (retires S15-D3).
-- T3A/T3B product features validated in live sessions: immediate reviewability, deck-scoped Review, non-mutating Practice (retires S16-D2).
-- Rollout log templates updated with release hash/version fields (retires S16-D1).
-- Capacity envelope updated with live measurements (retires S16-D4).
+- Logo always renders with the `Vibur` font.
+- Small-screen nav has a hamburger button when the main menu is hidden.
+- Account settings includes logout.
+- `/decks` grid shows separate `Cards` and `Due cards` columns.
+- Enabled buttons across the app use `cursor: pointer`; disabled buttons do not.
+- Review grading works before reveal.
+- Review advances optimistically to the next known card while grade persistence runs.
+- Failed optimistic grade requests keep the learner on the next card and show a retry/error banner.
 
 **Exit criteria**
-- All S15-D1..S15-D5 items show `Retired` with evidence links.
-- Broad production expansion recommendation changes from `Do not expand yet` to `Go`.
-- Live p50/p95 data is in the observability doc.
+- all Step 17 user-testing items are fixed or explicitly carried forward with owner and reason.
+- docs match implemented app behavior.
+- frontend/backend tests cover changed behavior where practical.
 
 **Constraints**
-- Staging gate (S15-D1) requires deployment control-plane access.
-- Canary gate (S15-D2) depends on staging gate being green.
-- Alert recalibration (S15-D3) depends on 7 production days after canary.
+- this step should not change review scheduling math or deck interval rules.
+- Practice must remain non-mutating.
+- operational rollout debt from Step 16 remains deferred to the next operations-focused step.
 
 Implementation plan:
-- `docs/plans/step-16-post-rollout-productization-and-scale.md` → Step 17 Next-Wave Proposal section
+- `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`
 
 ---
 

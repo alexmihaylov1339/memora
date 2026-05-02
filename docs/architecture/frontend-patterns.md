@@ -17,40 +17,42 @@
 13. Do not hardcode API endpoints or app routes in components/hooks; use centralized constants/builders.
 14. Prefer `interface` for object-shape contracts (props, payloads, DTO-like models). Use `type` for unions, intersections, mapped/conditional types, and utility aliases.
 15. When editing any non-test frontend file during a planned task, check whether the touched file is over 150 lines or mixes concerns. If there is a clear, convenient split, refactor it into smaller feature-local files while preserving behavior.
+16. Enabled buttons must use pointer cursor affordance. Disabled buttons must not use pointer cursor and must keep an explicit disabled affordance.
+17. Brand/logo rendering must use the shared brand/logo component and the `Vibur` font, not page-local ad-hoc font styling.
 
 ## Additional Rules
 
-16. Keep business logic out of presentational components; components should focus on rendering and user interaction.
-17. Derive values instead of storing duplicated state. Do not put in state anything that can be computed from props, query data, or other state.
-18. Keep side effects isolated:
+18. Keep business logic out of presentational components; components should focus on rendering and user interaction.
+19. Derive values instead of storing duplicated state. Do not put in state anything that can be computed from props, query data, or other state.
+20. Keep side effects isolated:
 
 - use hooks for React side effects
 - use services for API communication
 - use helpers/utils for pure transformations
 
-19. One file should have one primary responsibility. A page should not be treated as a single responsibility if it also contains detailed rendering sections, data mapping, validation, and orchestration together; split those concerns into dedicated files.
-20. Avoid prop drilling when it makes components harder to maintain; extract composition patterns, feature hooks, or context only when it clearly improves clarity.
-21. Feature hooks should expose a small, stable API to pages/components and hide service/query implementation details, normalization, and orchestration logic so pages stay thin.
-22. Query hooks must return normalized UI-friendly data when useful, so pages/components stay simple.
-23. Define explicit loading, error, empty, and success states for every async screen, and avoid long inline conditional JSX branches by extracting named state components or render helpers when the screen becomes complex.
-24. Do not transform API response shapes repeatedly in components; centralize mapping in hooks, adapters, or mappers.
-25. Prefer named constants over magic numbers/strings in UI logic, validation rules, limits, and statuses.
-26. Event handlers and local functions must use intention-revealing names (`handleSubmit`, `handleRetry`, `mapAccountToOption`) instead of vague names (`onClickFn`, `processData`).
-27. Do not create inline objects/functions in JSX when it hurts readability or causes unnecessary rerenders in shared/heavy components.
-28. Memoization is not default. Use `useMemo` / `useCallback` only when there is a clear render-stability or expensive-computation reason.
-29. Shared helpers must stay generic. If logic is feature-specific, keep it inside the feature instead of polluting global utils.
-30. Prefer feature-level types/models close to the feature. Move types to shared locations only when truly reused across multiple features.
-31. Validation rules, default form values, and field configs should be centralized per feature, not scattered across components.
-32. Avoid boolean explosion in component APIs. When a component starts needing many flags, consider composition or splitting the component.
-33. Do not couple UI text, routes, permissions, and business rules directly inside components; extract them into appropriate feature constants/configuration.
-34. New reusable abstractions require proof of reuse or a clear near-term use case. Do not over-abstract too early.
-35. Every non-trivial hook/helper/service should be easy to unit test by keeping logic pure where possible.
-36. Add or update tests for critical business logic, mappings, validators, and bug fixes.
-37. Leave code easier to change than you found it: improve naming, remove dead code, and reduce nesting when touching an area.
+21. One file should have one primary responsibility. A page should not be treated as a single responsibility if it also contains detailed rendering sections, data mapping, validation, and orchestration together; split those concerns into dedicated files.
+22. Avoid prop drilling when it makes components harder to maintain; extract composition patterns, feature hooks, or context only when it clearly improves clarity.
+23. Feature hooks should expose a small, stable API to pages/components and hide service/query implementation details, normalization, and orchestration logic so pages stay thin.
+24. Query hooks must return normalized UI-friendly data when useful, so pages/components stay simple.
+25. Define explicit loading, error, empty, and success states for every async screen, and avoid long inline conditional JSX branches by extracting named state components or render helpers when the screen becomes complex.
+26. Do not transform API response shapes repeatedly in components; centralize mapping in hooks, adapters, or mappers.
+27. Prefer named constants over magic numbers/strings in UI logic, validation rules, limits, and statuses.
+28. Event handlers and local functions must use intention-revealing names (`handleSubmit`, `handleRetry`, `mapAccountToOption`) instead of vague names (`onClickFn`, `processData`).
+29. Do not create inline objects/functions in JSX when it hurts readability or causes unnecessary rerenders in shared/heavy components.
+30. Memoization is not default. Use `useMemo` / `useCallback` only when there is a clear render-stability or expensive-computation reason.
+31. Shared helpers must stay generic. If logic is feature-specific, keep it inside the feature instead of polluting global utils.
+32. Prefer feature-level types/models close to the feature. Move types to shared locations only when truly reused across multiple features.
+33. Validation rules, default form values, and field configs should be centralized per feature, not scattered across components.
+34. Avoid boolean explosion in component APIs. When a component starts needing many flags, consider composition or splitting the component.
+35. Do not couple UI text, routes, permissions, and business rules directly inside components; extract them into appropriate feature constants/configuration.
+36. New reusable abstractions require proof of reuse or a clear near-term use case. Do not over-abstract too early.
+37. Every non-trivial hook/helper/service should be easy to unit test by keeping logic pure where possible.
+38. Add or update tests for critical business logic, mappings, validators, and bug fixes.
+39. Leave code easier to change than you found it: improve naming, remove dead code, and reduce nesting when touching an area.
 
 ## Imports
 
-38. Group imports in the following order (top → bottom):
+40. Group imports in the following order (top → bottom):
 
 - external libraries (react, next, third-party packages)
 - shared/core modules (e.g. common components, hooks, utils)
@@ -59,30 +61,30 @@
 - configs/constants
 - styles (last)
 
-39. Always keep imports sorted alphabetically within each group.
+41. Always keep imports sorted alphabetically within each group.
 
-40. Separate each import group with a single empty line.
+42. Separate each import group with a single empty line.
 
-41. Avoid deep relative paths (`../../../`); use aliases when available.
+43. Avoid deep relative paths (`../../../`); use aliases when available.
 
-42. Do not import from another feature’s internal files directly; expose a public API (index file) if sharing is needed.
+44. Do not import from another feature’s internal files directly; expose a public API (index file) if sharing is needed.
 
 ## Formatting
 
-43. Follow Prettier formatting rules; do not manually format code beyond readability improvements.
+45. Follow Prettier formatting rules; do not manually format code beyond readability improvements.
 
-44. Use empty lines to separate logical blocks (data setup, handlers, rendering), not every statement.
+46. Use empty lines to separate logical blocks (data setup, handlers, rendering), not every statement.
 
-45. Avoid excessive vertical spacing; prioritize readable grouping over rigid spacing rules.
+47. Avoid excessive vertical spacing; prioritize readable grouping over rigid spacing rules.
 
-46. Keep component bodies visually structured:
+48. Keep component bodies visually structured:
 
 - hooks
 - derived values
 - handlers
 - return
 
-47. Structure React components in this order:
+49. Structure React components in this order:
 
 - imports
 - component definition
@@ -93,25 +95,25 @@
 
 ## Decomposition Rules
 
-48. Pages must be orchestration-first. They should compose feature hooks and smaller feature components, not contain large rendering sections or business logic.
+50. Pages must be orchestration-first. They should compose feature hooks and smaller feature components, not contain large rendering sections or business logic.
 
-49. Pages must not directly implement large sections such as forms, tables, filters, summary panels, dialogs, sidebars, or multi-step state blocks inline. Extract these into feature-level components.
+51. Pages must not directly implement large sections such as forms, tables, filters, summary panels, dialogs, sidebars, or multi-step state blocks inline. Extract these into feature-level components.
 
-50. Components do not need to be reused across the app to deserve extraction. Prefer feature-local components over large page/component files.
+52. Components do not need to be reused across the app to deserve extraction. Prefer feature-local components over large page/component files.
 
-51. Extract a custom hook when a component starts handling a mix of query state, derived values, event handlers, modal state, submit flows, or other orchestration logic that reduces readability.
+53. Extract a custom hook when a component starts handling a mix of query state, derived values, event handlers, modal state, submit flows, or other orchestration logic that reduces readability.
 
-52. If a component renders more than 2 distinct visual sections, split those sections into smaller components unless keeping them together is clearly simpler.
+54. If a component renders more than 2 distinct visual sections, split those sections into smaller components unless keeping them together is clearly simpler.
 
-53. If JSX contains nested conditional rendering for loading, error, empty, and success states, extract named state components or render helpers.
+55. If JSX contains nested conditional rendering for loading, error, empty, and success states, extract named state components or render helpers.
 
-54. If a file mixes rendering, mapping, validation, and orchestration logic, split it immediately so each file has one primary responsibility.
+56. If a file mixes rendering, mapping, validation, and orchestration logic, split it immediately so each file has one primary responsibility.
 
-55. Response mapping beyond trivial property access must live in feature hooks, adapters, or mappers, not in page components.
+57. Response mapping beyond trivial property access must live in feature hooks, adapters, or mappers, not in page components.
 
-56. Single-use extraction is encouraged when it improves readability. Reuse is a bonus, not a requirement.
+58. Single-use extraction is encouraged when it improves readability. Reuse is a bonus, not a requirement.
 
-57. Prefer several small feature-local files over one large “smart” page/component.
+59. Prefer several small feature-local files over one large “smart” page/component.
 
 ## Decision Order
 

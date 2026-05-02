@@ -34,7 +34,7 @@ Key entry points by role:
 | Frontend engineer | `docs/architecture/frontend-patterns.md` |
 | On-call / release owner | `docs/operations/review-rollout-playbook.md` |
 | Adding a new card kind | `docs/architecture/card-kind-extensibility.md` |
-| Understanding current sprint | `docs/plans/chunked-learning-roadmap.md` → Step 17 section |
+| Understanding current sprint | `docs/plans/step-17-user-testing-bugs-and-small-improvements.md` |
 
 ---
 
@@ -54,7 +54,7 @@ The roadmap and all step plans live in [`docs/plans/`](plans/).
 
 - [`docs/plans/chunked-learning-roadmap.md`](plans/chunked-learning-roadmap.md) — ordered step list with objectives and exit criteria; the authoritative source for what was built and why
 - [`docs/plans/README.md`](plans/README.md) — explains how plan files are organized and kept up to date
-- Active step plan: Step 17 proposal in [`docs/plans/step-16-post-rollout-productization-and-scale.md`](plans/step-16-post-rollout-productization-and-scale.md#step-17-next-wave-proposal) (Step 16 is Done; Step 17 plan file TBD)
+- Active step plan: [`docs/plans/step-17-user-testing-bugs-and-small-improvements.md`](plans/step-17-user-testing-bugs-and-small-improvements.md)
 
 Rule: when docs conflict, prefer future-facing planning docs over completed historical step notes.
 

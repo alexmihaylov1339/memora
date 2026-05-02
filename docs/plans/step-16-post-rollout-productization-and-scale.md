@@ -501,8 +501,9 @@ Verification completed:
 - All tasks T1–T8 verified Done with evidence in their respective task blocks.
 - Quality gate outcomes recorded below.
 - Accepted debt and open risks documented below.
-- Step 17 next-wave proposal appended below.
-- S15-D9 (rollout log hash/version fields) formally carried to Step 17 as S16-D1.
+- Next-wave proposal appended below.
+- Status update: the original operations-focused Step 17 proposal was superseded on 2026-05-02 by the user-testing bugfix step at `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`.
+- S15-D9 (rollout log hash/version fields) formally carried to the next operations-focused step as S16-D1.
 
 ---
 
@@ -535,7 +536,7 @@ Closeout owner: Backend + Frontend + Product + On-call
 | T7 | Done | `docs/README.md` onboarding guide; two broken absolute-path links fixed |
 | T8 | Done | This closeout section; Step 17 proposal |
 
-### Accepted Debt Carried to Step 17
+### Accepted Debt Carried Beyond Step 16
 
 | ID | Description | Origin | Owner | Required before |
 |---|---|---|---|---|
@@ -553,16 +554,18 @@ Closeout owner: Backend + Frontend + Product + On-call
 
 | Risk | Severity | Description | Mitigation path |
 |---|---|---|---|
-| Expansion blocked | Critical | S15-D1/S15-D2 must be retired before canary exposure increases. No production traffic has validated candidate release. | Step 17 T1: real staging gate, then 5% canary. |
+| Expansion blocked | Critical | S15-D1/S15-D2 must be retired before canary exposure increases. No production traffic has validated candidate release. | Next operations-focused step: real staging gate, then 5% canary. |
 | Alert blind spot | High | S15-D3 thresholds are provisional. On-call may over-page or miss real incidents. | Collect 7 consecutive production days after canary; recalibrate per observability doc. |
-| Capacity model unvalidated | Medium | T5 envelope uses architectural estimates. Actual DB round-trip latency, connection saturation, and ReviewLog growth have not been measured. | Attach live p50/p95 and connection metrics during Step 17 canary window. |
+| Capacity model unvalidated | Medium | T5 envelope uses architectural estimates. Actual DB round-trip latency, connection saturation, and ReviewLog growth have not been measured. | Attach live p50/p95 and connection metrics during the next canary window. |
 | Platform-specific rollback gap | Medium | S15-D5 still has generic deployment placeholders. An operator under incident pressure must translate them. | Add platform commands to playbook before next canary retry. |
 
 ---
 
-## Step 17 Next-Wave Proposal
+## Superseded Operations Next-Wave Proposal
 
 **Proposed title:** Production Readiness Completion and Live Baseline Collection
+
+**Status update (2026-05-02):** Superseded as the immediate Step 17 by `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`. The production readiness items below remain valid deferred operational debt and should become the next operations-focused step after the user-testing bugfix pass.
 
 **Objective:** Retire all five S15-D1..S15-D5 blockers, collect first live telemetry baselines, and validate Step 16 product features in real sessions — making the system safe for broad production expansion.
 
@@ -595,7 +598,7 @@ Step 16 shipped all planned product and architecture improvements. The single re
 - `docs/operations/review-alert-calibration-*.md` has a new entry with live-data rationale.
 - Broad production expansion recommendation changes from `Do not expand yet` to `Go`.
 
-**Roadmap reference:** `docs/plans/chunked-learning-roadmap.md` → Step 17
+**Original roadmap reference:** `docs/plans/chunked-learning-roadmap.md` → Step 17. Superseded immediate plan: `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`.
 
 ---
 

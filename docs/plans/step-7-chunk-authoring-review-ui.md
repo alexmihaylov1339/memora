@@ -684,7 +684,7 @@ Acceptance:
 
 Verification:
 - `useReviewScreen` now submits grades through `POST /v1/reviews/:cardId/grade` and updates the active session from `nextActionableItem` without a full page reload.
-- Grade buttons disable while grading, surface API errors, and remain locked until the answer is revealed.
+- Historical implementation note: grade buttons disabled while grading, surfaced API errors, and were locked until the answer was revealed. Product correction after completion: Step 17 owns removing the reveal prerequisite so grade buttons can be used before or after reveal.
 - The review screen now shows lightweight post-grade feedback for advance/reset outcomes without exposing internal scheduling labels, last-grade stats, streak summaries, or next-interval details.
 - When a grade response returns no `nextActionableItem`, the screen shows a completion state with a manual `Refresh Queue` action instead of guessing the next item client-side.
 - `cd web && npx tsc --noEmit` passed.
@@ -693,6 +693,7 @@ Verification:
 Product correction after Step 7 completion:
 - The existing `/review` shell remains the foundation, but future implementation must make Review deck-scoped through the URL.
 - Future implementation must add Practice as a separate deck-scoped, non-mutating training flow instead of extending grade submission behavior.
+- Step 17 must allow grading without reveal and should optimistically advance to the next known card while grade persistence completes in the background.
 
 ---
 

@@ -5,6 +5,7 @@ This folder holds **implementation and architecture plans** for Memora (decision
 - Add new plans as dated or named Markdown files (e.g. `feature-name.md`).
 - Keep plans **updated** when scope changes, or add a short “Superseded by …” note at the top of older files.
 - When product rules change after a step is marked `Done`, update the completed step with a brief “Product correction after completion” note and put implementation work in the next future task. Do not reopen completed tasks just to carry future work.
+- Current active future step: `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`.
 
 Why keep plans in the repo:
 

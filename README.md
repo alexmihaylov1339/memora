@@ -16,8 +16,14 @@ Memora is a language-learning app centered on chunked review.
 - The default review interval sequence must be visible to the user, and the user must be able to edit intervals for a deck. Individual card/chunk interval overrides are a future capability, not part of the first deck-interval implementation.
 - Deck create/edit must let the user view and edit the deck's default review intervals using friendly units such as hours and days.
 - Review sessions must be deck-scoped. The review URL must identify the deck being reviewed, and Review mode should include only due review cards from that deck, not all due cards across the user's profile.
-- Deck grids/workspaces must expose both `Review` and `Practice` actions. `Practice` mode is deck-scoped training: it should include all cards in that deck, not only due cards, and it must not update review scheduling state, review logs, streaks, or due dates.
+- Deck grids/workspaces must expose both `Review` and `Practice` actions and show separate counts for total `Cards` and deck-scoped `Due cards`. `Practice` mode is deck-scoped training: it should include all cards in that deck, not only due cards, and it must not update review scheduling state, review logs, streaks, or due dates.
 - Pressing `again` or `hard` should make the item due immediately for the next review, not after a delayed interval such as 4 hours, but it should move behind the other due cards in the current deck session before being shown again.
 - The review page should stay focused on the card prompt and answer controls. It should not show internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
+- Review grading must be possible before revealing the answer. Reveal is optional, not required.
+- After grading, Review should move to the next known card immediately while the request saves in the background. If the request fails, the learner should stay on the next card and see a retry/error banner for the unsaved previous grade.
+- The Memora logo must consistently render with the `Vibur` font.
+- On small screens, hidden navigation must be reachable through a hamburger button.
+- Account settings must include logout.
+- All enabled buttons should use pointer cursor affordance; disabled buttons should not.
 
-The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](docs/plans/chunked-learning-roadmap.md) and [docs/plans/step-4-chunk-scheduling-engine.md](docs/plans/step-4-chunk-scheduling-engine.md).
+The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](docs/plans/chunked-learning-roadmap.md). The active user-testing bugfix plan is [docs/plans/step-17-user-testing-bugs-and-small-improvements.md](docs/plans/step-17-user-testing-bugs-and-small-improvements.md).
