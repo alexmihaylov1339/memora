@@ -1,6 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
-import { isString } from '../common/utils/type-guards';
+import { getCardSearchPreview } from './card-search-preview';
 import type { SearchResultItem } from './search.types';
 
 async function getAccessibleDeckIdsOrEmpty(
@@ -108,24 +108,25 @@ export async function searchCards(
 
   return cards
     .map((card) => {
-      const fields = card.fields as Record<string, unknown>;
-      const frontText = isString(fields.front) ? fields.front.trim() : '';
-      const backText = isString(fields.back) ? fields.back.trim() : '';
+      const preview = getCardSearchPreview(card);
       const deckName = card.deck?.name ?? '';
-      const searchable = [card.kind, deckName, frontText, backText]
+      const searchable = [deckName, preview.searchableText]
         .join(' ')
         .toLowerCase();
 
-      return { card, frontText, backText, searchable };
+      return { card, preview, searchable };
     })
     .filter((entry) => entry.searchable.includes(normalizedQuery))
     .slice(0, limit)
-    .map(({ card, frontText, backText }) => {
+    .map(({ card, preview }) => {
       return {
         id: card.id,
         type: 'card',
-        label: frontText || 'Untitled card',
-        description: [card.deck?.name ?? 'Unassigned', backText || card.kind]
+        label: preview.label,
+        description: [
+          card.deck?.name ?? 'Unassigned',
+          preview.description ?? card.kind,
+        ]
           .filter(Boolean)
           .join(' • '),
       };

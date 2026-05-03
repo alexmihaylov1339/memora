@@ -1,3 +1,5 @@
+export { getCardPreview } from './cardPreview';
+export type { CardPreview } from './cardPreview';
 export {
   getCardKindDefinition,
   getCardKindFields,
@@ -8,4 +10,3 @@ export {
   serializeCardKindFields,
 } from './registry';
 export type { CardKindDefinition, CardKindFormValues, SupportedCardKind } from './types';
-

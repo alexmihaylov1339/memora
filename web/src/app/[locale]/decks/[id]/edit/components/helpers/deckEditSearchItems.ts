@@ -1,15 +1,15 @@
-import type { CardRecord } from '@features/decks';
+import { getCardPreview, type CardRecord } from '@features/decks';
 import type { ChunkRecord } from '@features/chunks';
 import { SEARCH_ENTITY_TYPES, type SearchResultItem } from '@features/search';
 
 export function cardToSearchResultItem(card: CardRecord): SearchResultItem {
-  const fields = card.fields as { front?: string; back?: string };
+  const preview = getCardPreview(card);
 
   return {
     id: card.id,
     type: SEARCH_ENTITY_TYPES.card,
-    label: fields.front?.trim() || 'Untitled card',
-    description: fields.back?.trim() || card.kind,
+    label: preview.front,
+    description: preview.back || card.kind,
   };
 }
 
