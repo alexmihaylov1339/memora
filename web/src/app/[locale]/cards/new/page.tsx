@@ -45,8 +45,8 @@ export default function NewCardPage() {
 
   const backHref = deckIdParam
     ? APP_ROUTES.deckEdit(deckIdParam)
-    : APP_ROUTES.decks;
-  const backLabel = deckIdParam ? 'Back to Deck Workspace' : 'Back to Decks';
+    : APP_ROUTES.cards;
+  const backLabel = deckIdParam ? 'Back to Deck Workspace' : 'Back to Cards';
 
   return (
     <ProtectedRoute>

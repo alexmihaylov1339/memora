@@ -1,5 +1,4 @@
-import { Link } from '@/i18n/navigation';
-
+import { BackLinkButton } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 
 interface ChunkCreateHeaderProps {
@@ -11,20 +10,18 @@ export default function ChunkCreateHeader({
 }: ChunkCreateHeaderProps) {
   const hasDeckContext = Boolean(deckId.trim());
   const targetHref = hasDeckContext ? APP_ROUTES.deckEdit(deckId) : APP_ROUTES.chunks;
+  const backLabel = hasDeckContext ? 'Back to Deck Workspace' : 'Back to Chunks';
 
   return (
-    <header className="mb-8">
+    <header className="mx-auto mb-8 w-full max-w-[621px]">
       <h1 className="text-center text-4xl font-semibold text-ink-strong">
         Create Chunk
       </h1>
 
       <div className="mt-5">
-        <Link
-          href={targetHref}
-          className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
-        >
-          Back to Decks
-        </Link>
+        <BackLinkButton href={targetHref}>
+          {backLabel}
+        </BackLinkButton>
       </div>
     </header>
   );

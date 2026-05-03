@@ -37,7 +37,7 @@ export default function EditCardPage() {
 
   const deleteCard = useDeleteCardMutation({
     onSuccess: () => {
-      router.replace(APP_ROUTES.decks);
+      router.replace(APP_ROUTES.cards);
     },
   });
 

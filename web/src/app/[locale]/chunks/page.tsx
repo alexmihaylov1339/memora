@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
 import {
+  BackLinkButton,
   Button,
   ErrorMessage,
   Grid,
@@ -95,7 +96,7 @@ export default function ChunksPage() {
     : 'Browse all chunks, keep the library clean, and create new chunks fast.';
   const backHref = isMoveContext
     ? APP_ROUTES.deckEdit(deckIdFromQuery)
-    : APP_ROUTES.decks;
+    : APP_ROUTES.chunks;
   const backLabel = isMoveContext ? 'Back to Deck Workspace' : '';
   const createChunkHref = isMoveContext
     ? { pathname: APP_ROUTES.newChunk, query: { deckId: deckIdFromQuery } }
@@ -117,12 +118,9 @@ export default function ChunksPage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               {isMoveContext && (
-                <Link
-                  href={backHref}
-                  className="text-sm text-[var(--primary)] hover:underline"
-                >
+                <BackLinkButton href={backHref}>
                   {backLabel}
-                </Link>
+                </BackLinkButton>
               )}
             </div>
             <Link

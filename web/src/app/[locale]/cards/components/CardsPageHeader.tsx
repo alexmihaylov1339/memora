@@ -1,4 +1,4 @@
-import { Link } from '@/i18n/navigation';
+import { BackLinkButton } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 
 interface CardsPageHeaderProps {
@@ -10,8 +10,8 @@ interface CardsPageHeaderProps {
 
 export default function CardsPageHeader({
   description,
-  backHref = APP_ROUTES.decks,
-  backLabel = 'Back to Decks',
+  backHref = APP_ROUTES.cards,
+  backLabel = 'Back to Cards',
   title,
 }: CardsPageHeaderProps) {
   return (
@@ -20,9 +20,9 @@ export default function CardsPageHeader({
       {description && <p className="mb-4 text-sm text-slate-700">{description}</p>}
 
       <div className="mb-4">
-        <Link href={backHref} className="text-sm text-[var(--primary)] hover:underline">
+        <BackLinkButton href={backHref}>
           {backLabel}
-        </Link>
+        </BackLinkButton>
       </div>
     </>
   );

@@ -42,6 +42,19 @@ jest.mock('@/i18n/navigation', () => ({
 }));
 
 jest.mock('@shared/components', () => ({
+  BackLinkButton: ({
+    href,
+    children,
+  }: {
+    href: string | { pathname: string; query?: Record<string, string> };
+    children: ReactNode;
+  }) => {
+    const resolvedHref =
+      typeof href === 'string'
+        ? href
+        : `${href.pathname}?${new URLSearchParams(href.query ?? {}).toString()}`;
+    return <a href={resolvedHref}>{children}</a>;
+  },
   ProtectedRoute: ({ children }: { children: ReactNode }) => <>{children}</>,
   PageLoader: () => <div>loading</div>,
   ErrorMessage: ({ message }: { message: string }) => <div>{message}</div>,

@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useRouter } from '@/i18n/navigation';
 import {
+  BackLinkButton,
   Button,
   EntitySearch,
   ErrorMessage,
@@ -99,7 +100,7 @@ export default function CardsPage() {
     : 'Browse all cards, keep your library organized, and create cards quickly.';
   const backHref = isMoveContext
     ? APP_ROUTES.deckEdit(deckIdFromQuery)
-    : APP_ROUTES.decks;
+    : APP_ROUTES.cards;
   const backLabel = isMoveContext ? 'Back to Deck Workspace' : '';
   const createCardHref = isMoveContext
     ? { pathname: APP_ROUTES.newCard, query: { deckId: deckIdFromQuery } }
@@ -121,12 +122,9 @@ export default function CardsPage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               {isMoveContext && (
-                <Link
-                  href={backHref}
-                  className="text-sm text-[var(--primary)] hover:underline"
-                >
+                <BackLinkButton href={backHref}>
                   {backLabel}
-                </Link>
+                </BackLinkButton>
               )}
             </div>
             <Link

@@ -2,9 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 
-import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
+import {
+  BackLinkButton,
+  ErrorMessage,
+  PageLoader,
+  ProtectedRoute,
+} from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {
   useChunkDetailQuery,
@@ -93,18 +98,15 @@ export default function EditChunkPage() {
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
-        <header className="mb-8">
+        <header className="mx-auto mb-8 w-full max-w-[621px]">
           <h1 className="text-center text-4xl font-semibold text-ink-strong">
             Edit Chunk
           </h1>
 
           <div className="mt-5">
-            <Link
-              href={APP_ROUTES.chunks}
-              className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-sm text-[var(--primary)] transition hover:bg-slate-50"
-            >
-              Back to Decks
-            </Link>
+            <BackLinkButton href={APP_ROUTES.chunks}>
+              Back to Chunks
+            </BackLinkButton>
           </div>
         </header>
 
