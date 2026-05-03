@@ -30,13 +30,6 @@ jest.mock('./ReviewEmptyState', () => {
 
   return MockReviewEmptyState;
 });
-jest.mock('./ReviewFeedbackBanner', () => {
-  function MockReviewFeedbackBanner() {
-    return <div data-testid="review-feedback-banner">feedback</div>;
-  }
-
-  return MockReviewFeedbackBanner;
-});
 jest.mock('./ReviewGradeButtons', () => {
   function MockReviewGradeButtons({ disabled }: { disabled: boolean }) {
     return (

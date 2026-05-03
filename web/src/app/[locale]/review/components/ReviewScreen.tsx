@@ -2,7 +2,6 @@ import { ErrorMessage, PageLoader } from '@shared/components';
 import { useReviewScreen } from '@features/reviews';
 import ReviewCurrentItemCard from './ReviewCurrentItemCard';
 import ReviewEmptyState from './ReviewEmptyState';
-import ReviewFeedbackBanner from './ReviewFeedbackBanner';
 import ReviewGradeButtons from './ReviewGradeButtons';
 import ReviewRetryGradeBanner from './ReviewRetryGradeBanner';
 import ReviewUnsupportedCard from './ReviewUnsupportedCard';
@@ -65,7 +64,6 @@ export default function ReviewScreen({ deckId }: ReviewScreenProps) {
 
   return (
     <div className="space-y-6">
-      {gradeResult && <ReviewFeedbackBanner result={gradeResult} />}
       {failedGradeRetry && (
         <ReviewRetryGradeBanner
           cardId={failedGradeRetry.cardId}

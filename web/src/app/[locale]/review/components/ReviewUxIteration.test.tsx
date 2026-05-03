@@ -4,7 +4,6 @@ import type React from 'react';
 import { REVIEW_UNSUPPORTED_REASONS } from '@features/reviews/types';
 import ReviewCurrentItemCard from './ReviewCurrentItemCard';
 import ReviewEmptyState from './ReviewEmptyState';
-import ReviewFeedbackBanner from './ReviewFeedbackBanner';
 import ReviewUnsupportedCard from './ReviewUnsupportedCard';
 
 jest.mock('@/i18n/navigation', () => ({
@@ -124,45 +123,6 @@ describe('review UX iteration states', () => {
     expect(screen.getByRole('button', { name: 'Refresh Queue' })).toBeInTheDocument();
     expect(screen.queryByText('Last grade')).not.toBeInTheDocument();
     expect(screen.queryByText('Next interval')).not.toBeInTheDocument();
-  });
-
-  it('keeps post-grade feedback free of interval and streak summaries', () => {
-    render(
-      <ReviewFeedbackBanner
-        result={{
-          cardId: 'card-1',
-          grade: 'good',
-          wasSuccessful: true,
-          advanced: true,
-          reset: false,
-          previousConsecutiveSuccessCount: 0,
-          consecutiveSuccessCount: 1,
-          due: '2026-04-26T10:00:00.000Z',
-          intervalHours: 8,
-          chunk: {
-            chunkId: 'chunk-1',
-            deckId: 'deck-1',
-            title: 'Deck Inbox',
-            position: 0,
-            due: '2026-04-26T10:00:00.000Z',
-            isDue: false,
-            consecutiveSuccessCount: 1,
-            requiredConsecutiveSuccesses: 20,
-            hasMastery: false,
-            totalCards: 2,
-            currentCard: null,
-            lastGrade: 'good',
-          },
-          nextActionableItem: null,
-        }}
-      />,
-    );
-
-    expect(screen.getByText('Grade saved.')).toBeInTheDocument();
-    expect(screen.queryByText(/Progress/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Next review/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Streak/i)).not.toBeInTheDocument();
-    expect(screen.queryByText('Deck Inbox')).not.toBeInTheDocument();
   });
 
   it('shows unsupported reason details and exposes a refresh action', async () => {
