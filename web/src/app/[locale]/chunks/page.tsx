@@ -18,7 +18,7 @@ import {
   useDeckMovableChunksQuery,
   useMoveDeckChunksMutation,
 } from '@features/chunks';
-import useChunkGridColumns from './components/useChunkGridColumns';
+import { useChunkGridColumns } from './components/hooks';
 
 export default function ChunksPage() {
   const router = useRouter();

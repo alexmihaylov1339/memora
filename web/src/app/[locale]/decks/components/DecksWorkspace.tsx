@@ -4,7 +4,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import type { Deck } from '@features/decks';
 import { APP_ROUTES } from '@shared/constants';
 import { Grid } from '@shared/components';
-import useDeckGridColumns from './useDeckGridColumns';
+import { useDeckGridColumns } from './hooks';
 
 interface DecksWorkspaceProps {
   decks: Deck[];

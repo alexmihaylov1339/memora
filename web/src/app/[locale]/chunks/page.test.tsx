@@ -89,9 +89,9 @@ jest.mock('@features/chunks', () => ({
   useMoveDeckChunksMutation: (...args: unknown[]) => mockUseMoveDeckChunksMutation(...args),
 }));
 
-jest.mock('./components/useChunkGridColumns', () => ({
+jest.mock('./components/hooks', () => ({
   __esModule: true,
-  default: (...args: unknown[]) => mockUseChunkGridColumns(...args),
+  useChunkGridColumns: (...args: unknown[]) => mockUseChunkGridColumns(...args),
 }));
 
 describe('ChunksPage regressions', () => {
