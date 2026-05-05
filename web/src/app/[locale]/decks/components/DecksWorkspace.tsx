@@ -2,6 +2,7 @@
 
 import { Link, useRouter } from '@/i18n/navigation';
 import type { Deck } from '@features/decks';
+import { useGetCurrentUser } from '@/features/auth/account/hooks';
 import { APP_ROUTES } from '@shared/constants';
 import { Grid } from '@shared/components';
 import { useDeckGridColumns } from './hooks';
@@ -13,6 +14,8 @@ interface DecksWorkspaceProps {
 export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
   const router = useRouter();
   const columnDefs = useDeckGridColumns();
+  const { data: user } = useGetCurrentUser();
+  const displayName = user?.name ?? user?.email?.split('@')[0] ?? 'there';
 
   const totalDueCards = decks.reduce(
     (sum, deck) => sum + (deck.dueCount ?? 0),
@@ -27,7 +30,7 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
     <section className="mx-auto flex w-full max-w-[1100px] flex-col px-4 pb-10 pt-8 sm:px-6 lg:px-0">
       <div className="mb-10 text-center">
         <h1 className="text-[2rem] font-bold tracking-[0.01em] text-ink-heading sm:text-[2.15rem]">
-          Welcome back, Alex!
+          Welcome back, {displayName}!
         </h1>
         <p className="mt-3 text-[1.125rem] font-bold tracking-[0.01em] text-brand">
           {totalDueCards} Cards due today. Don&apos;t let them pile up!
