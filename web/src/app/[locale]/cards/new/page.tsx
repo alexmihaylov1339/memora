@@ -27,8 +27,8 @@ export default function NewCardPage() {
   const fields = useCreateCardFormFields(selectedKind);
 
   const createCard = useCreateCardMutation({
-    onSuccess: (card) => {
-      router.replace(APP_ROUTES.cardEdit(card.id));
+    onSuccess: () => {
+      router.replace(deckIdParam ? APP_ROUTES.deckEdit(deckIdParam) : APP_ROUTES.cards);
     },
   });
 
