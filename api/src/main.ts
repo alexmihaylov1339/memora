@@ -8,12 +8,12 @@ async function bootstrap() {
 
   app.useGlobalFilters(new PrismaKnownRequestExceptionFilter());
 
-  // Enable CORS for frontend access
+  const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim());
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // Next.js frontend
-      'http://localhost:4000', // API itself (if needed)
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
