@@ -1,11 +1,13 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/i18n/navigation';
 
 import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {
+  DECKS_QUERY_KEYS,
   useCardsListQuery,
   useDeckDetailQuery,
   useDeleteDeckMutation,
@@ -26,6 +28,7 @@ import {
 export default function EditDeckPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const id = resolveSingleParam(params?.id as string | string[] | undefined);
 
   const deckQuery = useDeckDetailQuery(id);
@@ -42,6 +45,7 @@ export default function EditDeckPage() {
 
   const deleteDeck = useDeleteDeckMutation({
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
       router.replace(APP_ROUTES.decks);
     },
   });
