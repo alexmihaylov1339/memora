@@ -3,14 +3,21 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { Response } from 'express';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaKnownRequestExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(PrismaKnownRequestExceptionFilter.name);
+
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     const res = host.switchToHttp().getResponse<Response>();
+    this.logger.error(
+      `Prisma error ${exception.code}: ${exception.message}`,
+      exception.meta,
+    );
 
     if (exception.code === 'P2021') {
       return res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
