@@ -93,7 +93,7 @@ export function useReviewScreen(deckId: string | null) {
       positionInChunk: currentItem.positionInChunk,
     });
 
-    const isImmediateRetry = grade === 'again' || grade === 'hard';
+    const isImmediateRetry = grade === 'again';
     const optimisticQueue = isImmediateRetry
       ? moveReviewedItemToQueueEnd(queueItems, currentItem.cardId)
       : removeReviewedItemFromQueue(queueItems, currentItem.cardId);

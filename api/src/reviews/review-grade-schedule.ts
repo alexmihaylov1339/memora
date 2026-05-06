@@ -28,20 +28,34 @@ export function getReviewGradeSchedule({
   reviewIntervalHours,
   snapshot,
 }: ReviewGradeScheduleInput): ReviewGradeSchedule {
-  const isImmediateRetry = grade === 'again' || grade === 'hard';
-  const wasSuccessful = !isImmediateRetry;
+  const isImmediateRetry = grade === 'again';
+  const wasSuccessful = grade === 'good' || grade === 'easy';
+
+  const goodBaseSuccessCount = getNextConsecutiveSuccessCount(
+    snapshot.consecutiveSuccessCount,
+    true,
+  );
+  const goodBaseIntervalHours = getChunkReviewIntervalHours(
+    goodBaseSuccessCount,
+    reviewIntervalHours,
+  );
+
   const nextConsecutiveSuccessCount = isImmediateRetry
     ? getNextImmediateRetryPosition(snapshot)
-    : getNextConsecutiveSuccessCount(
-        snapshot.consecutiveSuccessCount,
-        wasSuccessful,
-      );
-  const intervalHours = isImmediateRetry
-    ? 0
-    : getChunkReviewIntervalHours(
-        nextConsecutiveSuccessCount,
-        reviewIntervalHours,
-      );
+    : wasSuccessful
+      ? goodBaseSuccessCount
+      : 0;
+
+  let intervalHours: number;
+  if (isImmediateRetry) {
+    intervalHours = 0;
+  } else if (grade === 'hard') {
+    intervalHours = Math.max(1, Math.round(goodBaseIntervalHours * 0.5));
+  } else if (grade === 'easy') {
+    intervalHours = Math.round(goodBaseIntervalHours * 1.5);
+  } else {
+    intervalHours = goodBaseIntervalHours;
+  }
 
   return {
     intervalHours,

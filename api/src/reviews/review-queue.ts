@@ -121,8 +121,7 @@ function buildDueChunkQueueItems(
       reviewUnsupportedReason: reviewKindSupport.reviewUnsupportedReason,
       cardCreatedAt: chunkCard.card.createdAt,
       consecutiveSuccessCount: snapshot.consecutiveSuccessCount,
-      isImmediateRetryPending:
-        snapshot.lastGrade === 'again' || snapshot.lastGrade === 'hard',
+      isImmediateRetryPending: snapshot.lastGrade === 'again',
       reviewOrder: offset,
     } satisfies SortableReviewQueueItem;
   });
