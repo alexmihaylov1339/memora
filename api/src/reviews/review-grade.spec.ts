@@ -51,6 +51,7 @@ describe('review-grade persistGradeSideEffects', () => {
       update: {
         due: new Date('2026-04-02T17:00:00.000Z'),
         interval: 8,
+        consecutiveSuccessCount: 2,
         reps: 2,
         lapses: 0,
         lastGrade: 'good',
@@ -60,6 +61,7 @@ describe('review-grade persistGradeSideEffects', () => {
         ease: DEFAULT_REVIEW_EASE,
         interval: 8,
         due: new Date('2026-04-02T17:00:00.000Z'),
+        consecutiveSuccessCount: 2,
         reps: 1,
         lapses: 0,
         lastGrade: 'good',
@@ -144,6 +146,7 @@ describe('review-grade persistGradeSideEffects', () => {
       update: {
         due: new Date('2026-04-02T13:00:00.000Z'),
         interval: 4,
+        consecutiveSuccessCount: 0,
         reps: 3,
         lapses: 2,
         lastGrade: 'again',
@@ -153,6 +156,7 @@ describe('review-grade persistGradeSideEffects', () => {
         ease: DEFAULT_REVIEW_EASE,
         interval: 4,
         due: new Date('2026-04-02T13:00:00.000Z'),
+        consecutiveSuccessCount: 0,
         reps: 0,
         lapses: 1,
         lastGrade: 'again',
@@ -163,6 +167,7 @@ describe('review-grade persistGradeSideEffects', () => {
       update: {
         due: new Date('2026-04-02T17:00:00.000Z'),
         interval: 4,
+        consecutiveSuccessCount: 0,
         reps: 3,
         lapses: 3,
         lastGrade: 'again',
@@ -172,6 +177,7 @@ describe('review-grade persistGradeSideEffects', () => {
         ease: DEFAULT_REVIEW_EASE,
         interval: 4,
         due: new Date('2026-04-02T17:00:00.000Z'),
+        consecutiveSuccessCount: 0,
         reps: 0,
         lapses: 1,
         lastGrade: 'again',

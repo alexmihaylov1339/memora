@@ -103,6 +103,7 @@ CREATE TABLE "ReviewState" (
     "due" TIMESTAMP(3) NOT NULL,
     "reps" INTEGER NOT NULL DEFAULT 0,
     "lapses" INTEGER NOT NULL DEFAULT 0,
+    "consecutiveSuccessCount" INTEGER NOT NULL DEFAULT 0,
     "lastGrade" "Grade",
 
     CONSTRAINT "ReviewState_pkey" PRIMARY KEY ("id")

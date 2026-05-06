@@ -5,7 +5,6 @@ import {
   getNextConsecutiveSuccessCount,
 } from './chunk-scheduling';
 import type { ChunkProgressSnapshot } from './chunk-progress';
-import { getNextImmediateRetryPosition } from './review-grade-flow';
 
 interface ReviewGradeScheduleInput {
   grade: Grade;
@@ -64,4 +63,14 @@ export function getReviewGradeSchedule({
     nextDue: computeNextDueAt(now, intervalHours),
     wasSuccessful,
   };
+}
+
+function getNextImmediateRetryPosition(
+  snapshot: ChunkProgressSnapshot,
+): number {
+  if (snapshot.totalCards <= 0) {
+    return 0;
+  }
+
+  return (snapshot.consecutiveSuccessCount + 1) % snapshot.totalCards;
 }

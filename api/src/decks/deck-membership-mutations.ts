@@ -28,7 +28,7 @@ export async function moveDeckCards(
   }
 
   await prisma.$transaction(async (tx) => {
-    await moveCardsToDeck(tx, deckId, cardIds, userId);
+    await moveCardsToDeck(tx, deckId, cardIds);
   });
 
   return {

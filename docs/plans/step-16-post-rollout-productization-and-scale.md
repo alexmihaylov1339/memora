@@ -42,7 +42,7 @@ In scope:
 - post-rollout UX/product improvements driven by telemetry
 - review scheduling corrections requested by product:
   - all cards become reviewable immediately when a deck is created, a card is added to a deck, or a chunk is added to a deck
-  - cards without explicit chunk membership are covered by the deck-scoped `Deck Inbox`
+  - cards without explicit chunk membership are standalone review cards with independent `ReviewState`
   - default intervals are visible and editable
   - default intervals can be edited during deck create/edit using friendly units such as hours and days
   - interval overrides are configured at deck level for the first implementation; individual card/chunk overrides are future work and should inherit from the deck until then
@@ -137,7 +137,7 @@ Status:
 
 What to do:
 - implement UX improvements for unsupported handling while keeping the review card surface focused on the prompt and answer controls.
-- do not add chunk labels, `Deck Inbox`, queue position, chunk-card position, due chips, streak summaries, last-grade stats, or interval summary UI to the review page unless explicitly requested later.
+- do not add chunk labels, queue position, chunk-card position, due chips, streak summaries, last-grade stats, or interval summary UI to the review page unless explicitly requested later.
 - validate impact against baseline metrics.
 
 Suggested files:
@@ -216,7 +216,7 @@ What to do:
   - a deck is created
   - a card is added or moved into a deck
   - a chunk is added or moved into a deck
-- ensure every affected deck card is due immediately through either its authored chunk or the deck-scoped system chunk (`Deck Inbox`).
+- ensure every affected deck card is due immediately through either its authored chunk or standalone card `ReviewState`.
 - make default intervals visible during deck create/edit and any deck review settings UI.
 - allow the user to edit default intervals at deck level using friendly duration inputs such as hours and days.
 - keep cards/chunks inheriting the selected deck's intervals for now; individual card/chunk interval overrides are future work.
@@ -243,7 +243,7 @@ Exit criteria:
 - `again` and `hard` return the item to immediate review after the other currently due cards in the selected deck session.
 
 Verification checklist:
-- backend tests cover deck create, card add/move, chunk add/move, `Deck Inbox`, editable intervals, and immediate `again`/`hard` retry.
+- backend tests cover deck create, card add/move, chunk add/move, standalone card review state, editable intervals, and immediate `again` retry.
 - frontend tests cover viewing/editing default deck intervals from deck create/edit.
 - e2e/API flow confirms newly added deck cards appear in review without waiting.
 
@@ -251,7 +251,7 @@ Implementation notes:
 - Added persisted deck-level review interval configuration with Prisma schema, migration, and full-schema SQL updates.
 - Deck create/edit now accepts friendly interval editing in the UI and persists normalized hour intervals.
 - Review scheduling now resolves intervals from the card/chunk deck, falling back to the existing MVP defaults.
-- New deck membership paths continue to make cards/chunks due immediately through owned chunks or `Deck Inbox`.
+- New deck membership paths continue to make cards/chunks due immediately through owned chunks or standalone card `ReviewState`.
 - `again` and `hard` remain due immediately and refreshed queues sort immediate retries behind other currently due items.
 - Existing due dates are not recalculated when deck intervals change; updated intervals apply on the next grade.
 

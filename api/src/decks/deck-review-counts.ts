@@ -48,7 +48,16 @@ export async function getDueCardCountsByDeck(
       where: {
         deckId: { in: deckIds },
         chunkCards: {
-          none: {},
+          none: {
+            chunk: {
+              deckId: { in: deckIds },
+            },
+          },
+        },
+        state: {
+          is: {
+            due: { lte: now },
+          },
         },
       },
       select: { deckId: true },
@@ -64,7 +73,7 @@ export async function getDueCardCountsByDeck(
 
     deckCounts.set(
       chunk.deckId,
-      (deckCounts.get(chunk.deckId) ?? 0) + snapshot.totalCards,
+      (deckCounts.get(chunk.deckId) ?? 0) + 1,
     );
 
     return deckCounts;

@@ -8,21 +8,40 @@
 
 ## Product intent
 
+### Cards and chunks
+
 - A learner adds one target word and multiple sentence exposures (example: 5 cards).
-- These cards belong to one chunk and are reviewed in sequence, not all at once.
-- If cards are moved/added into a deck without explicit chunk membership, the system must auto-place them in a deck-scoped system chunk (`Deck Inbox`) so they are immediately reviewable.
+- These cards belong to one **user-authored chunk** and are reviewed **one card per session**, in sequence.
+- A card added directly to a deck (without being placed in a chunk) belongs to the deck as a **standalone card**. It enters its own independent spaced-repetition schedule immediately (due = now). It is never auto-placed in any system chunk.
+- Each standalone card has its own independent due date and interval. Two standalone cards in the same deck advance independently of each other.
 - Creating a deck, adding a card into a deck, or adding a chunk into a deck must make every affected card due for review immediately.
-- Review sessions are deck-scoped: the URL must identify the deck being reviewed, and Review mode must include only due review cards from that deck.
+
+### Chunk review behaviour
+
+- When a chunk is due, exactly **one card** is shown — the current card at position `consecutiveSuccessCount % totalCards`.
+- After the learner grades that card, the chunk is rescheduled and the session moves on. No other card from the same chunk appears in the same session.
+- The next time the chunk is due, the **next card** in sequence is shown.
+- After the last card is reviewed, the cycle wraps back to card 1 on the next review.
+
+### Grade behaviour
+
+- `again` → immediate retry: item stays in the queue for this session, placed behind other currently due items.
+- `hard` → scheduled at 0.5× the normal interval; not an immediate retry.
+- `good` → scheduled at the base interval.
+- `easy` → scheduled at 1.5× the base interval.
+
+### Review sessions
+
+- Review sessions are deck-scoped: the URL must identify the deck being reviewed, and Review mode must include only due review items (standalone cards and chunk cards) from that deck.
 - Practice sessions are deck-scoped training: the deck grid/workspace must expose a `Practice` action next to `Review`, Practice mode should include all cards in that deck, and Practice mode must not update review scheduling state, logs, streaks, or due dates.
 - Deck grids should show both total cards and deck-scoped due cards as separate columns.
-- The review page should not expose internal scheduling labels such as `Chunk`, `Deck Inbox`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
+- The review page should not expose internal scheduling labels such as `Chunk`, queue position, chunk-card position, due-state chips, last grade, streak, or interval summaries.
 - The review page must allow grading immediately without requiring reveal first; reveal is optional.
 - After grading, the UI should advance to the next known card immediately and reconcile with the server response in the background. If the grade request fails, keep the learner on the next card and show a retry/error banner for the unsaved previous grade.
-- In each chunk review session, the learner should see exactly one next sentence/card.
-- After the learner reaches the last sentence/card in the chunk, the next successful review cycles back to the first card.
+
+### Other
+
 - Chunk mastery should require a longer consecutive success streak, with a visible default schedule that the user can edit at deck create/edit time using friendly units such as hours and days. Individual card/chunk interval overrides should be added later, after deck-level intervals ship.
-- `again` and `hard` are immediate retry grades: the reviewed item should be due again right away, not after a delayed interval such as 4 hours, and should be placed behind the other currently due cards in that deck session.
-- `good` and `easy` can use the configured interval sequence.
 - The app shell should consistently render the Memora logo in `Vibur`, expose a hamburger menu on small screens when the main nav is hidden, and provide logout from account settings.
 - All enabled buttons should use pointer cursor affordance; disabled buttons should not.
 - Future requirement: support multiple exercise types (basic flashcard now, matching/other types later) without major rewrites.
@@ -105,8 +124,9 @@
   - only one next card in a chunk becomes reviewable at a time
   - chunk card order cycles back to the first card after the last
   - chunk mastery requires a consecutive success streak backed by a default interval sequence that is visible and editable
-  - `again` and `hard` retry immediately; they do not wait for the normal interval sequence, but the retried item moves behind the other currently due cards in the selected deck queue
-  - a failed review resets chunk progress to the beginning while keeping the item immediately due
+  - `again` retries immediately: the item moves behind the other currently due cards in the selected deck queue
+  - `hard` schedules at 0.5× the normal interval (not an immediate retry)
+  - a failed review (`again`) resets chunk progress to the beginning while keeping the item immediately due
 - Review state update rules on grade submission.
 - Deterministic time handling (UTC + consistent due-date calculation).
 
@@ -263,7 +283,7 @@ Critical planning note before implementation:
 - cards and chunks are now first-class library entities with optional deck assignment (`deckId` can be `null`)
 - Step 11 still locks move semantics for assigning existing items into decks
 - choose one explicit rule for v1 and keep API/UI wording aligned with that rule (`move`, `copy`, or true multi-deck membership)
-- deck-scoped review safety rule: cards moved to a deck must remain reviewable even if they are not part of a user-authored chunk (auto system `Deck Inbox` chunk behavior)
+- deck-scoped review safety rule: cards moved to a deck must remain reviewable as standalone cards when they are not part of a user-authored chunk
 
 **Deliverables**
 - Global navigation entries:
@@ -448,6 +468,29 @@ Implementation plan:
 
 ---
 
+## Step 18: Review model fix — standalone cards and one-card-per-session chunks
+
+**Objective:** Correct two fundamental review behaviour bugs discovered in user testing.
+
+**Why now:**
+Hands-on testing revealed that the review model has two critical flaws that make learning impossible to use correctly: cards auto-placed into a shared "Deck Inbox" chunk lose independent scheduling, and chunks show all their cards at once instead of one per session.
+
+**Deliverables**
+- Remove all `Deck Inbox` auto-chunk creation. Cards added to a deck are standalone and get their own `ReviewState` (due = now).
+- `buildDueChunkQueueItems` returns exactly one card per due chunk — the current card at `consecutiveSuccessCount % totalCards`.
+- Standalone card grading updates `ReviewState` independently (same interval table as chunks).
+- `ReviewState` gains a `consecutiveSuccessCount` column via migration.
+- All automated tests for the new behaviour pass.
+- This document and the roadmap product intent are corrected to match implemented behaviour.
+
+**Exit criteria**
+- All exit criteria in `docs/plans/step-18-review-model-fix.md` are satisfied.
+
+Implementation plan:
+- `docs/plans/step-18-review-model-fix.md`
+
+---
+
 ## Step 17: User testing bugs and small improvements
 
 **Objective:** Fix the first local user-testing bugs and small UX gaps before continuing broad rollout work.
@@ -500,6 +543,7 @@ Implementation plan:
 16. Step 15
 17. Step 16
 18. Step 17
+19. Step 18
 
 ---
 

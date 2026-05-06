@@ -31,6 +31,7 @@ export type GradeSideEffectsInput = {
     interval: number;
     reps: number;
     lapses: number;
+    consecutiveSuccessCount?: number;
   } | null;
   mode: string;
 };
@@ -83,6 +84,7 @@ export async function persistGradeSideEffects(
     update: {
       due: input.nextDue,
       interval: input.intervalHours,
+      consecutiveSuccessCount: input.nextConsecutiveSuccessCount,
       reps: input.wasSuccessful
         ? input.existingCardState
           ? input.existingCardState.reps + 1
@@ -98,6 +100,7 @@ export async function persistGradeSideEffects(
       ease: DEFAULT_REVIEW_EASE,
       interval: input.intervalHours,
       due: input.nextDue,
+      consecutiveSuccessCount: input.nextConsecutiveSuccessCount,
       reps: input.wasSuccessful ? 1 : 0,
       lapses: input.wasSuccessful ? 0 : 1,
       lastGrade: input.grade,

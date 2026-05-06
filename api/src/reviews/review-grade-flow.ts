@@ -61,16 +61,6 @@ export function getCurrentReviewChunkCard(
   );
 }
 
-export function getNextImmediateRetryPosition(
-  snapshot: ChunkProgressSnapshot,
-): number {
-  if (snapshot.totalCards <= 0) {
-    return 0;
-  }
-
-  return (snapshot.consecutiveSuccessCount + 1) % snapshot.totalCards;
-}
-
 export async function resolveNextActionableItemAfterGrade(
   prisma: PrismaService,
   input: {

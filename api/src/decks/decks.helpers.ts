@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
-import { ensureDeckInboxMembership } from './deck-inbox-membership';
+import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 
 export interface DeckListItem {
@@ -73,7 +73,13 @@ export type DeckWithShares = Prisma.DeckGetPayload<{
 
 type DeckPersistenceClient = Pick<
   PrismaService,
-  'card' | 'chunk' | 'chunkReviewState' | 'deck' | 'deckShare' | 'user'
+  | 'card'
+  | 'chunk'
+  | 'chunkReviewState'
+  | 'deck'
+  | 'deckShare'
+  | 'reviewState'
+  | 'user'
 >;
 
 export async function findOwnedDeck(
@@ -153,7 +159,6 @@ export async function moveCardsToDeck(
   client: DeckPersistenceClient,
   deckId: string,
   cardIds: string[],
-  ownerId?: string,
 ): Promise<void> {
   if (cardIds.length === 0) {
     return;
@@ -164,21 +169,20 @@ export async function moveCardsToDeck(
     data: { deckId },
   });
 
-  await ensureDeckInboxMembership(client, deckId, cardIds, ownerId);
+  await initStandaloneCardReviewState(client, cardIds);
 }
 
 export async function replaceDeckCards(
   client: DeckPersistenceClient,
   deckId: string,
   cardIds: string[],
-  ownerId?: string,
 ): Promise<void> {
   await client.card.updateMany({
     where: { deckId, id: { notIn: cardIds } },
     data: { deckId: null },
   });
 
-  await moveCardsToDeck(client, deckId, cardIds, ownerId);
+  await moveCardsToDeck(client, deckId, cardIds);
 }
 
 export async function moveChunksToDeck(

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
-import { ensureDeckInboxMembership } from '../decks/deck-inbox-membership';
+import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { normalizeCardFields } from './card-kind-registry';
 
 export interface CardRecord {
@@ -56,7 +56,7 @@ export class CardsService {
       })) as CardRecord;
 
       if (data.deckId) {
-        await ensureDeckInboxMembership(tx, data.deckId, [card.id], userId);
+        await initStandaloneCardReviewState(tx, [card.id]);
       }
 
       return card;

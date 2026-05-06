@@ -23,6 +23,7 @@ import {
   emitReviewGradedObservability,
   emitReviewUnsupportedObservability,
 } from './review-service-observability';
+import { applyGradeToStandaloneCard } from './standalone-card-review';
 
 interface ApplyGradeToReviewCardInput {
   cardId: string;
@@ -53,7 +54,14 @@ export async function applyGradeToReviewCard({
   );
 
   if (!reviewable) {
-    return null;
+    return applyGradeToStandaloneCard({
+      cardId,
+      deckId,
+      grade,
+      now,
+      prisma,
+      userId,
+    });
   }
   const { chunk, snapshot, state } = reviewable;
   const currentChunkCard = getCurrentReviewChunkCard(chunk, snapshot);
@@ -92,6 +100,13 @@ export async function applyGradeToReviewCard({
   });
   const existingCardState = await prisma.reviewState.findUnique({
     where: { cardId },
+    select: {
+      ease: true,
+      interval: true,
+      reps: true,
+      lapses: true,
+      consecutiveSuccessCount: true,
+    },
   });
 
   await prisma.$transaction(async (tx) => {

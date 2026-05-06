@@ -18,12 +18,18 @@ function createPrismaMock() {
       findMany: jest.fn(),
       findUnique: jest.fn(),
     },
+    card: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    },
     chunkReviewState: {
       upsert: jest.fn(),
       update: jest.fn(),
     },
     reviewState: {
       findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
       upsert: jest.fn(),
     },
     reviewLog: {
@@ -53,6 +59,8 @@ describe('ReviewsService', () => {
       { id: 'deck-2' },
     ]);
     prisma.deckShare.findMany.mockResolvedValue([]);
+    prisma.card.findFirst.mockResolvedValue(null);
+    prisma.card.findMany.mockResolvedValue([]);
   });
 
   describe('getChunkProgress', () => {
@@ -326,25 +334,9 @@ describe('ReviewsService', () => {
           consecutiveSuccessCount: 0,
         }),
         expect.objectContaining({
-          cardId: 'card-4',
-          chunkId: 'chunk-2',
-          positionInChunk: 1,
-          isReviewSupported: true,
-          reviewUnsupportedReason: null,
-          consecutiveSuccessCount: 0,
-        }),
-        expect.objectContaining({
           cardId: 'card-2',
           chunkId: 'chunk-1',
           positionInChunk: 1,
-          isReviewSupported: true,
-          reviewUnsupportedReason: null,
-          consecutiveSuccessCount: 1,
-        }),
-        expect.objectContaining({
-          cardId: 'card-1',
-          chunkId: 'chunk-1',
-          positionInChunk: 0,
           isReviewSupported: true,
           reviewUnsupportedReason: null,
           consecutiveSuccessCount: 1,
@@ -943,6 +935,7 @@ describe('ReviewsService', () => {
         update: {
           due: new Date('2026-04-02T11:00:00.000Z'),
           interval: 2,
+          consecutiveSuccessCount: 1,
           reps: 1,
           lapses: 0,
           lastGrade: 'good',
@@ -952,6 +945,7 @@ describe('ReviewsService', () => {
           ease: 2.5,
           interval: 2,
           due: new Date('2026-04-02T11:00:00.000Z'),
+          consecutiveSuccessCount: 1,
           reps: 1,
           lapses: 0,
           lastGrade: 'good',
@@ -1108,6 +1102,7 @@ describe('ReviewsService', () => {
         update: {
           due: now,
           interval: 0,
+          consecutiveSuccessCount: 0,
           reps: 0,
           lapses: 1,
           lastGrade: 'again',
@@ -1117,6 +1112,7 @@ describe('ReviewsService', () => {
           ease: 2.5,
           interval: 0,
           due: now,
+          consecutiveSuccessCount: 0,
           reps: 0,
           lapses: 1,
           lastGrade: 'again',
@@ -1367,6 +1363,7 @@ describe('ReviewsService', () => {
         update: {
           due: new Date('2026-04-02T13:00:00.000Z'),
           interval: 4,
+          consecutiveSuccessCount: 0,
           reps: 0,
           lapses: 1,
           lastGrade: 'hard',
@@ -1376,6 +1373,7 @@ describe('ReviewsService', () => {
           ease: 2.5,
           interval: 4,
           due: new Date('2026-04-02T13:00:00.000Z'),
+          consecutiveSuccessCount: 0,
           reps: 0,
           lapses: 1,
           lastGrade: 'hard',

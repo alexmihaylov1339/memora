@@ -43,7 +43,7 @@ export async function createDeck(
       },
     })) as unknown as DeckRecord;
 
-    await moveCardsToDeck(tx, deck.id, input.cardIds, input.userId);
+    await moveCardsToDeck(tx, deck.id, input.cardIds);
     await moveChunksToDeck(tx, deck.id, input.chunkIds);
 
     return {

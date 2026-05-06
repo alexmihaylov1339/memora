@@ -154,6 +154,7 @@ model ReviewState {
   due       DateTime
   reps      Int       @default(0)
   lapses    Int       @default(0)
+  consecutiveSuccessCount Int @default(0)
   lastGrade Grade?
 
   card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)

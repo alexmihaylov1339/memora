@@ -37,6 +37,9 @@ function createPrismaMock() {
     chunkReviewState: {
       upsert: jest.fn(),
     },
+    reviewState: {
+      upsert: jest.fn(),
+    },
     chunkCard: {
       deleteMany: jest.fn(),
     },
@@ -128,20 +131,18 @@ describe('DecksService', () => {
     ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
-      { id: 'deck-owned', name: 'Owned', count: 4, dueCount: 4 },
+      { id: 'deck-owned', name: 'Owned', count: 4, dueCount: 2 },
       { id: 'deck-shared', name: 'Shared', count: 2, dueCount: 1 },
     ]);
 
     jest.useRealTimers();
   });
 
-  it('creates deck inbox chunk so newly attached cards are immediately reviewable', async () => {
+  it('initializes standalone review state for newly attached cards', async () => {
     const now = new Date('2026-04-26T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
 
-    prisma.card.findMany
-      .mockResolvedValueOnce([{ id: 'card-1' }])
-      .mockResolvedValueOnce([{ id: 'card-1' }]);
+    prisma.card.findMany.mockResolvedValueOnce([{ id: 'card-1' }]);
     prisma.deck.create.mockResolvedValue({
       id: 'deck-1',
       name: 'Deck 1',
@@ -151,8 +152,6 @@ describe('DecksService', () => {
       createdAt: now,
       updatedAt: now,
     });
-    prisma.chunk.findFirst.mockResolvedValue(null);
-    prisma.chunk.create.mockResolvedValue({ id: 'chunk-inbox-1' });
 
     await expect(
       service.create('Deck 1', undefined, ['card-1'], [], 'user-1', [2, 24]),
@@ -162,21 +161,29 @@ describe('DecksService', () => {
       }),
     );
 
-    expect(prisma.chunk.create).toHaveBeenCalledWith({
-      data: {
-        ownerId: 'user-1',
-        deckId: 'deck-1',
-        title: 'Deck Inbox',
-        position: 0,
-        chunkCards: {
-          create: [{ cardId: 'card-1', sequenceIndex: 0 }],
-        },
+    expect(prisma.chunk.create).not.toHaveBeenCalled();
+    expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
+    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
+      where: { cardId: 'card-1' },
+      update: {
+        due: now,
+        interval: 0,
+        reps: 0,
+        lapses: 0,
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
       },
-      select: {
-        id: true,
+      create: {
+        cardId: 'card-1',
+        ease: 2.5,
+        interval: 0,
+        due: now,
+        reps: 0,
+        lapses: 0,
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
       },
     });
-    expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
     expect(prisma.deck.create).toHaveBeenCalledWith({
       data: {
         name: 'Deck 1',

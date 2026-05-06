@@ -18,6 +18,9 @@ function createPrismaMock() {
     chunkReviewState: {
       upsert: jest.fn(),
     },
+    reviewState: {
+      upsert: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -31,7 +34,7 @@ function createPrismaMock() {
 }
 
 describe('CardsService', () => {
-  it('adds newly created deck cards to immediate review inbox', async () => {
+  it('initializes standalone review state for newly created deck cards', async () => {
     const prisma = createPrismaMock();
     const service = new CardsService(prisma as unknown as PrismaService);
     const now = new Date('2026-05-02T10:00:00.000Z');
@@ -46,9 +49,6 @@ describe('CardsService', () => {
       fields: { front: 'front', back: 'back' },
       createdAt: now,
     });
-    prisma.card.findMany.mockResolvedValue([{ id: 'card-1' }]);
-    prisma.chunk.findFirst.mockResolvedValue(null);
-    prisma.chunk.create.mockResolvedValue({ id: 'chunk-inbox-1' });
 
     await expect(
       service.create(
@@ -66,30 +66,25 @@ describe('CardsService', () => {
       }),
     );
 
-    expect(prisma.chunk.create).toHaveBeenCalledWith({
-      data: {
-        ownerId: 'user-1',
-        deckId: 'deck-1',
-        title: 'Deck Inbox',
-        position: 0,
-        chunkCards: {
-          create: [{ cardId: 'card-1', sequenceIndex: 0 }],
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-    expect(prisma.chunkReviewState.upsert).toHaveBeenCalledWith({
-      where: { chunkId: 'chunk-inbox-1' },
+    expect(prisma.chunk.create).not.toHaveBeenCalled();
+    expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
+    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
+      where: { cardId: 'card-1' },
       update: {
         due: now,
+        interval: 0,
+        reps: 0,
+        lapses: 0,
         consecutiveSuccessCount: 0,
         lastGrade: null,
       },
       create: {
-        chunkId: 'chunk-inbox-1',
+        cardId: 'card-1',
+        ease: 2.5,
+        interval: 0,
         due: now,
+        reps: 0,
+        lapses: 0,
         consecutiveSuccessCount: 0,
         lastGrade: null,
       },
