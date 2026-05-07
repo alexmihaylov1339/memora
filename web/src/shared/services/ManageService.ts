@@ -7,6 +7,7 @@ interface RequestConfig {
   method: HttpMethod;
   queryParams?: Record<string, string | number | boolean>;
   body?: unknown;
+  formBody?: FormData;
   headers?: Record<string, string>;
 }
 
@@ -80,6 +81,14 @@ class RequestBuilder {
     return this;
   }
 
+  setFormBody(formData: FormData): this {
+    this.config.formBody = formData;
+    const { 'Content-Type': _removed, ...rest } = this.config.headers ?? {};
+    this.config.headers = rest;
+
+    return this;
+  }
+
   async execRequest<T>(): Promise<T> {
     try {
       // Build URL with query params
@@ -100,7 +109,9 @@ class RequestBuilder {
       };
 
       // Add body for non-GET requests
-      if (this.config.body && this.config.method !== HTTP_METHODS.GET) {
+      if (this.config.formBody && this.config.method !== HTTP_METHODS.GET) {
+        options.body = this.config.formBody;
+      } else if (this.config.body && this.config.method !== HTTP_METHODS.GET) {
         options.body = JSON.stringify(this.config.body);
       }
 

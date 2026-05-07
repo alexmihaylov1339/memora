@@ -1,6 +1,6 @@
 # Memora: Step 19 — CSV Import for Cards
 
-**Status:** In progress — T7 done  
+**Status:** In progress — T8 done  
 **Date:** 2026-05-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 19  
 **Priority:** Medium — quality-of-life feature that removes the main friction for onboarding existing flashcard collections
@@ -276,7 +276,7 @@ A summary line below the "Import CSV" button shows the pending state:
 5. ✅ **`cards-import.service.ts`** (new) — `CardsImportService.bulkImportFromCsv()`. Extracted to its own file to keep `cards.service.ts` under 150 lines. `cards.module.ts` updated to provide both services. `BASIC_CARD_KIND` constant added to `card-kind-types.ts`. `tsc --noEmit` clean, ESLint clean.
 6. ✅ **`cards-import.controller.ts`** (new) — `POST /v1/cards/import` endpoint with `FileInterceptor`. Extracted to its own controller to keep `cards.controller.ts` under 150 lines. `CardsImportController` registered in `cards.module.ts`. `tsc --noEmit` clean; `cards.controller.spec.ts` and `csv-parser.spec.ts` all 31 tests pass.
 7. ✅ **`csvPreviewParser.ts`** (frontend) — `web/src/features/decks/utils/csvPreviewParser.ts` created. Uses PapaParse for browser-safe parsing with identical header detection, row validation, and 1-based row numbering as the backend. Exported from `utils/index.ts`. 20 unit tests pass; `tsc --noEmit` clean (pre-existing review page module error unrelated).
-8. **`cardService.ts`** — add `importFromCsv()`.
+8. ✅ **`cardService.ts`** — `importFromCsv(params: ImportCsvParams)` added. Builds `FormData`, appends file and optional deckId, sends via `ManageService.setFormBody()` (new method). `ManageService` extended with `setFormBody(FormData)` which removes `Content-Type` so browser sets the multipart boundary automatically. `ImportCardsResponse`, `SkippedRowRecord`, `ImportCsvParams` types added to `decks/types/index.ts`. `tsc --noEmit` clean.
 9. **`useImportCardsMutation.ts`** — React Query mutation.
 10. **`ImportCsvModal.tsx`** — full modal with all 5 states.
 11. **Cards page** — add import button + wire modal (Entry A).

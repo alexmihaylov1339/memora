@@ -1,9 +1,12 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
+
 import type { SupportedCardKind } from '../card-kinds';
 import type {
   CardRecord,
   DeckCardMembershipMutationResult,
   DeckMoveCandidatesParams,
+  ImportCardsResponse,
+  ImportCsvParams,
   MoveDeckCardsParams,
 } from '../types';
 import type { SearchRequest, SearchResultItem } from '../../search/types';
@@ -29,6 +32,7 @@ const api = ManageService(API_URL);
 
 const CARD_ENDPOINTS = {
   BASE: '/v1/cards',
+  IMPORT: '/v1/cards/import',
   DETAIL: (id: string) => `/v1/cards/${id}`,
   MOVE_CANDIDATES: (deckId: string) => `/v1/decks/${deckId}/move-candidates/cards`,
   MOVE: (deckId: string) => `/v1/decks/${deckId}/move/cards`,
@@ -90,6 +94,20 @@ export const cardService = {
       .prepareRequest(CARD_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.DELETE)
       .setHeaders(getAuthHeaders())
       .execRequest<void>();
+  },
+
+  importFromCsv(params: ImportCsvParams) {
+    const formData = new FormData();
+    formData.append('file', params.file);
+    if (params.deckId) {
+      formData.append('deckId', params.deckId);
+    }
+
+    return api
+      .prepareRequest(CARD_ENDPOINTS.IMPORT, HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .setFormBody(formData)
+      .execRequest<ImportCardsResponse>();
   },
 
   search(params: SearchRequest) {

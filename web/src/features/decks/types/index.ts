@@ -102,3 +102,18 @@ export type RemoveDeckShareResponse = void;
 
 // Backward-compatible alias for the current decks page usage.
 export type Deck = DeckListItem;
+
+export interface SkippedRowRecord {
+  row: number;
+  reason: string;
+}
+
+export interface ImportCardsResponse {
+  created: number;
+  skipped: SkippedRowRecord[];
+}
+
+export interface ImportCsvParams {
+  file: File;
+  deckId?: string;
+}
