@@ -22,5 +22,6 @@ export {
   useUpdateCardMutation,
   useDeleteCardMutation,
 } from './useCardMutations';
+export { useImportCardsMutation } from './useImportCardsMutation';
 export { useDeckEditFormFields } from './useDeckFormFields';
 export { useCreateCardFormFields, useEditCardFormFields } from './useCardFormFields';

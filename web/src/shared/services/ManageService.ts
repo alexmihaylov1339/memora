@@ -83,8 +83,9 @@ class RequestBuilder {
 
   setFormBody(formData: FormData): this {
     this.config.formBody = formData;
-    const { 'Content-Type': _removed, ...rest } = this.config.headers ?? {};
-    this.config.headers = rest;
+    const headers = { ...(this.config.headers ?? {}) };
+    delete headers['Content-Type'];
+    this.config.headers = headers;
 
     return this;
   }
