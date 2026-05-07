@@ -1,6 +1,6 @@
 # Memora: Step 19 — CSV Import for Cards
 
-**Status:** In progress — T3 done  
+**Status:** In progress — T4 done  
 **Date:** 2026-05-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 19  
 **Priority:** Medium — quality-of-life feature that removes the main friction for onboarding existing flashcard collections
@@ -272,7 +272,7 @@ A summary line below the "Import CSV" button shows the pending state:
 1. ✅ **Install `csv-parse`** in `api/` and **`papaparse` + `@types/papaparse`** in `web/`. Also added `@types/multer` (required for `FileInterceptor`; not yet in api devDeps).
 2. ✅ **`csv-parser.ts`** — pure parsing utility with full header detection + validation logic. `api/src/cards/csv/csv-parser.ts` created; `tsc --noEmit` clean; smoke-tested against real NotebookLM file (68 rows/0 skipped) and all edge cases.
 3. ✅ **Unit tests** for `csv-parser.ts` — 25 tests, all passing. Covers all plan scenarios: header detection (5 variants), whitespace trimming, empty row silent skip, missing column, empty front/back, length limits (at/over boundary), RFC 4180 quoting, 1-based file row numbering, mixed valid/invalid rows.
-4. **`import-cards.dto.ts`** — response DTO.
+4. ✅ **`import-cards.dto.ts`** — `SkippedRowDto`, `ImportCardsResponseDto`, and `serializeImportCardsResponse` serializer. `tsc --noEmit` clean, ESLint clean.
 5. **`cards.service.ts`** — add `bulkImportFromCsv()`.
 6. **`cards.controller.ts`** — add `POST /v1/cards/import` endpoint with `FileInterceptor`.
 7. **`csvPreviewParser.ts`** (frontend) — same logic as backend parser, browser-safe.
