@@ -32,6 +32,10 @@
     "deleteSuccess": "Deck deleted successfully!",
     "deleteError": "Failed to delete deck. Please try again."
   },
+  "cards": {
+    "importSuccess": "{created} cards imported.",
+    "importSuccessWithSkipped": "{created} cards imported, {skipped} rows skipped."
+  },
   "notifications": {
     "success": "Success",
     "error": "Error",

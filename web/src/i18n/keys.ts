@@ -37,6 +37,10 @@ export const TRANSLATION_KEYS = {
     deleteSuccess: 'decks.deleteSuccess',
     deleteError: 'decks.deleteError',
   },
+  cards: {
+    importSuccess: 'cards.importSuccess',
+    importSuccessWithSkipped: 'cards.importSuccessWithSkipped',
+  },
   notifications: {
     success: 'notifications.success',
     error: 'notifications.error',

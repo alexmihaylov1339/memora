@@ -1,3 +1,3 @@
 export { default as CardsPageHeader } from './CardsPageHeader';
 export { default as CardFieldsEditor } from './CardFieldsEditor';
-export { useCardGridColumns } from './hooks';
+export { useCardGridColumns, useCardsImportModal } from './hooks';

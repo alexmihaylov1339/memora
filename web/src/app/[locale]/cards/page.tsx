@@ -17,15 +17,17 @@ import { APP_ROUTES } from '@shared/constants';
 import type { CardRecord } from '@features/decks';
 import {
   cardService,
+  ImportCsvModal,
   useCardsListQuery,
   useDeckMovableCardsQuery,
   useMoveDeckCardsMutation,
 } from '@features/decks';
 import { SEARCH_QUERY_KEYS } from '@features/search';
-import { useCardGridColumns } from './components';
+import { useCardGridColumns, useCardsImportModal } from './components';
 
 export default function CardsPage() {
   const router = useRouter();
+  const importModal = useCardsImportModal();
   const searchParams = useSearchParams();
   const deckIdFromQuery = searchParams?.get('deckId')?.trim() ?? '';
   const isMoveContext = deckIdFromQuery.length > 0;
@@ -127,12 +129,22 @@ export default function CardsPage() {
                 </BackLinkButton>
               )}
             </div>
-            <Link
-              href={createCardHref}
-              className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover"
-            >
-              Create Card
-            </Link>
+            <div className="flex items-center gap-3">
+              {!isMoveContext && (
+                <Button
+                  onClick={importModal.handleOpen}
+                  className="rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
+                >
+                  Import CSV
+                </Button>
+              )}
+              <Link
+                href={createCardHref}
+                className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover"
+              >
+                Create Card
+              </Link>
+            </div>
           </div>
 
           {!isMoveContext && (
@@ -171,6 +183,12 @@ export default function CardsPage() {
           )}
         </section>
       </main>
+
+      <ImportCsvModal
+        isOpen={importModal.isOpen}
+        onClose={importModal.handleClose}
+        onImportComplete={importModal.handleImportComplete}
+      />
     </ProtectedRoute>
   );
 }

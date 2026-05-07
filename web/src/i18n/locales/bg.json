@@ -32,6 +32,10 @@
     "deleteSuccess": "Тестето е изтрито успешно!",
     "deleteError": "Неуспешно изтриване на тесте. Моля, опитайте отново."
   },
+  "cards": {
+    "importSuccess": "{created} карти импортирани.",
+    "importSuccessWithSkipped": "{created} карти импортирани, {skipped} реда пропуснати."
+  },
   "notifications": {
     "success": "Успех",
     "error": "Грешка",
