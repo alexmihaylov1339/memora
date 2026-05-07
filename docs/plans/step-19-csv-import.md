@@ -1,6 +1,6 @@
 # Memora: Step 19 — CSV Import for Cards
 
-**Status:** Planned  
+**Status:** In progress — T1 done  
 **Date:** 2026-05-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 19  
 **Priority:** Medium — quality-of-life feature that removes the main friction for onboarding existing flashcard collections
@@ -269,7 +269,7 @@ A summary line below the "Import CSV" button shows the pending state:
 
 ## Implementation order
 
-1. **Install `csv-parse`** in `api/` and **`papaparse` + `@types/papaparse`** in `web/`.
+1. ✅ **Install `csv-parse`** in `api/` and **`papaparse` + `@types/papaparse`** in `web/`. Also added `@types/multer` (required for `FileInterceptor`; not yet in api devDeps).
 2. **`csv-parser.ts`** — pure parsing utility with full header detection + validation logic.
 3. **Unit tests** for `csv-parser.ts` (see verification section).
 4. **`import-cards.dto.ts`** — response DTO.
