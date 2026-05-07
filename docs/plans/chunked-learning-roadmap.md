@@ -523,6 +523,30 @@ Implementation plan:
 
 ---
 
+## Step 19: CSV import for cards
+
+**Objective:** Let users import existing flashcard collections from CSV files (e.g. NotebookLM exports) instead of creating cards one by one.
+
+**Why now:**
+CSV import removes the biggest onboarding friction: users with 50–200 cards in other tools have no path into Memora today. This is a contained, independent feature with no review-model dependencies.
+
+**Deliverables:**
+- `POST /v1/cards/import` endpoint — accepts multipart CSV file + optional `deckId`, creates `basic` cards in a transaction, initializes `ReviewState` for deck-assigned cards.
+- Auto header detection (skips `Front,Back`-style header rows; imports all rows otherwise).
+- Row validation: skipped rows reported with row number and reason.
+- `ImportCsvModal` — client-side preview (up to 10 rows shown, skipped rows listed) before confirmation.
+- **Entry A** — "Import CSV" button on `/cards` page (creates standalone cards).
+- **Entry B** — "Import CSV" inside deck create form (deferred: imported on deck submit).
+- **Entry C** — "Import CSV" inside deck edit form (immediate: imported with existing `deckId`).
+
+**Exit criteria:**
+- All exit criteria in `docs/plans/step-19-csv-import.md` satisfied.
+
+Implementation plan:
+- `docs/plans/step-19-csv-import.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -544,6 +568,7 @@ Implementation plan:
 17. Step 16
 18. Step 17
 19. Step 18
+20. Step 19
 
 ---
 
