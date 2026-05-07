@@ -1,6 +1,6 @@
 # Memora: Step 19 — CSV Import for Cards
 
-**Status:** In progress — T5 done  
+**Status:** In progress — T6 done  
 **Date:** 2026-05-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 19  
 **Priority:** Medium — quality-of-life feature that removes the main friction for onboarding existing flashcard collections
@@ -274,7 +274,7 @@ A summary line below the "Import CSV" button shows the pending state:
 3. ✅ **Unit tests** for `csv-parser.ts` — 25 tests, all passing. Covers all plan scenarios: header detection (5 variants), whitespace trimming, empty row silent skip, missing column, empty front/back, length limits (at/over boundary), RFC 4180 quoting, 1-based file row numbering, mixed valid/invalid rows.
 4. ✅ **`import-cards.dto.ts`** — `SkippedRowDto`, `ImportCardsResponseDto`, and `serializeImportCardsResponse` serializer. `tsc --noEmit` clean, ESLint clean.
 5. ✅ **`cards-import.service.ts`** (new) — `CardsImportService.bulkImportFromCsv()`. Extracted to its own file to keep `cards.service.ts` under 150 lines. `cards.module.ts` updated to provide both services. `BASIC_CARD_KIND` constant added to `card-kind-types.ts`. `tsc --noEmit` clean, ESLint clean.
-6. **`cards.controller.ts`** — add `POST /v1/cards/import` endpoint with `FileInterceptor`.
+6. ✅ **`cards-import.controller.ts`** (new) — `POST /v1/cards/import` endpoint with `FileInterceptor`. Extracted to its own controller to keep `cards.controller.ts` under 150 lines. `CardsImportController` registered in `cards.module.ts`. `tsc --noEmit` clean; `cards.controller.spec.ts` and `csv-parser.spec.ts` all 31 tests pass.
 7. **`csvPreviewParser.ts`** (frontend) — same logic as backend parser, browser-safe.
 8. **`cardService.ts`** — add `importFromCsv()`.
 9. **`useImportCardsMutation.ts`** — React Query mutation.
