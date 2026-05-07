@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { CARD_ERROR_MESSAGES, cardFieldsInvalidForKind } from './card-errors';
+import {
+  BASIC_CARD_FIELD_MAX_LENGTH,
+  CARD_ERROR_MESSAGES,
+  cardFieldsInvalidForKind,
+} from './card-errors';
 import type { CardKindDefinition, SupportedCardKind } from './card-kind-types';
 import { isNil, isObjectRecord, isString } from '../common/utils/type-guards';
 
@@ -8,7 +12,7 @@ function normalizeRequiredString(
   rawValue: unknown,
   key: string,
   kind: SupportedCardKind,
-  maxLength = 2000,
+  maxLength = BASIC_CARD_FIELD_MAX_LENGTH,
 ): string {
   if (!isString(rawValue)) {
     throw new BadRequestException(

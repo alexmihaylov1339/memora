@@ -1,3 +1,5 @@
+export const BASIC_CARD_FIELD_MAX_LENGTH = 2000;
+
 export const CARD_ERROR_MESSAGES = {
   idRequired: 'id is required',
   kindRequired: 'kind is required',

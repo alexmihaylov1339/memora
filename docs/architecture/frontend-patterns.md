@@ -36,7 +36,9 @@
 24. Query hooks must return normalized UI-friendly data when useful, so pages/components stay simple.
 25. Define explicit loading, error, empty, and success states for every async screen, and avoid long inline conditional JSX branches by extracting named state components or render helpers when the screen becomes complex.
 26. Do not transform API response shapes repeatedly in components; centralize mapping in hooks, adapters, or mappers.
-27. Prefer named constants over magic numbers/strings in UI logic, validation rules, limits, and statuses.
+27. Do not embed magic numbers/strings in UI logic, validation rules, limits, or statuses. Define every threshold or label as a named constant. When the same value is shared across multiple files, define it once in the feature's constants file and import it — never copy the literal.
+27a. Use intention-revealing variable names at every scope. Single-letter names are acceptable only for standard loop counters (`i`, `j`). Abbreviations and short aliases must be expanded to their full meaning (`fileRowNumber` not `fileRow`, `response` not `res`) unless the full name adds no information.
+27b. Do not use non-null assertions (`!`) when TypeScript already infers a non-nullable type. Assertions suppress errors silently; prefer a runtime guard, optional chaining, or restructuring the code so the type is naturally non-optional.
 28. Event handlers and local functions must use intention-revealing names (`handleSubmit`, `handleRetry`, `mapAccountToOption`) instead of vague names (`onClickFn`, `processData`).
 29. Do not create inline objects/functions in JSX when it hurts readability or causes unnecessary rerenders in shared/heavy components.
 30. Memoization is not default. Use `useMemo` / `useCallback` only when there is a clear render-stability or expensive-computation reason.

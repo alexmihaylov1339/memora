@@ -37,9 +37,11 @@
 25. Keep error messages clear and stable. Do not return raw Prisma/internal errors to API consumers.
 26. When persistence logic becomes multi-step and must remain consistent, use Prisma transactions.
 27. Prefer deterministic ordering in list/query endpoints. Always decide and document sort order.
-28. Do not embed magic numbers/strings in business rules. Use named constants for grades, limits, default schedules, and thresholds.
+28. Do not embed magic numbers/strings in business rules. Use named constants for grades, limits, default schedules, and thresholds. When the same value is needed in more than one file, define it once in the feature's `*-errors.ts` or `*-constants.ts` and import it everywhere — never copy the literal.
 29. When time is part of the business logic, use UTC-safe calculations and fixed clock values in tests.
 30. For domain rules with future configurability, isolate the source of truth behind one helper/config module instead of scattering constants.
+31a. Use intention-revealing variable names at every scope. Single-letter names are acceptable only for standard loop counters (`i`, `j`). Abbreviations and short aliases (`fileRow`, `res`, `val`) must be expanded to their full meaning (`fileRowNumber`, `response`, `validatedValue`) unless the full name would add no information.
+31b. Do not use non-null assertions (`!`) when TypeScript already infers a non-nullable type. Assertions suppress errors silently; use a runtime guard or restructure the code so the type is naturally non-optional.
 31. Prefer additive, focused migrations. Avoid mixing unrelated schema changes into one migration.
 32. If local SQLite behavior differs from Postgres/Supabase behavior, document it and keep migrations/bootstrap SQL compatible with the actual local dev flow.
 33. Leave touched backend code easier to change than you found it: improve naming, reduce nesting, remove dead branches, tighten types, and split oversized files.
