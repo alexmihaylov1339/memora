@@ -1,5 +1,9 @@
-// Export utility functions here when created
-
+export { parseCsvText } from './csvPreviewParser';
+export type {
+  CsvPreviewParseResult,
+  ParsedRow,
+  SkippedRow,
+} from './csvPreviewParser';
 
 export {
   formatDeckReviewIntervalsInput,
