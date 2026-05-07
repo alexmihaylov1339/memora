@@ -19,6 +19,8 @@
 15. When editing any non-test frontend file during a planned task, check whether the touched file is over 150 lines or mixes concerns. If there is a clear, convenient split, refactor it into smaller feature-local files while preserving behavior.
 16. Enabled buttons must use pointer cursor affordance. Disabled buttons must not use pointer cursor and must keep an explicit disabled affordance.
 17. Brand/logo rendering must use the shared brand/logo component and the `Vibur` font, not page-local ad-hoc font styling.
+17a. Always use `web/src/shared/components/Grid/` for any grid or table-style surface — including preview tables, read-only listings, and modal result tables. Never write a raw `<table>` when `Grid` can be used.
+17b. Always use `web/src/shared/components/FormBuilder/` for any form. Never build an ad-hoc form shell when `FormBuilder` fits the task.
 
 ## Additional Rules
 

@@ -3,6 +3,8 @@ export { CreateDeckForm } from './components';
 export { DeckCardSelectionPanel } from './components';
 export { DeckChunkSelectionPanel } from './components';
 export { DeckSelectedItemsGrid } from './components';
+export { ImportCsvModal } from './components';
+export type { ImportCsvModalProps } from './components';
 
 // Hooks
 export {
@@ -17,6 +19,7 @@ export {
   useDeckMovableCardsQuery,
   useCardDetailQuery,
   useCreateCardMutation,
+  useImportCardsMutation,
   useMoveDeckCardsMutation,
   useUpdateCardMutation,
   useDeleteCardMutation,
@@ -28,8 +31,10 @@ export {
 // Utils
 export {
   formatDeckReviewIntervalsInput,
+  parseCsvText,
   parseDeckReviewIntervalsInput,
 } from './utils';
+export type { CsvPreviewParseResult, ParsedRow, SkippedRow } from './utils';
 
 // Types
 export type {
@@ -37,6 +42,9 @@ export type {
   CreateDeckResponse,
   CardRecord,
   Deck,
+  ImportCardsResponse,
+  ImportCsvParams,
+  SkippedRowRecord,
   DeckDetail,
   DeckIdParams,
   DeckListItem,
