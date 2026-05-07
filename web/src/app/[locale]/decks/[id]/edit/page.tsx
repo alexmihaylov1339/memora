@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/i18n/navigation';
 
-import { Button, ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
+import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
 import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
 import { TRANSLATION_KEYS } from '@/i18n';
 import {
   DECKS_QUERY_KEYS,
-  ImportCsvModal,
   useCardsListQuery,
   useDeckDetailQuery,
   useDeleteDeckMutation,
@@ -35,7 +33,6 @@ export default function EditDeckPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success } = useNotification();
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const id = resolveSingleParam(params?.id as string | string[] | undefined);
 
   const deckQuery = useDeckDetailQuery(id);
@@ -98,15 +95,6 @@ export default function EditDeckPage() {
 
         {allLoaded && deck && (
           <div className="space-y-10">
-            <div className="mx-auto flex w-full max-w-[621px] justify-end">
-              <Button
-                onClick={() => setIsImportModalOpen(true)}
-                className="rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
-              >
-                Import CSV
-              </Button>
-            </div>
-
             <DeckEditForm
               key={deck.id}
               id={deck.id}
@@ -120,6 +108,7 @@ export default function EditDeckPage() {
               isDeleting={deleteDeck.isLoading}
               updateError={updateDeck.error?.message}
               deleteError={deleteDeck.error?.message}
+              onImportComplete={handleImportComplete}
             />
 
             <DeckSharePanel
@@ -130,13 +119,6 @@ export default function EditDeckPage() {
           </div>
         )}
       </main>
-
-      <ImportCsvModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        deckId={id}
-        onImportComplete={handleImportComplete}
-      />
     </ProtectedRoute>
   );
 }

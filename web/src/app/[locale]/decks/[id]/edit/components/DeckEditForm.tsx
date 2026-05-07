@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
 
-import { FormBuilder, type FieldConfig } from '@shared/components';
+import { Button, FormBuilder, type FieldConfig } from '@shared/components';
 import { BUTTON_STYLES } from '@shared/constants';
 import {
   DeckCardSelectionPanel,
   DeckChunkSelectionPanel,
+  ImportCsvModal,
   formatDeckReviewIntervalsInput,
   parseDeckReviewIntervalsInput,
   useDeckEditFormFields,
+  type ImportCardsResponse,
 } from '@features/decks';
 import type { SearchResultItem } from '@features/search';
 import styles from '@features/decks/components/CreateDeckForm.module.scss';
@@ -31,6 +33,7 @@ interface DeckEditFormProps {
   isDeleting: boolean;
   updateError?: string;
   deleteError?: string;
+  onImportComplete?: (result: ImportCardsResponse) => void;
 }
 
 export default function DeckEditForm({
@@ -45,10 +48,12 @@ export default function DeckEditForm({
   isDeleting,
   updateError,
   deleteError,
+  onImportComplete,
 }: DeckEditFormProps) {
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>(initialCards);
   const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>(initialChunks);
   const [intervalError, setIntervalError] = useState<string | undefined>();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const baseFields = useDeckEditFormFields();
 
   const fields = useMemo<FieldConfig[]>(
@@ -121,34 +126,55 @@ export default function DeckEditForm({
   }
 
   return (
-    <FormBuilder<{
-      name: string;
-      description?: string;
-      reviewIntervalsInput: string;
-      cardIds?: string[];
-      chunkIds?: string[];
-    }>
-      fields={fields}
-      onSubmit={handleSubmit}
-      initialValues={{
-        name,
-        description: description ?? '',
-        reviewIntervalsInput: formatDeckReviewIntervalsInput(
-          reviewIntervalHours,
-        ),
-      }}
-      submitLabel="Save Changes"
-      submitButtonClassName={styles.primaryButton}
-      showDeleteButton
-      deleteLabel="Delete Deck"
-      deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
-      onDelete={onDelete}
-      isDeleting={isDeleting}
-      actionsContainerClassName={styles.actionRow}
-      translateFields={false}
-      resetOnSubmit={false}
-      errorMessage={intervalError ?? updateError ?? deleteError}
-      formClassName={`${styles.container} ${styles.form}`}
-    />
+    <>
+      <FormBuilder<{
+        name: string;
+        description?: string;
+        reviewIntervalsInput: string;
+        cardIds?: string[];
+        chunkIds?: string[];
+      }>
+        fields={fields}
+        onSubmit={handleSubmit}
+        initialValues={{
+          name,
+          description: description ?? '',
+          reviewIntervalsInput: formatDeckReviewIntervalsInput(
+            reviewIntervalHours,
+          ),
+        }}
+        submitLabel="Save Changes"
+        submitButtonClassName={styles.primaryButton}
+        showDeleteButton
+        deleteLabel="Delete Deck"
+        deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+        actionsContainerClassName={styles.actionRow}
+        translateFields={false}
+        resetOnSubmit={false}
+        errorMessage={intervalError ?? updateError ?? deleteError}
+        formClassName={`${styles.container} ${styles.form}`}
+        leadingAction={
+          <Button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
+          >
+            Import CSV
+          </Button>
+        }
+      />
+
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        deckId={id}
+        onImportComplete={(result) => {
+          setIsImportModalOpen(false);
+          onImportComplete?.(result);
+        }}
+      />
+    </>
   );
 }
