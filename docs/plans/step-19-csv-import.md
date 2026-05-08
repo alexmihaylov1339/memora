@@ -1,6 +1,6 @@
 # Memora: Step 19 — CSV Import for Cards
 
-**Status:** In progress — T12 done  
+**Status:** In progress — T13 done  
 **Date:** 2026-05-07  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 19  
 **Priority:** Medium — quality-of-life feature that removes the main friction for onboarding existing flashcard collections
@@ -281,7 +281,7 @@ A summary line below the "Import CSV" button shows the pending state:
 10. ✅ **`ImportCsvModal.tsx`** — split into `ImportCsvModal.tsx` (154 lines, state machine + overlay), `CsvPreviewTable.tsx` (67 lines, table + skipped rows), `CsvFileSelector.tsx` (44 lines, file input). All 6 modal states implemented. Exported from `decks/components/index.ts` and `decks/index.ts`. `tsc --noEmit` clean.
 11. ✅ **Cards page** — "Import CSV" button added next to "Create Card" (hidden in move-to-deck context). `ImportCsvModal` wired with `onImportComplete` → success toast via `useCardsImportModal` hook. Translation keys added to all 3 locales + `keys.ts`. `tsc --noEmit` clean.
 12. ✅ **Deck edit form** — "Import CSV" button added above `DeckEditForm` at page level. `ImportCsvModal` mounted with `deckId` for immediate import; `onImportComplete` shows localised success toast. `useImportCardsMutation` inside modal auto-invalidates card + deck caches. `tsc --noEmit` clean; page is 142 lines.
-13. **Deck create form** — add import button + deferred state + two-step submit (Entry B).
+13. ✅ **Deck create form** — "Import CSV" button added as `leadingAction` in `FormBuilder`. `deferred` mode wired with `onDeferredConfirm` → stores `pendingCsvFile` + `pendingCsvRowCount`. `handleSubmit` does two-step: create deck → import CSV → navigate to deck edit on success (or `/decks` if no CSV). Warning toast on import failure with retry instruction. `decks.csvImportFailed` key added to all 3 locales. `tsc --noEmit` clean.
 14. **Manual verification** of all flows and edge cases.
 15. **TypeScript + tests** — ensure `tsc --noEmit` passes, all new tests pass.
 

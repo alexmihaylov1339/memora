@@ -30,7 +30,8 @@
     "createSuccess": "Deck \"{name}\" created successfully!",
     "createError": "Failed to create deck. Please try again.",
     "deleteSuccess": "Deck deleted successfully!",
-    "deleteError": "Failed to delete deck. Please try again."
+    "deleteError": "Failed to delete deck. Please try again.",
+    "csvImportFailed": "Deck created, but CSV import failed. You can retry the import from the deck edit page."
   },
   "cards": {
     "importSuccess": "{created} cards imported.",

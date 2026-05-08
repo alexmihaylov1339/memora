@@ -36,6 +36,7 @@ export const TRANSLATION_KEYS = {
     createError: 'decks.createError',
     deleteSuccess: 'decks.deleteSuccess',
     deleteError: 'decks.deleteError',
+    csvImportFailed: 'decks.csvImportFailed',
   },
   cards: {
     importSuccess: 'cards.importSuccess',

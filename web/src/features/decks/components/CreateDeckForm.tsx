@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useMemo, useState } from 'react';
 
-import { FormBuilder, type FieldConfig } from '@shared/components';
+import { Button, FormBuilder, type FieldConfig } from '@shared/components';
 import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
-import { useCreateDeckMutation } from '../hooks';
+import { useCreateDeckMutation, useImportCardsMutation } from '../hooks';
 import type { CreateDeckDto } from '../types';
 import { parseDeckReviewIntervalsInput } from '../utils';
 import type { SearchResultItem } from '../../search/types';
@@ -16,6 +16,7 @@ import { DECKS_QUERY_KEYS, createDeckFormFields } from '../constants';
 import { TRANSLATION_KEYS } from '@/i18n';
 import DeckCardSelectionPanel from './DeckCardSelectionPanel';
 import DeckChunkSelectionPanel from './DeckChunkSelectionPanel';
+import { ImportCsvModal } from './ImportCsvModal';
 
 import styles from './CreateDeckForm.module.scss';
 
@@ -26,25 +27,16 @@ interface CreateDeckFormValues extends Omit<CreateDeckDto, 'reviewIntervalHours'
 export default function CreateDeckForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { success, error } = useNotification();
+  const { success, error, warning } = useNotification();
   const t = useTranslations();
   const [selectedCards, setSelectedCards] = useState<SearchResultItem[]>([]);
   const [selectedChunks, setSelectedChunks] = useState<SearchResultItem[]>([]);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [pendingCsvFile, setPendingCsvFile] = useState<File | null>(null);
+  const [pendingCsvRowCount, setPendingCsvRowCount] = useState(0);
 
-  const handleCreateSuccess = (data: { name: string }) => {
-    queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
-    success(TRANSLATION_KEYS.decks.createSuccess, { name: data.name });
-    router.replace(APP_ROUTES.decks);
-  };
-
-  const handleCreateError = () => {
-    error(TRANSLATION_KEYS.decks.createError);
-  };
-
-  const createDeck = useCreateDeckMutation({
-    onSuccess: handleCreateSuccess,
-    onError: handleCreateError,
-  });
+  const createDeck = useCreateDeckMutation();
+  const importMutation = useImportCardsMutation();
 
   const fields = useMemo<FieldConfig[]>(
     () => [
@@ -96,13 +88,43 @@ export default function CreateDeckForm() {
       return;
     }
 
-    await createDeck.fetch({
-      name: values.name.trim(),
-      description: values.description?.trim() || undefined,
-      cardIds: values.cardIds,
-      chunkIds: values.chunkIds,
-      reviewIntervalHours,
-    });
+    let deck: Awaited<ReturnType<typeof createDeck.fetch>>;
+    try {
+      deck = await createDeck.fetch({
+        name: values.name.trim(),
+        description: values.description?.trim() || undefined,
+        cardIds: values.cardIds,
+        chunkIds: values.chunkIds,
+        reviewIntervalHours,
+      });
+    } catch {
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: DECKS_QUERY_KEYS.all });
+
+    if (pendingCsvFile) {
+      try {
+        const importResult = await importMutation.fetch({
+          file: pendingCsvFile,
+          deckId: deck.id,
+        });
+        const msgKey =
+          importResult.skipped.length > 0
+            ? TRANSLATION_KEYS.cards.importSuccessWithSkipped
+            : TRANSLATION_KEYS.cards.importSuccess;
+        success(msgKey, {
+          created: importResult.created,
+          skipped: importResult.skipped.length,
+        });
+      } catch {
+        warning(TRANSLATION_KEYS.decks.csvImportFailed);
+      }
+      router.replace(APP_ROUTES.deckEdit(deck.id));
+    } else {
+      success(TRANSLATION_KEYS.decks.createSuccess, { name: deck.name });
+      router.replace(APP_ROUTES.decks);
+    }
   }
 
   return (
@@ -111,17 +133,38 @@ export default function CreateDeckForm() {
         fields={fields}
         onSubmit={handleSubmit}
         submitLabel={createDeck.isLoading ? t(TRANSLATION_KEYS.decks.creating) : t(TRANSLATION_KEYS.decks.createButton)}
-        submitButtonClassName={`${styles.primaryButton} ml-auto mt-4 block`}
+        submitButtonClassName={styles.primaryButton}
         errorMessage={createDeck.error?.message}
         formClassName={styles.form}
+        actionsContainerClassName={styles.actionRow}
         resetOnSubmit={false}
+        leadingAction={
+          <Button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
+          >
+            Import CSV
+          </Button>
+        }
       />
 
-      <div className={styles.actionRow}>
-        <span className="text-sm text-ink-subtle">
-          {selectedCards.length} cards, {selectedChunks.length} chunks selected
-        </span>
-      </div>
+      {pendingCsvFile && (
+        <p className="mt-2 text-sm text-ink-subtle">
+          {pendingCsvRowCount} cards from CSV will be imported when you save.
+        </p>
+      )}
+
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        deferred
+        onDeferredConfirm={(file, rowCount) => {
+          setPendingCsvFile(file);
+          setPendingCsvRowCount(rowCount);
+          setIsImportModalOpen(false);
+        }}
+      />
     </div>
   );
 }
