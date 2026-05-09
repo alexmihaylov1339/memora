@@ -91,62 +91,73 @@ export function ImportCsvModal({
       onClick={handleClose}
     >
       <div
-        className="w-full max-w-xl rounded-lg bg-white p-6 shadow-xl"
+        className="flex w-full max-w-xl flex-col rounded-lg bg-white shadow-xl"
+        style={{ maxHeight: 'min(90vh, 640px)' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="mb-4 text-lg font-semibold text-ink-heading">Import from CSV</h2>
+        <div className="shrink-0 px-6 pt-6">
+          <h2 className="text-lg font-semibold text-ink-heading">Import from CSV</h2>
+        </div>
 
-        {state.kind === 'idle' && (
-          <CsvFileSelector onFileSelect={(file) => void handleFileSelect(file)} />
-        )}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          {state.kind === 'idle' && (
+            <CsvFileSelector onFileSelect={(file) => void handleFileSelect(file)} />
+          )}
 
-        {state.kind === 'parsing' && (
-          <p className="py-4 text-center text-sm text-ink-muted">Parsing file…</p>
-        )}
+          {state.kind === 'parsing' && (
+            <p className="py-4 text-center text-sm text-ink-muted">Parsing file…</p>
+          )}
 
-        {state.kind === 'preview' && (
-          <>
+          {state.kind === 'preview' && (
             <CsvPreviewTable rows={state.rows} skipped={state.skipped} />
-            <div className="mt-4 flex justify-end gap-3">
-              <Button
-                onClick={handleClose}
-                className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => void handleConfirmImport()}
-                disabled={state.rows.length === 0}
-                className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {confirmLabel}
-              </Button>
-            </div>
-          </>
-        )}
+          )}
 
-        {state.kind === 'importing' && (
-          <p className="py-4 text-center text-sm text-ink-muted">Importing cards…</p>
-        )}
+          {state.kind === 'importing' && (
+            <p className="py-4 text-center text-sm text-ink-muted">Importing cards…</p>
+          )}
 
-        {state.kind === 'error' && (
-          <>
+          {state.kind === 'error' && (
             <ErrorMessage message={state.message} />
-            <div className="mt-4 flex justify-end gap-3">
-              <Button
-                onClick={handleClose}
-                className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
-              >
-                Close
-              </Button>
-              <Button
-                onClick={() => setState({ kind: 'idle' })}
-                className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover"
-              >
-                Try again
-              </Button>
-            </div>
-          </>
+          )}
+        </div>
+
+        {(state.kind === 'preview' || state.kind === 'error') && (
+          <div className="shrink-0 flex justify-end gap-3 border-t border-line px-6 py-4">
+            {state.kind === 'preview' && (
+              <>
+                <Button
+                  onClick={handleClose}
+                  className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => void handleConfirmImport()}
+                  disabled={state.rows.length === 0}
+                  className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {confirmLabel}
+                </Button>
+              </>
+            )}
+
+            {state.kind === 'error' && (
+              <>
+                <Button
+                  onClick={handleClose}
+                  className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => setState({ kind: 'idle' })}
+                  className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover"
+                >
+                  Try again
+                </Button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
