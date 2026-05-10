@@ -282,14 +282,28 @@ A summary line below the "Import CSV" button shows the pending state:
 11. ✅ **Cards page** — "Import CSV" button added next to "Create Card" (hidden in move-to-deck context). `ImportCsvModal` wired with `onImportComplete` → success toast via `useCardsImportModal` hook. Translation keys added to all 3 locales + `keys.ts`. `tsc --noEmit` clean.
 12. ✅ **Deck edit form** — "Import CSV" button added above `DeckEditForm` at page level. `ImportCsvModal` mounted with `deckId` for immediate import; `onImportComplete` shows localised success toast. `useImportCardsMutation` inside modal auto-invalidates card + deck caches. `tsc --noEmit` clean; page is 142 lines.
 13. ✅ **Deck create form** — "Import CSV" button added as `leadingAction` in `FormBuilder`. `deferred` mode wired with `onDeferredConfirm` → stores `pendingCsvFile` + `pendingCsvRowCount`. `handleSubmit` does two-step: create deck → import CSV → navigate to deck edit on success (or `/decks` if no CSV). Warning toast on import failure with retry instruction. `decks.csvImportFailed` key added to all 3 locales. `tsc --noEmit` clean.
-14. **Manual verification** of all flows and edge cases.
-15. **TypeScript + tests** — ensure `tsc --noEmit` passes, all new tests pass.
+14. **Manual verification** of all flows and edge cases.  
+    - 2026-05-10 executor note: not marked done. Browser/manual flow verification still needs to be performed for Entries A/B/C and edge cases. Automated evidence collected today is listed below.
+15. **TypeScript + tests** — ensure `tsc --noEmit` passes, all new tests pass.  
+    - 2026-05-10 executor note: targeted parser/controller tests and TypeScript checks passed. `CardsImportService` unit tests listed below are still not present, so this is not marked done yet.
 
 ---
 
 ## Verification
 
 ### Automated tests to write
+
+### Verification completed — 2026-05-10
+
+- `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.controller.spec.ts` — passed, 31 tests.
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/utils/csvPreviewParser.test.ts` — passed, 21 tests.
+- `cd api && npx tsc --noEmit` — passed.
+- `cd web && npx tsc --noEmit` — passed.
+
+Remaining before Step 19 sign-off:
+
+- Manual browser/API verification steps 1–25 below.
+- `CardsImportService` unit tests for no-deck import, deck import + review-state initialization, empty rows, and not-owned deck.
 
 #### `csv-parser.spec.ts`
 
