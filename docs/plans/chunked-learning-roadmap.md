@@ -547,6 +547,28 @@ Implementation plan:
 
 ---
 
+## Step 20: Deck composition scale and card discovery
+
+**Objective:** Keep deck create/edit usable when users have many cards and chunks, and make existing cards discoverable without relying only on exact autocomplete search.
+
+**Why now:**
+CSV import and normal card creation can quickly grow a user's card library. The deck form needs compact selected-item grids and a browsable card picker so users can confidently compose decks from larger libraries.
+
+**Deliverables:**
+- Selected cards and selected chunks grids inside deck create/edit forms paginate instead of growing indefinitely.
+- Deck card selection keeps autocomplete for fast lookup and adds a browsable card library picker for scanning all accessible cards.
+- Card create/edit supports optional deck assignment so users can add a newly created card directly to a deck.
+- Assignment behavior respects existing ownership rules and standalone review-state initialization.
+- Styling and translations keep the form compact and responsive.
+
+**Exit criteria:**
+- All exit criteria in `docs/plans/step-20-deck-composition-scale-and-card-discovery.md` satisfied.
+
+Implementation plan:
+- `docs/plans/step-20-deck-composition-scale-and-card-discovery.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -569,6 +591,7 @@ Implementation plan:
 18. Step 17
 19. Step 18
 20. Step 19
+21. Step 20
 
 ---
 
