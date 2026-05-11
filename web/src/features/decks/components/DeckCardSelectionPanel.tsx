@@ -1,5 +1,11 @@
 import { EntitySearch } from '@shared/components';
-import { SEARCH_QUERY_KEYS, SEARCH_SELECTION_MODES, type SearchResultItem } from '@features/search';
+import {
+  SEARCH_QUERY_KEYS,
+  SEARCH_SELECTION_MODES,
+  type SearchResultItem,
+} from '@features/search';
+
+import { DECK_SELECTED_ITEMS_PAGE_SIZE } from '../constants';
 import { cardService } from '../services';
 import DeckSelectedItemsGrid from './DeckSelectedItemsGrid';
 import styles from './CreateDeckForm.module.scss';
@@ -14,7 +20,11 @@ export default function DeckCardSelectionPanel({
   onSelectionChange,
 }: DeckCardSelectionPanelProps) {
   function handleRemove(item: SearchResultItem) {
-    onSelectionChange(selectedCards.filter((c) => !(c.id === item.id && c.type === item.type)));
+    onSelectionChange(
+      selectedCards.filter(
+        (card) => !(card.id === item.id && card.type === item.type),
+      ),
+    );
   }
 
   return (
@@ -41,6 +51,8 @@ export default function DeckCardSelectionPanel({
           descriptionHeader="Back"
           emptyMessage="There are currently no cards to choose from."
           onRemove={handleRemove}
+          paginate
+          pageSize={DECK_SELECTED_ITEMS_PAGE_SIZE}
         />
       </div>
     </section>

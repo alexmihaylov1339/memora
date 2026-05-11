@@ -1,6 +1,12 @@
 import { EntitySearch } from '@shared/components';
-import { SEARCH_QUERY_KEYS, SEARCH_SELECTION_MODES, type SearchResultItem } from '@features/search';
 import { chunkService } from '@features/chunks';
+import {
+  SEARCH_QUERY_KEYS,
+  SEARCH_SELECTION_MODES,
+  type SearchResultItem,
+} from '@features/search';
+
+import { DECK_SELECTED_ITEMS_PAGE_SIZE } from '../constants';
 import DeckSelectedItemsGrid from './DeckSelectedItemsGrid';
 import styles from './CreateDeckForm.module.scss';
 
@@ -14,7 +20,11 @@ export default function DeckChunkSelectionPanel({
   onSelectionChange,
 }: DeckChunkSelectionPanelProps) {
   function handleRemove(item: SearchResultItem) {
-    onSelectionChange(selectedChunks.filter((c) => !(c.id === item.id && c.type === item.type)));
+    onSelectionChange(
+      selectedChunks.filter(
+        (chunk) => !(chunk.id === item.id && chunk.type === item.type),
+      ),
+    );
   }
 
   return (
@@ -41,6 +51,8 @@ export default function DeckChunkSelectionPanel({
           descriptionHeader="Back"
           emptyMessage="There are currently no chunks to choose from."
           onRemove={handleRemove}
+          paginate
+          pageSize={DECK_SELECTED_ITEMS_PAGE_SIZE}
         />
       </div>
     </section>

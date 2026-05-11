@@ -1,6 +1,6 @@
 # Memora: Step 20 — Deck Composition Scale and Card Discovery
 
-**Status:** In progress — T1 done  
+**Status:** In progress — T1-T2 done  
 **Date:** 2026-05-09  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 20  
 **Priority:** Medium — quality-of-life fixes for users with larger card and chunk libraries
@@ -314,9 +314,15 @@ Verification completed — 2026-05-10:
 
 ### T2 — Selected grid pagination
 
-- Wire pagination through `DeckSelectedItemsGrid`.
-- Enable it for selected cards and selected chunks in create/edit deck forms.
-- Add tests for pagination behavior.
+- ✅ Wire pagination through `DeckSelectedItemsGrid`.
+- ✅ Enable it for selected cards and selected chunks in create/edit deck forms.
+- ✅ Add tests for pagination behavior and removing an item from page 2.
+
+Verification completed — 2026-05-11:
+
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/DeckSelectedItemsGrid.test.tsx` — passed, 2 tests.
+- `cd web && npx tsc --noEmit` — passed.
+- `cd web && npx eslint src/features/decks/components/DeckSelectedItemsGrid.tsx src/features/decks/components/DeckCardSelectionPanel.tsx src/features/decks/components/DeckChunkSelectionPanel.tsx src/features/decks/components/DeckSelectedItemsGrid.test.tsx src/features/decks/constants/index.ts` — passed.
 
 ### T3 — Card library picker
 

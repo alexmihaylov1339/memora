@@ -11,6 +11,7 @@ export const DECKS_QUERY_KEYS = {
   detail: (id: string) => [DECKS_KEY, id],
 };
 
+export const DECK_SELECTED_ITEMS_PAGE_SIZE = 5;
+
 export { createDeckFormFields } from './formFields';
 export { DECK_ENDPOINTS } from './endpoints';
-

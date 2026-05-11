@@ -10,6 +10,8 @@ interface DeckSelectedItemsGridProps {
   descriptionHeader: string;
   emptyMessage: string;
   onRemove: (item: SearchResultItem) => void;
+  paginate?: boolean;
+  pageSize?: number;
 }
 
 export default function DeckSelectedItemsGrid({
@@ -19,6 +21,8 @@ export default function DeckSelectedItemsGrid({
   descriptionHeader,
   emptyMessage,
   onRemove,
+  paginate = false,
+  pageSize,
 }: DeckSelectedItemsGridProps) {
   const columnDefs = useMemo<GridColumnDef<SearchResultItem>[]>(
     () => [
@@ -36,6 +40,8 @@ export default function DeckSelectedItemsGrid({
       emptyMessage={emptyMessage}
       showQuickFilter={false}
       onRemove={onRemove}
+      paginate={paginate}
+      pageSize={pageSize}
     />
   );
 }
