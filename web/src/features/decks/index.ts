@@ -1,6 +1,8 @@
 // Components
+export { CardDeckSelectionPanel } from './components';
 export { CardLibraryPicker } from './components';
 export { CreateDeckForm } from './components';
+export { DeckLibraryPicker } from './components';
 export { DeckCardSelectionPanel } from './components';
 export { DeckChunkSelectionPanel } from './components';
 export { DeckSelectedItemsGrid } from './components';
@@ -86,4 +88,9 @@ export type {
 } from './card-kinds';
 
 // Constants
-export { DECKS_QUERY_KEYS, DECK_ENDPOINTS } from './constants';
+export {
+  CARD_LIBRARY_PICKER_PAGE_SIZE,
+  DECKS_QUERY_KEYS,
+  DECK_ENDPOINTS,
+  DECK_SELECTED_ITEMS_PAGE_SIZE,
+} from './constants';

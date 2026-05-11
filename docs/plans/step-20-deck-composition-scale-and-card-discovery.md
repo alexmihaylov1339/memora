@@ -1,6 +1,6 @@
 # Memora: Step 20 — Deck Composition Scale and Card Discovery
 
-**Status:** In progress — T1-T3 done  
+**Status:** In progress — T1-T4 done  
 **Date:** 2026-05-09  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 20  
 **Priority:** Medium — quality-of-life fixes for users with larger card and chunk libraries
@@ -339,11 +339,18 @@ Verification completed — 2026-05-11:
 
 ### T4 — Deck library picker for card create/edit
 
-- Build `DeckLibraryPicker` with the same autocomplete + browse selection model.
-- Add multi-select deck picker to card create/edit.
-- Preselect the active deck when launched from a deck context.
-- Verify backend assignment and review-state initialization.
-- Add backend/frontend tests where behavior changes.
+- ✅ Build `DeckLibraryPicker` with the same autocomplete + browse selection model.
+- ✅ Add multi-select deck picker to card create/edit.
+- ✅ Preselect the active deck when launched from a deck context.
+- ✅ Verify backend assignment and review-state initialization.
+- ✅ Add backend/frontend tests where behavior changes.
+
+Verification completed — 2026-05-11:
+
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/DeckLibraryPicker.test.tsx src/features/decks/components/CardLibraryPicker.test.tsx` — passed, 8 tests.
+- `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards.service.spec.ts src/cards/cards.controller.spec.ts src/cards/dto/card-validation.spec.ts` — passed, 24 tests.
+- `cd web && npx tsc --noEmit` — passed.
+- `cd web && npx eslint 'src/app/[locale]/cards/new/page.tsx' 'src/app/[locale]/cards/new/components/NewCardForm.tsx' 'src/app/[locale]/cards/[id]/edit/page.tsx' 'src/app/[locale]/cards/[id]/edit/components/EditCardForm.tsx' src/features/decks/components/CardDeckSelectionPanel.tsx src/features/decks/components/DeckLibraryPicker.tsx src/features/decks/components/DeckLibraryPickerGrid.tsx src/features/decks/components/DeckLibraryPicker.test.tsx src/features/decks/components/deckLibraryPickerHelpers.ts src/features/decks/components/index.ts src/features/decks/index.ts src/features/decks/services/cardService.ts src/features/decks/hooks/useCardMutations.ts` — passed.
 
 ### T5 — Styling, translations, and polish
 

@@ -13,12 +13,14 @@ import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 interface CardPayload {
   deckId?: string;
+  deckIds?: string[];
   kind: SupportedCardKind;
   fields: Record<string, unknown>;
 }
 
 interface UpdateCardPayload {
   id: string;
+  deckIds?: string[];
   kind?: SupportedCardKind;
   fields?: Record<string, unknown>;
 }

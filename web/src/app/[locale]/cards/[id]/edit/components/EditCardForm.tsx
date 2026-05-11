@@ -1,0 +1,146 @@
+import { useMemo, useState } from 'react';
+
+import { FormBuilder } from '@shared/components';
+import { BUTTON_STYLES } from '@shared/constants';
+import {
+  CardDeckSelectionPanel,
+  type CardKindFormValues,
+  type CardRecord,
+  type Deck,
+  getCardKindOptions,
+  parseCardKindFields,
+  resolveSupportedCardKind,
+  serializeCardKindFields,
+  type SupportedCardKind,
+  useEditCardFormFields,
+} from '@features/decks';
+import type { SearchResultItem } from '@features/search';
+
+interface EditCardFormProps {
+  card: CardRecord;
+  decks: Deck[];
+  onUpdate: (payload: {
+    id: string;
+    kind: SupportedCardKind;
+    deckIds: string[];
+    fields: Record<string, unknown>;
+  }) => void;
+  onDelete: () => void;
+  updateError?: string;
+  deleteError?: string;
+  isDeleting: boolean;
+}
+
+export default function EditCardForm({
+  card,
+  decks,
+  onUpdate,
+  onDelete,
+  updateError,
+  deleteError,
+  isDeleting,
+}: EditCardFormProps) {
+  const cardKind = useMemo(
+    () => resolveSupportedCardKind(card.kind),
+    [card.kind],
+  );
+  const [selectedKind, setSelectedKind] = useState<SupportedCardKind>(cardKind);
+  const [selectedDecks, setSelectedDecks] = useState<SearchResultItem[]>(
+    () => mapCardDecksToSearchResults(card, decks),
+  );
+  const kindOptions = useMemo(() => getCardKindOptions(), []);
+  const fields = useEditCardFormFields(selectedKind);
+  const parsedKindFields = useMemo(
+    () =>
+      selectedKind === cardKind
+        ? parseCardKindFields(cardKind, card.fields)
+        : parseCardKindFields(selectedKind, {}),
+    [card.fields, cardKind, selectedKind],
+  );
+
+  function handleUpdate(values: CardKindFormValues) {
+    onUpdate({
+      id: card.id,
+      kind: selectedKind,
+      deckIds: selectedDecks.map((deck) => deck.id),
+      fields: serializeCardKindFields(selectedKind, {
+        ...values,
+        kind: selectedKind,
+      }),
+    });
+  }
+
+  return (
+    <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
+      <div>
+        <label
+          htmlFor="edit-card-kind"
+          className="mb-2 block text-xs font-semibold text-ink-strong"
+        >
+          Kind
+        </label>
+        <select
+          id="edit-card-kind"
+          value={selectedKind}
+          onChange={(event) =>
+            setSelectedKind(resolveSupportedCardKind(event.target.value))
+          }
+          className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent"
+        >
+          {kindOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <CardDeckSelectionPanel
+        selectedDecks={selectedDecks}
+        onSelectionChange={setSelectedDecks}
+      />
+
+      <FormBuilder<CardKindFormValues>
+        key={`${card.id}-${selectedKind}`}
+        fields={fields}
+        initialValues={{
+          kind: selectedKind,
+          ...parsedKindFields,
+        }}
+        onSubmit={handleUpdate}
+        submitLabel="Save Changes"
+        submitButtonClassName={BUTTON_STYLES.primarySolid}
+        errorMessage={updateError}
+        translateFields={false}
+        actionsContainerClassName="mt-3 flex items-center justify-between gap-3"
+        showDeleteButton
+        deleteLabel="Delete Card"
+        deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+      />
+
+      {deleteError && (
+        <p className="text-sm text-[var(--destructive)]">{deleteError}</p>
+      )}
+    </div>
+  );
+}
+
+function mapCardDecksToSearchResults(
+  card: CardRecord,
+  decks: Deck[],
+): SearchResultItem[] {
+  const cardDeckIds = new Set(
+    card.deckIds ?? (card.deckId ? [card.deckId] : []),
+  );
+
+  return decks
+    .filter((deck) => cardDeckIds.has(deck.id))
+    .map((deck) => ({
+      id: deck.id,
+      type: 'deck',
+      label: deck.name,
+      description: `${deck.count} card${deck.count === 1 ? '' : 's'}`,
+    }));
+}

@@ -1,97 +1,64 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useRouter } from '@/i18n/navigation';
 
-import { ProtectedRoute, FormBuilder } from '@shared/components';
-import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import {
-  type CardKindFormValues,
-  getCardKindOptions,
+  ErrorMessage,
+  PageLoader,
+  ProtectedRoute,
+} from '@shared/components';
+import { APP_ROUTES } from '@shared/constants';
+import {
+  type DeckDetail,
   resolveSupportedCardKind,
-  serializeCardKindFields,
-  type SupportedCardKind,
-  useCreateCardFormFields,
-  useCreateCardMutation,
+  useDeckDetailQuery,
 } from '@features/decks';
+import type { SearchResultItem } from '@features/search';
 import { CardsPageHeader } from '../components';
+import NewCardForm from './components/NewCardForm';
 
 export default function NewCardPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const deckIdParam = searchParams.get('deckId')?.trim() ?? '';
-  const initialKind = useMemo(() => resolveSupportedCardKind('basic'), []);
-  const [selectedKind, setSelectedKind] = useState<SupportedCardKind>(initialKind);
-  const kindOptions = useMemo(() => getCardKindOptions(), []);
-  const fields = useCreateCardFormFields(selectedKind);
-
-  const createCard = useCreateCardMutation({
-    onSuccess: () => {
-      router.replace(deckIdParam ? APP_ROUTES.deckEdit(deckIdParam) : APP_ROUTES.cards);
-    },
+  const deckQuery = useDeckDetailQuery(deckIdParam, {
+    enabled: Boolean(deckIdParam),
   });
 
-  const handleCreate = (values: CardKindFormValues) => {
-    createCard.fetch({
-      deckId: deckIdParam || undefined,
-      kind: selectedKind,
-      fields: serializeCardKindFields(selectedKind, {
-        ...values,
-        kind: selectedKind,
-      }),
-    });
-  };
-
-  const backHref = deckIdParam
-    ? APP_ROUTES.deckEdit(deckIdParam)
-    : APP_ROUTES.cards;
-  const backLabel = deckIdParam ? 'Back to Deck Workspace' : 'Back to Cards';
+  const initialSelectedDecks =
+    deckIdParam && deckQuery.result ? [mapDeckDetailToSearchResult(deckQuery.result)] : [];
+  const isLoadingInitialDeck = Boolean(deckIdParam) && deckQuery.isLoading;
+  const initialKind = useMemo(() => resolveSupportedCardKind('basic'), []);
 
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-2xl p-6">
         <CardsPageHeader
           title="Create Card"
-          backHref={backHref}
-          backLabel={backLabel}
+          backHref={deckIdParam ? APP_ROUTES.deckEdit(deckIdParam) : APP_ROUTES.cards}
+          backLabel={deckIdParam ? 'Back to Deck Workspace' : 'Back to Cards'}
         />
 
-        <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
-          <div>
-            <label htmlFor="create-card-kind" className="mb-2 block text-xs font-semibold text-ink-strong">
-              Kind
-            </label>
-            <select
-              id="create-card-kind"
-              value={selectedKind}
-              onChange={(event) =>
-                setSelectedKind(resolveSupportedCardKind(event.target.value))
-              }
-              className="h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent"
-            >
-              {kindOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <FormBuilder<CardKindFormValues>
-            key={selectedKind}
-            fields={fields}
-            initialValues={{ kind: selectedKind }}
-            onSubmit={handleCreate}
-            submitLabel="Create Card"
-            submitButtonClassName={BUTTON_STYLES.primarySolid}
-            actionsContainerClassName="mt-3 flex items-center justify-end gap-3"
-            errorMessage={createCard.error?.message}
-            translateFields={false}
-            resetOnSubmit={false}
+        {isLoadingInitialDeck && <PageLoader />}
+        {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}
+        {!isLoadingInitialDeck && (
+          <NewCardForm
+            key={deckIdParam || 'card-without-deck-context'}
+            deckIdParam={deckIdParam}
+            initialKind={initialKind}
+            initialSelectedDecks={initialSelectedDecks}
           />
-        </div>
+        )}
       </main>
     </ProtectedRoute>
   );
+}
+
+function mapDeckDetailToSearchResult(deck: DeckDetail): SearchResultItem {
+  return {
+    id: deck.id,
+    type: 'deck',
+    label: deck.name,
+    description: `${deck.count} card${deck.count === 1 ? '' : 's'}`,
+  };
 }

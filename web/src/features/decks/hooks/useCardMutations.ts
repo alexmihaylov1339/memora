@@ -12,12 +12,14 @@ import { CARD_QUERY_KEYS } from './useCardQueries';
 
 interface CreateCardParams {
   deckId?: string;
+  deckIds?: string[];
   kind: SupportedCardKind;
   fields: Record<string, unknown>;
 }
 
 interface UpdateCardParams {
   id: string;
+  deckIds?: string[];
   kind?: SupportedCardKind;
   fields?: Record<string, unknown>;
 }
