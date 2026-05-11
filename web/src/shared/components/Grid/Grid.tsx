@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { ConfirmationModal } from '../ConfirmationModal';
 import GridPagination from './GridPagination';
 import GridSearchInput from './GridSearchInput';
 import GridTable from './GridTable';
 import { matchesGridQuickFilter } from './helpers/gridQuickFilter';
+import useGridDeleteConfirmation from './hooks/useGridDeleteConfirmation';
 import useGridQuickFilter from './hooks/useGridQuickFilter';
 
 export interface GridColumnDef<TRow> {
@@ -21,8 +23,14 @@ interface GridProps<TRow extends { id: string }> {
   rowData: TRow[];
   columnDefs: GridColumnDef<TRow>[];
   emptyMessage?: string;
+  onDelete?: (row: TRow) => Promise<void> | void;
   onRowClick?: (row: TRow) => void;
   onRemove?: (row: TRow) => void;
+  deleteButtonLabel?: string;
+  deleteConfirmationCancelLabel?: string;
+  deleteConfirmationConfirmLabel?: string;
+  deleteConfirmationTitle?: string;
+  getDeleteConfirmationMessage?: (row: TRow) => string;
   quickFilterPlaceholder?: string;
   showQuickFilter?: boolean;
   paginate?: boolean;
@@ -37,8 +45,15 @@ export default function Grid<TRow extends { id: string }>({
   rowData,
   columnDefs,
   emptyMessage = 'No rows to display.',
+  onDelete,
   onRowClick,
   onRemove,
+  deleteButtonLabel = 'Delete',
+  deleteConfirmationCancelLabel = 'Cancel',
+  deleteConfirmationConfirmLabel = 'Delete',
+  deleteConfirmationTitle = 'Delete item?',
+  getDeleteConfirmationMessage = () =>
+    'Delete this item? This action cannot be undone.',
   quickFilterPlaceholder = 'Search grid rows',
   showQuickFilter = true,
   paginate = false,
@@ -47,6 +62,13 @@ export default function Grid<TRow extends { id: string }>({
   const { quickFilterText, setQuickFilterText, debouncedQuickFilterText } =
     useGridQuickFilter();
   const [currentPage, setCurrentPage] = useState(1);
+  const {
+    cancelDelete,
+    confirmDelete,
+    isDeleteConfirming,
+    requestDelete,
+    rowPendingDelete,
+  } = useGridDeleteConfirmation({ onDelete });
 
   const visibleRows = useMemo(() => {
     if (!debouncedQuickFilterText) {
@@ -104,6 +126,8 @@ export default function Grid<TRow extends { id: string }>({
               id={id}
               rows={paginatedRows}
               columnDefs={columnDefs}
+              deleteButtonLabel={deleteButtonLabel}
+              onDelete={onDelete ? requestDelete : undefined}
               onRowClick={onRowClick}
               onRemove={onRemove}
             />
@@ -121,6 +145,20 @@ export default function Grid<TRow extends { id: string }>({
           />
         )}
       </div>
+      <ConfirmationModal
+        isOpen={Boolean(rowPendingDelete)}
+        title={deleteConfirmationTitle}
+        message={
+          rowPendingDelete
+            ? getDeleteConfirmationMessage(rowPendingDelete)
+            : ''
+        }
+        cancelLabel={deleteConfirmationCancelLabel}
+        confirmLabel={deleteConfirmationConfirmLabel}
+        isConfirming={isDeleteConfirming}
+        onCancel={cancelDelete}
+        onConfirm={() => void confirmDelete()}
+      />
     </div>
   );
 }

@@ -1,6 +1,10 @@
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 export { BackLinkButton } from './BackLinkButton';
+export { ConfirmationModal } from './ConfirmationModal';
+export type { ConfirmationModalProps } from './ConfirmationModal';
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';
 
 export { BrandLogo } from './BrandLogo';
 
