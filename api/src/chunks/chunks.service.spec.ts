@@ -25,6 +25,9 @@ function createPrismaMock() {
     deckShare: {
       findMany: jest.fn(),
     },
+    deckCard: {
+      createMany: jest.fn(),
+    },
     card: {
       findMany: jest.fn(),
       updateMany: jest.fn(),
@@ -188,8 +191,12 @@ describe('ChunksService', () => {
         'user-1',
       );
 
+      expect(prisma.deckCard.createMany).toHaveBeenCalledWith({
+        data: [{ deckId: 'deck-1', cardId: 'card-2' }],
+        skipDuplicates: true,
+      });
       expect(prisma.card.updateMany).toHaveBeenCalledWith({
-        where: { id: { in: ['card-2'] } },
+        where: { id: { in: ['card-2'] }, deckId: null },
         data: { deckId: 'deck-1' },
       });
       expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);
@@ -354,8 +361,12 @@ describe('ChunksService', () => {
         },
       });
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(prisma.deckCard.createMany).toHaveBeenCalledWith({
+        data: [{ deckId: 'deck-1', cardId: 'card-3' }],
+        skipDuplicates: true,
+      });
       expect(prisma.card.updateMany).toHaveBeenCalledWith({
-        where: { id: { in: ['card-3'] } },
+        where: { id: { in: ['card-3'] }, deckId: null },
         data: { deckId: 'deck-1' },
       });
       expect(prisma.chunkReviewState.upsert).toHaveBeenCalledTimes(1);

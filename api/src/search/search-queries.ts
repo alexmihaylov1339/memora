@@ -1,5 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
+import { getDeckCardCounts } from '../decks/decks.helpers';
 import { getCardSearchPreview } from './card-search-preview';
 import type { SearchResultItem } from './search.types';
 
@@ -32,18 +33,17 @@ export async function searchDecks(
     },
     orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
     take: limit,
-    include: {
-      _count: {
-        select: { cards: true },
-      },
-    },
   });
+  const cardCounts = await getDeckCardCounts(
+    prisma,
+    decks.map((deck) => deck.id),
+  );
 
   return decks.map((deck) => ({
     id: deck.id,
     type: 'deck',
     label: deck.name,
-    description: `${deck._count.cards} card${deck._count.cards === 1 ? '' : 's'}`,
+    description: `${cardCounts.get(deck.id) ?? 0} card${cardCounts.get(deck.id) === 1 ? '' : 's'}`,
   }));
 }
 
@@ -97,11 +97,18 @@ export async function searchCards(
     where: {
       OR: [
         { ownerId: userId },
-        ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
+        ...(deckIds.length > 0
+          ? [{ deckCards: { some: { deckId: { in: deckIds } } } }]
+          : []),
       ],
     },
     orderBy: [{ createdAt: 'desc' }],
-    include: { deck: { select: { name: true } } },
+    include: {
+      deckCards: {
+        orderBy: { createdAt: 'asc' },
+        select: { deck: { select: { name: true } } },
+      },
+    },
   });
 
   const normalizedQuery = q.trim().toLowerCase();
@@ -109,8 +116,8 @@ export async function searchCards(
   return cards
     .map((card) => {
       const preview = getCardSearchPreview(card);
-      const deckName = card.deck?.name ?? '';
-      const searchable = [deckName, preview.searchableText]
+      const deckNames = card.deckCards.map((membership) => membership.deck.name);
+      const searchable = [...deckNames, preview.searchableText]
         .join(' ')
         .toLowerCase();
 
@@ -124,7 +131,9 @@ export async function searchCards(
         type: 'card',
         label: preview.label,
         description: [
-          card.deck?.name ?? 'Unassigned',
+          card.deckCards.length > 0
+            ? card.deckCards.map((membership) => membership.deck.name).join(', ')
+            : 'Unassigned',
           preview.description ?? card.kind,
         ]
           .filter(Boolean)

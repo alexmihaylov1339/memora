@@ -2,6 +2,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
 import { getDueCardCountsByDeck } from './deck-review-counts';
 import {
+  getDeckCardCounts,
   mapDeckDetail,
   mapDeckShareSummary,
   type DeckShareWithUser,
@@ -20,14 +21,14 @@ export async function listDecks(
 
   const decks = await prisma.deck.findMany({
     where: { id: { in: deckIds } },
-    include: { _count: { select: { cards: true } } },
   });
+  const cardCounts = await getDeckCardCounts(prisma, deckIds);
   const dueCounts = await getDueCardCountsByDeck(prisma, deckIds);
 
   return decks.map((deck) => ({
     id: deck.id,
     name: deck.name,
-    count: deck._count.cards,
+    count: cardCounts.get(deck.id) ?? 0,
     dueCount: dueCounts.get(deck.id) ?? 0,
   }));
 }
@@ -45,7 +46,6 @@ export async function getDeckDetail(
   const deck = (await prisma.deck.findFirst({
     where: { id },
     include: {
-      _count: { select: { cards: true } },
       shares: {
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         include: {
@@ -63,7 +63,13 @@ export async function getDeckDetail(
     },
   })) as DeckWithShares | null;
 
-  return deck ? mapDeckDetail(deck) : null;
+  if (!deck) {
+    return null;
+  }
+
+  const count = await prisma.deckCard.count({ where: { deckId: id } });
+
+  return mapDeckDetail(deck, count);
 }
 
 export async function listDeckShares(

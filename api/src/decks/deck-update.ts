@@ -60,7 +60,6 @@ export async function updateDeck(
         reviewIntervalHours: data.reviewIntervalHours,
       },
       include: {
-        _count: { select: { cards: true } },
         shares: {
           orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
           include: {
@@ -77,6 +76,7 @@ export async function updateDeck(
         },
       },
     });
+    const cardCount = await tx.deckCard.count({ where: { deckId: id } });
 
     return {
       status: 'updated',
@@ -87,7 +87,7 @@ export async function updateDeck(
         reviewIntervalHours: resolveDeckReviewIntervalHours(
           deck.reviewIntervalHours,
         ),
-        count: deck._count.cards,
+        count: cardCount,
         createdAt: deck.createdAt,
         updatedAt: deck.updatedAt,
         sharedUsers: deck.shares.map((share) => ({

@@ -70,6 +70,15 @@ CREATE TABLE "ChunkCard" (
 );
 
 -- CreateTable
+CREATE TABLE "DeckCard" (
+    "deckId" TEXT NOT NULL,
+    "cardId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "DeckCard_pkey" PRIMARY KEY ("deckId","cardId")
+);
+
+-- CreateTable
 CREATE TABLE "ChunkReviewState" (
     "id" TEXT NOT NULL,
     "chunkId" TEXT NOT NULL,
@@ -158,6 +167,9 @@ CREATE UNIQUE INDEX "ChunkCard_chunkId_sequenceIndex_key" ON "ChunkCard"("chunkI
 CREATE INDEX "ChunkCard_cardId_idx" ON "ChunkCard"("cardId");
 
 -- CreateIndex
+CREATE INDEX "DeckCard_cardId_idx" ON "DeckCard"("cardId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ChunkReviewState_chunkId_key" ON "ChunkReviewState"("chunkId");
 
 -- CreateIndex
@@ -195,6 +207,12 @@ ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_chunkId_fkey" FOREIGN KEY ("ch
 
 -- AddForeignKey
 ALTER TABLE "ChunkCard" ADD CONSTRAINT "ChunkCard_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DeckCard" ADD CONSTRAINT "DeckCard_deckId_fkey" FOREIGN KEY ("deckId") REFERENCES "Deck"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DeckCard" ADD CONSTRAINT "DeckCard_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ChunkReviewState" ADD CONSTRAINT "ChunkReviewState_chunkId_fkey" FOREIGN KEY ("chunkId") REFERENCES "Chunk"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -257,3 +275,9 @@ SET "ownerId" = u."id"
 FROM "User" AS u
 WHERE u."email" = 'system.orphaned-owner@memora.local'
   AND c."ownerId" IS NULL;
+
+INSERT INTO "DeckCard" ("deckId", "cardId")
+SELECT "deckId", "id"
+FROM "Card"
+WHERE "deckId" IS NOT NULL
+ON CONFLICT ("deckId", "cardId") DO NOTHING;

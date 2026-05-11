@@ -82,7 +82,9 @@ export default function EditDeckPage() {
     cardsQuery.result !== undefined &&
     chunksQuery.result !== undefined;
   const deck = deckQuery.result;
-  const cards = (cardsQuery.result ?? []).filter((card) => card.deckId === id);
+  const cards = (cardsQuery.result ?? []).filter((card) =>
+    card.deckIds?.includes(id) || card.deckId === id,
+  );
   const chunks = (chunksQuery.result ?? []).filter((chunk) => chunk.deckId === id);
 
   return (

@@ -27,7 +27,7 @@ export interface ChunkSummary {
 
 export type ChunkPersistenceClient = Pick<
   PrismaService,
-  'card' | 'chunk' | 'chunkCard' | 'chunkReviewState' | 'deck'
+  'card' | 'chunk' | 'chunkCard' | 'chunkReviewState' | 'deck' | 'deckCard'
 >;
 
 export function mapChunkSummary(chunk: PersistedChunkRecord): ChunkSummary {
@@ -50,7 +50,10 @@ export async function hasExistingCards(
   const cards = await client.card.findMany({
     where: {
       id: { in: cardIds },
-      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+      OR: [
+        { ownerId: userId },
+        { deckCards: { some: { deck: { ownerId: userId } } } },
+      ],
     },
     select: { id: true },
   });
@@ -67,8 +70,13 @@ export async function assignCardsToDeck(
     return;
   }
 
+  await client.deckCard.createMany({
+    data: cardIds.map((cardId) => ({ deckId, cardId })),
+    skipDuplicates: true,
+  });
+
   await client.card.updateMany({
-    where: { id: { in: cardIds } },
+    where: { id: { in: cardIds }, deckId: null },
     data: { deckId },
   });
 }

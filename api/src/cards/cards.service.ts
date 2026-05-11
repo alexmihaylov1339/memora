@@ -2,17 +2,19 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
-import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { normalizeCardFields } from './card-kind-registry';
+import {
+  buildAccessibleCardWhere,
+  buildOwnedCardAccessWhere,
+  createCardDeckMemberships,
+  hasOwnedDeckIds,
+  mapCardRecord,
+  replaceOwnedCardDeckMemberships,
+  type CardRecord,
+  type PersistedCardRecord,
+} from './cards.helpers';
 
-export interface CardRecord {
-  id: string;
-  ownerId: string | null;
-  deckId: string | null;
-  kind: string;
-  fields: Prisma.JsonValue;
-  createdAt: Date;
-}
+export type { CardRecord } from './cards.helpers';
 
 @Injectable()
 export class CardsService {
@@ -21,74 +23,78 @@ export class CardsService {
   async findAll(userId: string): Promise<CardRecord[]> {
     const deckIds = await getAccessibleDeckIds(this.prisma, userId);
 
-    return (await this.prisma.card.findMany({
-      where: {
-        OR: [
-          { ownerId: userId },
-          ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
-        ],
-      },
+    const cards = (await this.prisma.card.findMany({
+      where: buildAccessibleCardWhere(userId, deckIds),
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-    })) as CardRecord[];
+      include: { deckCards: { select: { deckId: true } } },
+    })) as PersistedCardRecord[];
+
+    return cards.map(mapCardRecord);
   }
 
   async create(
-    data: { deckId?: string; kind: string; fields: Prisma.JsonObject },
+    data: {
+      deckIds?: string[];
+      kind: string;
+      fields: Prisma.JsonObject;
+    },
     userId: string,
   ): Promise<CardRecord | null> {
-    if (data.deckId) {
-      const deck = await this.prisma.deck.findFirst({
-        where: { id: data.deckId, ownerId: userId },
-      });
-      if (!deck) {
-        return null;
-      }
+    const deckIds = data.deckIds ?? [];
+
+    if (!(await hasOwnedDeckIds(this.prisma, deckIds, userId))) {
+      return null;
     }
 
     return this.prisma.$transaction(async (tx) => {
       const card = (await tx.card.create({
         data: {
           ownerId: userId,
-          deckId: data.deckId ?? null,
+          deckId: deckIds[0] ?? null,
           kind: data.kind,
           fields: normalizeCardFields(data.kind, data.fields),
         },
-      })) as CardRecord;
+        include: { deckCards: { select: { deckId: true } } },
+      })) as PersistedCardRecord;
 
-      if (data.deckId) {
-        await initStandaloneCardReviewState(tx, [card.id]);
-      }
+      await createCardDeckMemberships(tx, card.id, deckIds);
 
-      return card;
+      return { ...mapCardRecord(card), deckIds };
     });
   }
 
   async findOne(id: string, userId: string): Promise<CardRecord | null> {
     const deckIds = await getAccessibleDeckIds(this.prisma, userId);
 
-    return (await this.prisma.card.findFirst({
-      where: {
-        id,
-        OR: [
-          { ownerId: userId },
-          ...(deckIds.length > 0 ? [{ deckId: { in: deckIds } }] : []),
-        ],
-      },
-    })) as CardRecord | null;
+    const card = (await this.prisma.card.findFirst({
+      where: { id, ...buildAccessibleCardWhere(userId, deckIds) },
+      include: { deckCards: { select: { deckId: true } } },
+    })) as PersistedCardRecord | null;
+
+    return card ? mapCardRecord(card) : null;
   }
 
   async update(
     id: string,
-    data: { kind?: string; fields?: Prisma.JsonObject },
+    data: {
+      deckIds?: string[];
+      kind?: string;
+      fields?: Prisma.JsonObject;
+    },
     userId: string,
   ): Promise<CardRecord | null> {
     const existing = await this.prisma.card.findFirst({
-      where: {
-        id,
-        OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
-      },
+      where: buildOwnedCardAccessWhere(id, userId),
+      include: { deckCards: { select: { deckId: true } } },
     });
     if (!existing) {
+      return null;
+    }
+
+    if (
+      data.deckIds &&
+      !(await hasOwnedDeckIds(this.prisma, data.deckIds, userId))
+    ) {
       return null;
     }
 
@@ -98,21 +104,29 @@ export class CardsService {
         ? normalizeCardFields(nextKind, data.fields)
         : normalizeCardFields(nextKind, existing.fields);
 
-    return (await this.prisma.card.update({
-      where: { id },
-      data: {
-        kind: data.kind,
-        fields: nextFields,
-      },
-    })) as CardRecord;
+    return this.prisma.$transaction(async (tx) => {
+      if (data.deckIds !== undefined) {
+        await replaceOwnedCardDeckMemberships(tx, id, data.deckIds, userId);
+      }
+
+      const card = (await tx.card.update({
+        where: { id },
+        data: {
+          deckId:
+            data.deckIds === undefined ? undefined : data.deckIds[0] ?? null,
+          kind: data.kind,
+          fields: nextFields,
+        },
+        include: { deckCards: { select: { deckId: true } } },
+      })) as PersistedCardRecord;
+
+      return mapCardRecord(card);
+    });
   }
 
   async remove(id: string, userId: string) {
     const existing = await this.prisma.card.findFirst({
-      where: {
-        id,
-        OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
-      },
+      where: buildOwnedCardAccessWhere(id, userId),
     });
     if (!existing) {
       return false;

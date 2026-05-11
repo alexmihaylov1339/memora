@@ -16,12 +16,23 @@ export async function listMovableCardsForDeck(
     return null;
   }
 
-  return (await prisma.card.findMany({
+  const cards = await prisma.card.findMany({
     where: {
       ownerId: userId,
-      OR: [{ deckId: null }, { deckId: { not: deckId } }],
+      deckCards: { none: { deckId } },
     },
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    include: { deckCards: { select: { deckId: true } } },
+  });
+
+  return cards.map((card) => ({
+    id: card.id,
+    ownerId: card.ownerId,
+    deckId: card.deckCards[0]?.deckId ?? card.deckId,
+    deckIds: card.deckCards.map((membership) => membership.deckId),
+    kind: card.kind,
+    fields: card.fields,
+    createdAt: card.createdAt,
   })) as DeckMembershipCardRecord[];
 }
 

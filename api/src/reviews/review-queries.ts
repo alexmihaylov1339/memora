@@ -69,37 +69,52 @@ export async function getStandaloneCardQueueItems(
     return [];
   }
 
-  return (await prisma.card.findMany({
+  const memberships = await prisma.deckCard.findMany({
     where: {
       deckId: { in: scopedDeckIds },
-      chunkCards: {
-        none: {
-          chunk: {
-            deckId: { in: scopedDeckIds },
+      card: {
+        chunkCards: {
+          none: {
+            chunk: {
+              deckId: { in: scopedDeckIds },
+            },
+          },
+        },
+        state: {
+          is: {
+            due: { lte: now },
           },
         },
       },
-      state: {
-        is: {
-          due: { lte: now },
-        },
-      },
     },
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: [{ createdAt: 'asc' }, { cardId: 'asc' }],
     select: {
-      id: true,
       deckId: true,
-      kind: true,
-      fields: true,
-      createdAt: true,
-      state: {
+      card: {
         select: {
-          due: true,
-          consecutiveSuccessCount: true,
-          lastGrade: true,
+          id: true,
+          kind: true,
+          fields: true,
+          createdAt: true,
+          state: {
+            select: {
+              due: true,
+              consecutiveSuccessCount: true,
+              lastGrade: true,
+            },
+          },
         },
       },
     },
+  });
+
+  return memberships.map((membership) => ({
+    id: membership.card.id,
+    deckId: membership.deckId,
+    kind: membership.card.kind,
+    fields: membership.card.fields,
+    createdAt: membership.card.createdAt,
+    state: membership.card.state,
   })) as StandaloneCardQueueRecord[];
 }
 

@@ -1,6 +1,6 @@
 # Memora: Step 20 — Deck Composition Scale and Card Discovery
 
-**Status:** Proposed  
+**Status:** In progress — T1 done  
 **Date:** 2026-05-09  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 20  
 **Priority:** Medium — quality-of-life fixes for users with larger card and chunk libraries
@@ -299,10 +299,18 @@ Rules:
 
 ### T1 — Backend many-deck membership foundation
 
-- Add `DeckCard` join table/model and backfill migration from `Card.deckId`.
-- Update deck card counts, deck detail, search, review queue, card list, and membership mutations to use the join table.
-- Keep compatibility with existing `deckId` response fields only where needed, but prefer `deckIds` for new UI work.
-- Add focused backend tests for many-deck membership and review queue behavior.
+- ✅ Add `DeckCard` join table/model and backfill migration from `Card.deckId`.
+- ✅ Update deck card counts, deck detail, search, review queue, card list, CSV import, chunk card assignment, and membership mutations to use the join table.
+- ✅ Keep compatibility with existing `deckId` response fields where needed, and add `deckIds` for new UI work.
+- ✅ Add focused backend tests for many-deck membership, CSV import membership creation, validation, and review queue behavior.
+
+Verification completed — 2026-05-10:
+
+- `cd api && npx prisma generate` — passed.
+- `cd api && npx prisma validate` — passed.
+- `cd api && npx tsc --noEmit` — passed.
+- `cd web && npx tsc --noEmit` — passed.
+- `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards.service.spec.ts src/cards/cards-import.service.spec.ts src/cards/cards.controller.spec.ts src/cards/dto/card-validation.spec.ts src/decks/decks.service.spec.ts src/reviews/review-queries.spec.ts src/chunks/chunks.service.spec.ts` — passed, 47 tests.
 
 ### T2 — Selected grid pagination
 

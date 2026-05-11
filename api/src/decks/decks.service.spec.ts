@@ -17,6 +17,13 @@ function createPrismaMock() {
       create: jest.fn(),
       deleteMany: jest.fn(),
     },
+    deckCard: {
+      createMany: jest.fn(),
+      deleteMany: jest.fn(),
+      findMany: jest.fn(),
+      groupBy: jest.fn(),
+      count: jest.fn(),
+    },
     user: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -74,14 +81,16 @@ describe('DecksService', () => {
         {
           id: 'deck-owned',
           name: 'Owned',
-          _count: { cards: 4 },
         },
         {
           id: 'deck-shared',
           name: 'Shared',
-          _count: { cards: 2 },
         },
       ]);
+    prisma.deckCard.groupBy.mockResolvedValueOnce([
+      { deckId: 'deck-owned', _count: { cardId: 4 } },
+      { deckId: 'deck-shared', _count: { cardId: 2 } },
+    ]);
     prisma.deckShare.findMany.mockResolvedValueOnce([
       { deckId: 'deck-shared' },
     ]);
@@ -125,7 +134,7 @@ describe('DecksService', () => {
         chunkCards: [{ cardId: 'card-shared', sequenceIndex: 0 }],
       },
     ]);
-    prisma.card.findMany.mockResolvedValueOnce([
+    prisma.deckCard.findMany.mockResolvedValueOnce([
       { deckId: 'deck-owned' },
       { deckId: 'deck-shared' },
     ]);
@@ -163,6 +172,10 @@ describe('DecksService', () => {
 
     expect(prisma.chunk.create).not.toHaveBeenCalled();
     expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
+    expect(prisma.deckCard.createMany).toHaveBeenCalledWith({
+      data: [{ deckId: 'deck-1', cardId: 'card-1' }],
+      skipDuplicates: true,
+    });
     expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
       where: { cardId: 'card-1' },
       update: {
@@ -208,7 +221,6 @@ describe('DecksService', () => {
       reviewIntervalHours: [4, 24],
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
-      _count: { cards: 3 },
       shares: [
         {
           id: 'share-1',
@@ -226,6 +238,7 @@ describe('DecksService', () => {
         },
       ],
     });
+    prisma.deckCard.count.mockResolvedValueOnce(3);
 
     await expect(service.findOne('deck-shared', 'user-1')).resolves.toEqual({
       id: 'deck-shared',
@@ -262,9 +275,9 @@ describe('DecksService', () => {
       reviewIntervalHours: [1, 24, 168],
       createdAt,
       updatedAt,
-      _count: { cards: 0 },
       shares: [],
     });
+    prisma.deckCard.count.mockResolvedValueOnce(0);
 
     await expect(
       service.update('deck-1', { reviewIntervalHours: [1, 24, 168] }, 'user-1'),

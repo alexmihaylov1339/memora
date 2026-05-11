@@ -49,11 +49,8 @@ export type DeckShareWithUser = Prisma.DeckShareGetPayload<{
   };
 }>;
 
-export type DeckWithShares = Prisma.DeckGetPayload<{
+type DeckWithShareUsers = Prisma.DeckGetPayload<{
   include: {
-    _count: {
-      select: { cards: true };
-    };
     shares: {
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }];
       include: {
@@ -71,16 +68,40 @@ export type DeckWithShares = Prisma.DeckGetPayload<{
   };
 }>;
 
+export type DeckWithShares = DeckWithShareUsers;
+
 type DeckPersistenceClient = Pick<
   PrismaService,
   | 'card'
   | 'chunk'
   | 'chunkReviewState'
   | 'deck'
+  | 'deckCard'
   | 'deckShare'
   | 'reviewState'
   | 'user'
 >;
+
+type DeckCardCountClient = Pick<PrismaService, 'deckCard'>;
+
+export async function getDeckCardCounts(
+  prisma: DeckCardCountClient,
+  deckIds: string[],
+): Promise<Map<string, number>> {
+  if (deckIds.length === 0) {
+    return new Map();
+  }
+
+  const counts = await prisma.deckCard.groupBy({
+    by: ['deckId'],
+    where: { deckId: { in: deckIds } },
+    _count: { cardId: true },
+  });
+
+  return new Map(
+    counts.map((count) => [count.deckId, count._count.cardId] as const),
+  );
+}
 
 export async function findOwnedDeck(
   prisma: PrismaService,
@@ -108,7 +129,7 @@ export function mapDeckShareSummary(
   };
 }
 
-export function mapDeckDetail(deck: DeckWithShares): DeckDetail {
+export function mapDeckDetail(deck: DeckWithShares, count: number): DeckDetail {
   return {
     id: deck.id,
     name: deck.name,
@@ -116,7 +137,7 @@ export function mapDeckDetail(deck: DeckWithShares): DeckDetail {
     reviewIntervalHours: resolveDeckReviewIntervalHours(
       deck.reviewIntervalHours,
     ),
-    count: deck._count.cards,
+    count,
     createdAt: deck.createdAt,
     updatedAt: deck.updatedAt,
     sharedUsers: deck.shares.map((share) => mapDeckShareSummary(share)),
@@ -131,7 +152,10 @@ export async function hasExistingCards(
   const cards = await prisma.card.findMany({
     where: {
       id: { in: cardIds },
-      OR: [{ ownerId: userId }, { deck: { ownerId: userId } }],
+      OR: [
+        { ownerId: userId },
+        { deckCards: { some: { deck: { ownerId: userId } } } },
+      ],
     },
     select: { id: true },
   });
@@ -164,8 +188,13 @@ export async function moveCardsToDeck(
     return;
   }
 
+  await client.deckCard.createMany({
+    data: cardIds.map((cardId) => ({ deckId, cardId })),
+    skipDuplicates: true,
+  });
+
   await client.card.updateMany({
-    where: { id: { in: cardIds } },
+    where: { id: { in: cardIds }, deckId: null },
     data: { deckId },
   });
 
@@ -177,6 +206,10 @@ export async function replaceDeckCards(
   deckId: string,
   cardIds: string[],
 ): Promise<void> {
+  await client.deckCard.deleteMany({
+    where: { deckId, cardId: { notIn: cardIds } },
+  });
+
   await client.card.updateMany({
     where: { deckId, id: { notIn: cardIds } },
     data: { deckId: null },

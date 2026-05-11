@@ -44,19 +44,21 @@ export async function getDueCardCountsByDeck(
         },
       },
     }),
-    prisma.card.findMany({
+    prisma.deckCard.findMany({
       where: {
         deckId: { in: deckIds },
-        chunkCards: {
-          none: {
-            chunk: {
-              deckId: { in: deckIds },
+        card: {
+          chunkCards: {
+            none: {
+              chunk: {
+                deckId: { in: deckIds },
+              },
             },
           },
-        },
-        state: {
-          is: {
-            due: { lte: now },
+          state: {
+            is: {
+              due: { lte: now },
+            },
           },
         },
       },
@@ -71,20 +73,13 @@ export async function getDueCardCountsByDeck(
       return deckCounts;
     }
 
-    deckCounts.set(
-      chunk.deckId,
-      (deckCounts.get(chunk.deckId) ?? 0) + 1,
-    );
+    deckCounts.set(chunk.deckId, (deckCounts.get(chunk.deckId) ?? 0) + 1);
 
     return deckCounts;
   }, new Map<string, number>());
 
-  for (const card of unchunkedCards) {
-    if (!card.deckId) {
-      continue;
-    }
-
-    counts.set(card.deckId, (counts.get(card.deckId) ?? 0) + 1);
+  for (const membership of unchunkedCards) {
+    counts.set(membership.deckId, (counts.get(membership.deckId) ?? 0) + 1);
   }
 
   return counts;

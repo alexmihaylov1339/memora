@@ -29,23 +29,26 @@ export class CardsImportService {
 
     const now = new Date();
 
-    const created = await this.prisma.card.createManyAndReturn({
-      data: rows.map((row) => ({
-        ownerId: userId,
-        deckId: deckId ?? null,
-        kind: BASIC_CARD_KIND,
-        fields: { front: row.front, back: row.back },
-      })),
-      select: { id: true },
-    });
+    await this.prisma.$transaction(async (tx) => {
+      const created = await tx.card.createManyAndReturn({
+        data: rows.map((row) => ({
+          ownerId: userId,
+          deckId: deckId ?? null,
+          kind: BASIC_CARD_KIND,
+          fields: { front: row.front, back: row.back },
+        })),
+        select: { id: true },
+      });
 
-    if (deckId) {
-      await initStandaloneCardReviewState(
-        this.prisma,
-        created.map((c) => c.id),
-        now,
-      );
-    }
+      if (deckId) {
+        const cardIds = created.map((card) => card.id);
+        await tx.deckCard.createMany({
+          data: cardIds.map((cardId) => ({ deckId, cardId })),
+          skipDuplicates: true,
+        });
+        await initStandaloneCardReviewState(tx, cardIds, now);
+      }
+    });
 
     return { created: rows.length };
   }

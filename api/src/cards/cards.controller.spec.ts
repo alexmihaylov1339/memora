@@ -37,6 +37,7 @@ describe('CardsController', () => {
       id: 'card-1',
       ownerId: 'user-1',
       deckId: 'deck-1',
+      deckIds: ['deck-1'],
       kind: 'basic',
       fields: { front: 'spielen', back: 'to play' },
       createdAt: new Date('2026-04-26T10:00:00.000Z'),
@@ -54,6 +55,7 @@ describe('CardsController', () => {
     ).resolves.toEqual({
       id: 'card-1',
       deckId: 'deck-1',
+      deckIds: ['deck-1'],
       kind: 'basic',
       fields: { front: 'spielen', back: 'to play' },
       createdAt: '2026-04-26T10:00:00.000Z',
@@ -61,7 +63,7 @@ describe('CardsController', () => {
 
     expect(cardsService.create).toHaveBeenCalledWith(
       {
-        deckId: 'deck-1',
+        deckIds: ['deck-1'],
         kind: 'basic',
         fields: {
           front: '  spielen ',
@@ -77,6 +79,7 @@ describe('CardsController', () => {
       id: 'card-2',
       ownerId: 'user-1',
       deckId: null,
+      deckIds: [],
       kind: 'cloze_text',
       fields: {
         text: 'Ich {{c1::spiele}} gern Tennis.',
@@ -96,6 +99,7 @@ describe('CardsController', () => {
     ).resolves.toEqual({
       id: 'card-2',
       deckId: null,
+      deckIds: [],
       kind: 'cloze_text',
       fields: {
         text: 'Ich {{c1::spiele}} gern Tennis.',
@@ -123,6 +127,7 @@ describe('CardsController', () => {
       id: 'card-2',
       ownerId: 'user-1',
       deckId: null,
+      deckIds: [],
       kind: 'cloze_text',
       fields: {
         text: 'Wir {{c1::lernen}} Deutsch.',
@@ -146,6 +151,7 @@ describe('CardsController', () => {
     ).resolves.toEqual({
       id: 'card-2',
       deckId: null,
+      deckIds: [],
       kind: 'cloze_text',
       fields: {
         text: 'Wir {{c1::lernen}} Deutsch.',

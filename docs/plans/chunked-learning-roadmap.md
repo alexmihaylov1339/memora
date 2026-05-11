@@ -557,7 +557,7 @@ CSV import and normal card creation can quickly grow a user's card library. The 
 **Deliverables:**
 - Selected cards and selected chunks grids inside deck create/edit forms paginate instead of growing indefinitely.
 - Deck card selection keeps autocomplete for fast lookup and adds a browsable card library picker for scanning all accessible cards.
-- Card create/edit supports optional deck assignment so users can add a newly created card directly to a deck.
+- Card create/edit supports multi-deck card assignment so users can reuse one card across as many decks as they need.
 - Assignment behavior respects existing ownership rules and standalone review-state initialization.
 - Styling and translations keep the form compact and responsive.
 

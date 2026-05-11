@@ -68,6 +68,26 @@ describe('card-validation', () => {
         }),
       ).not.toThrow();
     });
+
+    it('accepts unique deck IDs on create', () => {
+      expect(() =>
+        validateCreateCardInput({
+          kind: 'basic',
+          deckIds: ['deck-1', ' deck-2 '],
+          fields: { front: 'Hej', back: 'Hi' },
+        }),
+      ).not.toThrow();
+    });
+
+    it('rejects duplicate deck IDs on create', () => {
+      expect(() =>
+        validateCreateCardInput({
+          kind: 'basic',
+          deckIds: ['deck-1', ' deck-1 '],
+          fields: { front: 'Hej', back: 'Hi' },
+        }),
+      ).toThrow(BadRequestException);
+    });
   });
 
   describe('validateUpdateCardInput', () => {
@@ -110,6 +130,22 @@ describe('card-validation', () => {
           },
         }),
       ).not.toThrow();
+    });
+
+    it('accepts deck-only updates', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          deckIds: ['deck-1', 'deck-2'],
+        }),
+      ).not.toThrow();
+    });
+
+    it('rejects empty deck IDs on update', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          deckIds: ['deck-1', ' '],
+        }),
+      ).toThrow(BadRequestException);
     });
   });
 });

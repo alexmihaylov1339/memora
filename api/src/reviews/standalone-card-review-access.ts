@@ -17,38 +17,58 @@ export async function findReviewableStandaloneCard(
     return null;
   }
 
-  return (await prisma.card.findFirst({
+  const membership = await prisma.deckCard.findFirst({
     where: {
-      id: cardId,
       deckId: { in: scopedDeckIds },
-      chunkCards: {
-        none: {
-          chunk: {
-            deckId: { in: scopedDeckIds },
+      cardId,
+      card: {
+        chunkCards: {
+          none: {
+            chunk: {
+              deckId: { in: scopedDeckIds },
+            },
           },
         },
       },
     },
     select: {
-      id: true,
       deckId: true,
-      kind: true,
-      fields: true,
-      createdAt: true,
       deck: {
         select: { reviewIntervalHours: true },
       },
-      state: {
+      card: {
         select: {
-          due: true,
-          ease: true,
-          interval: true,
-          reps: true,
-          lapses: true,
-          consecutiveSuccessCount: true,
-          lastGrade: true,
+          id: true,
+          kind: true,
+          fields: true,
+          createdAt: true,
+          state: {
+            select: {
+              due: true,
+              ease: true,
+              interval: true,
+              reps: true,
+              lapses: true,
+              consecutiveSuccessCount: true,
+              lastGrade: true,
+            },
+          },
         },
       },
     },
-  })) as StandaloneReviewCard | null;
+  });
+
+  if (!membership) {
+    return null;
+  }
+
+  return {
+    id: membership.card.id,
+    deckId: membership.deckId,
+    kind: membership.card.kind,
+    fields: membership.card.fields,
+    createdAt: membership.card.createdAt,
+    deck: membership.deck,
+    state: membership.card.state,
+  } as StandaloneReviewCard;
 }

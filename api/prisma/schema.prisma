@@ -51,6 +51,7 @@ model Deck {
 
   owner       User?    @relation(fields: [ownerId], references: [id])
   cards       Card[]
+  deckCards   DeckCard[]
   chunks      Chunk[]
   shares      DeckShare[]
 
@@ -125,6 +126,19 @@ model ChunkCard {
   @@index([cardId])
 }
 
+/** Card membership for decks. A card may appear in many decks. */
+model DeckCard {
+  deckId    String
+  cardId    String
+  createdAt DateTime @default(now())
+
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@id([deckId, cardId])
+  @@index([cardId])
+}
+
 /** A card can be of different kinds; payload stored in JSON for flexibility */
 model Card {
   id         String      @id @default(cuid())
@@ -136,6 +150,7 @@ model Card {
 
   owner      User?       @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   deck       Deck?       @relation(fields: [deckId], references: [id], onDelete: SetNull)
+  deckCards  DeckCard[]
   chunkCards ChunkCard[]
   state      ReviewState?
   logs       ReviewLog[]
