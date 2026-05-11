@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@shared/components';
 import type { SearchResultItem } from '@features/search';
+import { TRANSLATION_KEYS } from '@/i18n';
 
 import { useDecksListQuery } from '../hooks';
 import DeckLibraryPickerGrid from './DeckLibraryPickerGrid';
@@ -26,6 +28,7 @@ export default function DeckLibraryPicker({
   onCancel,
   onConfirm,
 }: DeckLibraryPickerProps) {
+  const t = useTranslations();
   const decksQuery = useDecksListQuery({ enabled: isOpen });
   const [searchText, setSearchText] = useState('');
   const [stagedSelectedIds, setStagedSelectedIds] = useState<Set<string>>(
@@ -49,9 +52,13 @@ export default function DeckLibraryPicker({
   const rows = useMemo(
     () =>
       (decksQuery.result ?? []).map((deck) =>
-        mapDeckToLibraryRow(deck, stagedSelectedIds),
+        mapDeckToLibraryRow(
+          deck,
+          stagedSelectedIds,
+          t(TRANSLATION_KEYS.decks.cardsCount),
+        ),
       ),
-    [decksQuery.result, stagedSelectedIds],
+    [decksQuery.result, stagedSelectedIds, t],
   );
 
   const filteredRows = useMemo(
@@ -62,7 +69,9 @@ export default function DeckLibraryPicker({
   function handleConfirm() {
     const selectedItems = (decksQuery.result ?? [])
       .filter((deck) => stagedSelectedIds.has(deck.id))
-      .map(mapDeckToSearchResult);
+      .map((deck) =>
+        mapDeckToSearchResult(deck, t(TRANSLATION_KEYS.decks.cardsCount)),
+      );
 
     onConfirm(selectedItems);
   }
@@ -83,10 +92,10 @@ export default function DeckLibraryPicker({
       >
         <div className="shrink-0 px-6 pt-6">
           <h2 className="text-lg font-semibold text-ink-heading">
-            Browse decks
+            {t(TRANSLATION_KEYS.cards.browseDecks)}
           </h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Select every deck this card should appear in.
+            {t(TRANSLATION_KEYS.cards.browseDecksDescription)}
           </p>
         </div>
 
@@ -106,13 +115,13 @@ export default function DeckLibraryPicker({
             onClick={onCancel}
             className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
           >
-            Cancel
+            {t(TRANSLATION_KEYS.common.cancel)}
           </Button>
           <Button
             onClick={handleConfirm}
             className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover"
           >
-            Apply decks
+            {t(TRANSLATION_KEYS.cards.applyDecks)}
           </Button>
         </div>
       </div>

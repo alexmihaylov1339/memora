@@ -7,21 +7,25 @@ export interface DeckLibraryRow extends SearchResultItem {
   cardCount: string;
 }
 
-export function mapDeckToSearchResult(deck: Deck): SearchResultItem {
+export function mapDeckToSearchResult(
+  deck: Deck,
+  cardsLabel = 'cards',
+): SearchResultItem {
   return {
     id: deck.id,
     type: 'deck',
     label: deck.name,
-    description: `${deck.count} card${deck.count === 1 ? '' : 's'}`,
+    description: `${deck.count} ${cardsLabel}`,
   };
 }
 
 export function mapDeckToLibraryRow(
   deck: Deck,
   selectedIds: Set<string>,
+  cardsLabel?: string,
 ): DeckLibraryRow {
   return {
-    ...mapDeckToSearchResult(deck),
+    ...mapDeckToSearchResult(deck, cardsLabel),
     selected: selectedIds.has(deck.id),
     cardCount: `${deck.count}`,
   };

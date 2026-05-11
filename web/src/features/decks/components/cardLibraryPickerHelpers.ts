@@ -22,16 +22,14 @@ export function mapCardToSearchResult(card: CardRecord): SearchResultItem {
 export function mapCardToLibraryRow(
   card: CardRecord,
   selectedIds: Set<string>,
+  formatDeckStatus: (deckCount: number) => string,
 ): CardLibraryRow {
   const deckCount = card.deckIds?.length ?? (card.deckId ? 1 : 0);
 
   return {
     ...mapCardToSearchResult(card),
     selected: selectedIds.has(card.id),
-    deckStatus:
-      deckCount === 0
-        ? 'Unassigned'
-        : `${deckCount} deck${deckCount === 1 ? '' : 's'}`,
+    deckStatus: formatDeckStatus(deckCount),
   };
 }
 

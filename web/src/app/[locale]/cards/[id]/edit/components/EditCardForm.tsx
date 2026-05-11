@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
+import { TRANSLATION_KEYS } from '@/i18n';
 import { FormBuilder } from '@shared/components';
 import { BUTTON_STYLES } from '@shared/constants';
 import {
@@ -40,13 +42,12 @@ export default function EditCardForm({
   deleteError,
   isDeleting,
 }: EditCardFormProps) {
-  const cardKind = useMemo(
-    () => resolveSupportedCardKind(card.kind),
-    [card.kind],
-  );
+  const t = useTranslations();
+  const cardKind = useMemo(() => resolveSupportedCardKind(card.kind), [card.kind]);
   const [selectedKind, setSelectedKind] = useState<SupportedCardKind>(cardKind);
   const [selectedDecks, setSelectedDecks] = useState<SearchResultItem[]>(
-    () => mapCardDecksToSearchResults(card, decks),
+    () =>
+      mapCardDecksToSearchResults(card, decks, t(TRANSLATION_KEYS.decks.cardsCount)),
   );
   const kindOptions = useMemo(() => getCardKindOptions(), []);
   const fields = useEditCardFormFields(selectedKind);
@@ -73,11 +74,8 @@ export default function EditCardForm({
   return (
     <div className="space-y-4 rounded-lg border border-[var(--border)] bg-white p-4">
       <div>
-        <label
-          htmlFor="edit-card-kind"
-          className="mb-2 block text-xs font-semibold text-ink-strong"
-        >
-          Kind
+        <label htmlFor="edit-card-kind" className="mb-2 block text-xs font-semibold text-ink-strong">
+          {t(TRANSLATION_KEYS.cards.kind)}
         </label>
         <select
           id="edit-card-kind"
@@ -108,13 +106,13 @@ export default function EditCardForm({
           ...parsedKindFields,
         }}
         onSubmit={handleUpdate}
-        submitLabel="Save Changes"
+        submitLabel={t(TRANSLATION_KEYS.cards.saveChanges)}
         submitButtonClassName={BUTTON_STYLES.primarySolid}
         errorMessage={updateError}
         translateFields={false}
         actionsContainerClassName="mt-3 flex items-center justify-between gap-3"
         showDeleteButton
-        deleteLabel="Delete Card"
+        deleteLabel={t(TRANSLATION_KEYS.cards.deleteButton)}
         deleteButtonClassName={BUTTON_STYLES.destructiveSolid}
         onDelete={onDelete}
         isDeleting={isDeleting}
@@ -130,6 +128,7 @@ export default function EditCardForm({
 function mapCardDecksToSearchResults(
   card: CardRecord,
   decks: Deck[],
+  cardsLabel: string,
 ): SearchResultItem[] {
   const cardDeckIds = new Set(
     card.deckIds ?? (card.deckId ? [card.deckId] : []),
@@ -141,6 +140,6 @@ function mapCardDecksToSearchResults(
       id: deck.id,
       type: 'deck',
       label: deck.name,
-      description: `${deck.count} card${deck.count === 1 ? '' : 's'}`,
+      description: `${deck.count} ${cardsLabel}`,
     }));
 }

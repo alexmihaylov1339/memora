@@ -2,7 +2,9 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
+import { TRANSLATION_KEYS } from '@/i18n';
 import {
   ErrorMessage,
   PageLoader,
@@ -19,6 +21,7 @@ import { CardsPageHeader } from '../components';
 import NewCardForm from './components/NewCardForm';
 
 export default function NewCardPage() {
+  const t = useTranslations();
   const searchParams = useSearchParams();
   const deckIdParam = searchParams.get('deckId')?.trim() ?? '';
   const deckQuery = useDeckDetailQuery(deckIdParam, {
@@ -26,7 +29,9 @@ export default function NewCardPage() {
   });
 
   const initialSelectedDecks =
-    deckIdParam && deckQuery.result ? [mapDeckDetailToSearchResult(deckQuery.result)] : [];
+    deckIdParam && deckQuery.result
+      ? [mapDeckDetailToSearchResult(deckQuery.result, t(TRANSLATION_KEYS.decks.cardsCount))]
+      : [];
   const isLoadingInitialDeck = Boolean(deckIdParam) && deckQuery.isLoading;
   const initialKind = useMemo(() => resolveSupportedCardKind('basic'), []);
 
@@ -34,9 +39,13 @@ export default function NewCardPage() {
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-2xl p-6">
         <CardsPageHeader
-          title="Create Card"
+          title={t(TRANSLATION_KEYS.cards.createTitle)}
           backHref={deckIdParam ? APP_ROUTES.deckEdit(deckIdParam) : APP_ROUTES.cards}
-          backLabel={deckIdParam ? 'Back to Deck Workspace' : 'Back to Cards'}
+          backLabel={
+            deckIdParam
+              ? t(TRANSLATION_KEYS.cards.backToDeckWorkspace)
+              : t(TRANSLATION_KEYS.cards.backToCards)
+          }
         />
 
         {isLoadingInitialDeck && <PageLoader />}
@@ -54,11 +63,14 @@ export default function NewCardPage() {
   );
 }
 
-function mapDeckDetailToSearchResult(deck: DeckDetail): SearchResultItem {
+function mapDeckDetailToSearchResult(
+  deck: DeckDetail,
+  cardsLabel: string,
+): SearchResultItem {
   return {
     id: deck.id,
     type: 'deck',
     label: deck.name,
-    description: `${deck.count} card${deck.count === 1 ? '' : 's'}`,
+    description: `${deck.count} ${cardsLabel}`,
   };
 }

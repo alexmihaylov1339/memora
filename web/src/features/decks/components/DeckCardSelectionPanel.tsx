@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { EntitySearch } from '@shared/components';
+import { TRANSLATION_KEYS } from '@/i18n';
 import {
   SEARCH_QUERY_KEYS,
   SEARCH_SELECTION_MODES,
@@ -23,6 +25,7 @@ export default function DeckCardSelectionPanel({
   selectedCards,
   onSelectionChange,
 }: DeckCardSelectionPanelProps) {
+  const t = useTranslations();
   const [isCardLibraryOpen, setIsCardLibraryOpen] = useState(false);
 
   function handleRemove(item: SearchResultItem) {
@@ -41,8 +44,12 @@ export default function DeckCardSelectionPanel({
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>My Cards</h3>
-        <p className={styles.sectionDescription}>Search and select cards for this deck.</p>
+        <h3 className={styles.sectionTitle}>
+          {t(TRANSLATION_KEYS.cards.myCards)}
+        </h3>
+        <p className={styles.sectionDescription}>
+          {t(TRANSLATION_KEYS.cards.searchSelectCardsDescription)}
+        </p>
       </div>
 
       <EntitySearch
@@ -51,7 +58,7 @@ export default function DeckCardSelectionPanel({
         selectionMode={SEARCH_SELECTION_MODES.multiple}
         selectedItems={selectedCards}
         onSelectionChange={onSelectionChange}
-        placeholder="Search cards"
+        placeholder={t(TRANSLATION_KEYS.cards.searchCards)}
       />
 
       <div className="mt-3">
@@ -60,7 +67,7 @@ export default function DeckCardSelectionPanel({
           onClick={() => setIsCardLibraryOpen(true)}
           className="cursor-pointer rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
         >
-          Browse cards
+          {t(TRANSLATION_KEYS.cards.browseCards)}
         </button>
       </div>
 
@@ -68,9 +75,9 @@ export default function DeckCardSelectionPanel({
         <DeckSelectedItemsGrid
           id="deck-selected-cards-grid"
           items={selectedCards}
-          labelHeader="Front"
-          descriptionHeader="Back"
-          emptyMessage="There are currently no cards to choose from."
+          labelHeader={t(TRANSLATION_KEYS.cards.front)}
+          descriptionHeader={t(TRANSLATION_KEYS.cards.back)}
+          emptyMessage={t(TRANSLATION_KEYS.cards.emptySelectedCards)}
           onRemove={handleRemove}
           paginate
           pageSize={DECK_SELECTED_ITEMS_PAGE_SIZE}

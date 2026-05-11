@@ -1,6 +1,6 @@
 # Memora: Step 20 — Deck Composition Scale and Card Discovery
 
-**Status:** In progress — T1-T4 done  
+**Status:** Done  
 **Date:** 2026-05-09  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 20  
 **Priority:** Medium — quality-of-life fixes for users with larger card and chunk libraries
@@ -354,10 +354,16 @@ Verification completed — 2026-05-11:
 
 ### T5 — Styling, translations, and polish
 
-- Add English, Bulgarian, and German translations.
-- Verify responsive layout.
-- Remove hardcoded user-visible text introduced in this step.
-- Run relevant frontend and backend test suites.
+- ✅ Add English, Bulgarian, and German translations.
+- ✅ Verify responsive layout.
+- ✅ Remove hardcoded user-visible text introduced in this step.
+- ✅ Run relevant frontend and backend test suites.
+
+Verification completed — 2026-05-11:
+
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/DeckLibraryPicker.test.tsx src/features/decks/components/CardLibraryPicker.test.tsx src/features/decks/components/DeckSelectedItemsGrid.test.tsx` — passed, 10 tests.
+- `cd web && npx tsc --noEmit` — passed.
+- `cd web && npx eslint 'src/app/[locale]/cards/new/page.tsx' 'src/app/[locale]/cards/new/components/NewCardForm.tsx' 'src/app/[locale]/cards/[id]/edit/page.tsx' 'src/app/[locale]/cards/[id]/edit/components/EditCardForm.tsx' src/features/decks/components/CardDeckSelectionPanel.tsx src/features/decks/components/CardLibraryPicker.tsx src/features/decks/components/CardLibraryPickerGrid.tsx src/features/decks/components/CardLibraryPicker.test.tsx src/features/decks/components/DeckCardSelectionPanel.tsx src/features/decks/components/DeckLibraryPicker.tsx src/features/decks/components/DeckLibraryPickerGrid.tsx src/features/decks/components/DeckLibraryPicker.test.tsx src/features/decks/components/cardLibraryPickerHelpers.ts src/features/decks/components/deckLibraryPickerHelpers.ts src/features/decks/components/index.ts src/features/decks/index.ts src/i18n/keys.ts` — passed.
 
 ---
 

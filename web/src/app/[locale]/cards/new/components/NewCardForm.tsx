@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 
+import { TRANSLATION_KEYS } from '@/i18n';
 import { FormBuilder } from '@shared/components';
 import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import {
@@ -26,6 +28,7 @@ export default function NewCardForm({
   initialKind,
   initialSelectedDecks,
 }: NewCardFormProps) {
+  const t = useTranslations();
   const router = useRouter();
   const [selectedKind, setSelectedKind] =
     useState<SupportedCardKind>(initialKind);
@@ -60,7 +63,7 @@ export default function NewCardForm({
           htmlFor="create-card-kind"
           className="mb-2 block text-xs font-semibold text-ink-strong"
         >
-          Kind
+          {t(TRANSLATION_KEYS.cards.kind)}
         </label>
         <select
           id="create-card-kind"
@@ -88,7 +91,7 @@ export default function NewCardForm({
         fields={fields}
         initialValues={{ kind: selectedKind }}
         onSubmit={handleCreate}
-        submitLabel="Create Card"
+        submitLabel={t(TRANSLATION_KEYS.cards.createButton)}
         submitButtonClassName={BUTTON_STYLES.primarySolid}
         actionsContainerClassName="mt-3 flex items-center justify-end gap-3"
         errorMessage={createCard.error?.message}

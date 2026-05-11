@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@shared/components';
 import type { SearchResultItem } from '@features/search';
+import { TRANSLATION_KEYS } from '@/i18n';
 
 import { useCardsListQuery } from '../hooks';
 import {
@@ -26,6 +28,7 @@ export default function CardLibraryPicker({
   onCancel,
   onConfirm,
 }: CardLibraryPickerProps) {
+  const t = useTranslations();
   const cardsQuery = useCardsListQuery({ enabled: isOpen });
   const [searchText, setSearchText] = useState('');
   const [stagedSelectedIds, setStagedSelectedIds] = useState<Set<string>>(
@@ -36,9 +39,15 @@ export default function CardLibraryPicker({
     const selectedIds = stagedSelectedIds;
 
     return (cardsQuery.result ?? []).map((card) =>
-      mapCardToLibraryRow(card, selectedIds),
+      mapCardToLibraryRow(card, selectedIds, (deckCount) =>
+        deckCount === 0
+          ? t(TRANSLATION_KEYS.cards.unassigned)
+          : t(TRANSLATION_KEYS.cards.deckMembershipCount, {
+              count: deckCount,
+            }),
+      ),
     );
-  }, [cardsQuery.result, stagedSelectedIds]);
+  }, [cardsQuery.result, stagedSelectedIds, t]);
 
   const filteredRows = useMemo(
     () => filterCardLibraryRows(rows, searchText),
@@ -83,10 +92,10 @@ export default function CardLibraryPicker({
       >
         <div className="shrink-0 px-6 pt-6">
           <h2 className="text-lg font-semibold text-ink-heading">
-            Browse cards
+            {t(TRANSLATION_KEYS.cards.browseCards)}
           </h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Scan your card library and select cards for this deck.
+            {t(TRANSLATION_KEYS.cards.browseCardsDescription)}
           </p>
         </div>
 
@@ -106,13 +115,13 @@ export default function CardLibraryPicker({
             onClick={onCancel}
             className="rounded-[5px] border border-line px-4 py-2 text-sm text-ink-muted transition hover:bg-surface-soft"
           >
-            Cancel
+            {t(TRANSLATION_KEYS.common.cancel)}
           </Button>
           <Button
             onClick={handleConfirm}
             className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-accent-hover"
           >
-            Add selected cards
+            {t(TRANSLATION_KEYS.cards.addSelectedCards)}
           </Button>
         </div>
       </div>

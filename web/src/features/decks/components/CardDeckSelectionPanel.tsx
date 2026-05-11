@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { EntitySearch, Grid, type GridColumnDef } from '@shared/components';
+import { TRANSLATION_KEYS } from '@/i18n';
 import {
   SEARCH_QUERY_KEYS,
   SEARCH_SELECTION_MODES,
@@ -16,16 +18,16 @@ interface CardDeckSelectionPanelProps {
   onSelectionChange: (items: SearchResultItem[]) => void;
 }
 
-const deckColumnDefs: GridColumnDef<SearchResultItem>[] = [
-  { field: 'label', headerName: 'Deck' },
-  { field: 'description', headerName: 'Cards' },
-];
-
 export default function CardDeckSelectionPanel({
   selectedDecks,
   onSelectionChange,
 }: CardDeckSelectionPanelProps) {
+  const t = useTranslations();
   const [isDeckLibraryOpen, setIsDeckLibraryOpen] = useState(false);
+  const deckColumnDefs: GridColumnDef<SearchResultItem>[] = [
+    { field: 'label', headerName: t(TRANSLATION_KEYS.cards.deckColumn) },
+    { field: 'description', headerName: t(TRANSLATION_KEYS.decks.cardsCount) },
+  ];
 
   function handleRemove(item: SearchResultItem) {
     onSelectionChange(selectedDecks.filter((deck) => deck.id !== item.id));
@@ -39,9 +41,11 @@ export default function CardDeckSelectionPanel({
   return (
     <section className="space-y-3 rounded-[5px] border border-line-soft bg-white p-4">
       <div>
-        <h3 className="text-base font-semibold text-ink-heading">Decks</h3>
+        <h3 className="text-base font-semibold text-ink-heading">
+          {t(TRANSLATION_KEYS.cards.decksSectionTitle)}
+        </h3>
         <p className="mt-1 text-sm text-ink-muted">
-          Attach this card to one or more decks.
+          {t(TRANSLATION_KEYS.cards.attachDecksDescription)}
         </p>
       </div>
 
@@ -51,7 +55,7 @@ export default function CardDeckSelectionPanel({
         selectionMode={SEARCH_SELECTION_MODES.multiple}
         selectedItems={selectedDecks}
         onSelectionChange={onSelectionChange}
-        placeholder="Search decks"
+        placeholder={t(TRANSLATION_KEYS.cards.searchDecks)}
       />
 
       <button
@@ -59,14 +63,14 @@ export default function CardDeckSelectionPanel({
         onClick={() => setIsDeckLibraryOpen(true)}
         className="cursor-pointer rounded-[5px] border border-line px-4 py-2 text-sm font-semibold text-ink-heading transition hover:bg-surface-soft"
       >
-        Browse decks
+        {t(TRANSLATION_KEYS.cards.browseDecks)}
       </button>
 
       <Grid
         id="card-selected-decks-grid"
         rowData={selectedDecks}
         columnDefs={deckColumnDefs}
-        emptyMessage="This card is not attached to any decks yet."
+        emptyMessage={t(TRANSLATION_KEYS.cards.emptySelectedDecks)}
         showQuickFilter={false}
         onRemove={handleRemove}
         paginate

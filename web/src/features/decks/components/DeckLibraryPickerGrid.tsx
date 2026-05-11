@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { ErrorMessage, Grid, type GridColumnDef } from '@shared/components';
+import { TRANSLATION_KEYS } from '@/i18n';
 
 import { CARD_LIBRARY_PICKER_PAGE_SIZE } from '../constants';
 import type { DeckLibraryRow } from './deckLibraryPickerHelpers';
@@ -22,10 +24,11 @@ export default function DeckLibraryPickerGrid({
   onSearchChange,
   onToggleDeck,
 }: DeckLibraryPickerGridProps) {
+  const t = useTranslations();
   const columnDefs = useMemo<GridColumnDef<DeckLibraryRow>[]>(
     () => [
       {
-        headerName: 'Select',
+        headerName: '',
         searchable: false,
         cellRenderer: (row) => (
           <input
@@ -33,15 +36,17 @@ export default function DeckLibraryPickerGrid({
             checked={row.selected}
             onClick={(event) => event.stopPropagation()}
             onChange={() => onToggleDeck(row.id)}
-            aria-label={`Select ${row.label}`}
+            aria-label={t(TRANSLATION_KEYS.cards.selectDeck, {
+              label: row.label,
+            })}
             className="h-4 w-4 cursor-pointer accent-brand-accent"
           />
         ),
       },
-      { field: 'label', headerName: 'Deck' },
-      { field: 'cardCount', headerName: 'Cards' },
+      { field: 'label', headerName: t(TRANSLATION_KEYS.cards.deckColumn) },
+      { field: 'cardCount', headerName: t(TRANSLATION_KEYS.decks.cardsCount) },
     ],
-    [onToggleDeck],
+    [onToggleDeck, t],
   );
 
   return (
@@ -50,7 +55,7 @@ export default function DeckLibraryPickerGrid({
         htmlFor="deck-library-search"
         className="mb-2 block text-xs font-semibold text-ink-strong"
       >
-        Search decks
+        {t(TRANSLATION_KEYS.cards.searchDecks)}
       </label>
       <input
         id="deck-library-search"
@@ -61,7 +66,7 @@ export default function DeckLibraryPickerGrid({
 
       {isLoading && (
         <p className="py-8 text-center text-sm text-ink-muted">
-          Loading decks...
+          {t(TRANSLATION_KEYS.cards.loadingDecks)}
         </p>
       )}
 
@@ -72,7 +77,7 @@ export default function DeckLibraryPickerGrid({
           id="deck-library-picker-grid"
           rowData={rows}
           columnDefs={columnDefs}
-          emptyMessage="No decks match your search."
+          emptyMessage={t(TRANSLATION_KEYS.cards.noDecksMatch)}
           showQuickFilter={false}
           paginate
           pageSize={CARD_LIBRARY_PICKER_PAGE_SIZE}

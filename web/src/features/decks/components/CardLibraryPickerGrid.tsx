@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { ErrorMessage, Grid, type GridColumnDef } from '@shared/components';
+import { TRANSLATION_KEYS } from '@/i18n';
 
 import { CARD_LIBRARY_PICKER_PAGE_SIZE } from '../constants';
 import type { CardLibraryRow } from './cardLibraryPickerHelpers';
@@ -22,10 +24,11 @@ export default function CardLibraryPickerGrid({
   onSearchChange,
   onToggleCard,
 }: CardLibraryPickerGridProps) {
+  const t = useTranslations();
   const columnDefs = useMemo<GridColumnDef<CardLibraryRow>[]>(
     () => [
       {
-        headerName: 'Select',
+        headerName: '',
         searchable: false,
         cellRenderer: (row) => (
           <input
@@ -33,16 +36,18 @@ export default function CardLibraryPickerGrid({
             checked={row.selected}
             onClick={(event) => event.stopPropagation()}
             onChange={() => onToggleCard(row.id)}
-            aria-label={`Select ${row.label}`}
+            aria-label={t(TRANSLATION_KEYS.cards.selectCard, {
+              label: row.label,
+            })}
             className="h-4 w-4 cursor-pointer accent-brand-accent"
           />
         ),
       },
-      { field: 'label', headerName: 'Front' },
-      { field: 'description', headerName: 'Back' },
-      { field: 'deckStatus', headerName: 'Deck' },
+      { field: 'label', headerName: t(TRANSLATION_KEYS.cards.front) },
+      { field: 'description', headerName: t(TRANSLATION_KEYS.cards.back) },
+      { field: 'deckStatus', headerName: t(TRANSLATION_KEYS.cards.deckColumn) },
     ],
-    [onToggleCard],
+    [onToggleCard, t],
   );
 
   return (
@@ -51,7 +56,7 @@ export default function CardLibraryPickerGrid({
         htmlFor="card-library-search"
         className="mb-2 block text-xs font-semibold text-ink-strong"
       >
-        Search cards
+        {t(TRANSLATION_KEYS.cards.searchCards)}
       </label>
       <input
         id="card-library-search"
@@ -62,7 +67,7 @@ export default function CardLibraryPickerGrid({
 
       {isLoading && (
         <p className="py-8 text-center text-sm text-ink-muted">
-          Loading cards...
+          {t(TRANSLATION_KEYS.cards.loadingCards)}
         </p>
       )}
 
@@ -73,7 +78,7 @@ export default function CardLibraryPickerGrid({
           id="card-library-picker-grid"
           rowData={rows}
           columnDefs={columnDefs}
-          emptyMessage="No cards match your search."
+          emptyMessage={t(TRANSLATION_KEYS.cards.noCardsMatch)}
           showQuickFilter={false}
           paginate
           pageSize={CARD_LIBRARY_PICKER_PAGE_SIZE}

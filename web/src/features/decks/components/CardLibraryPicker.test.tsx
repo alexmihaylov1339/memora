@@ -19,6 +19,31 @@ jest.mock('@/i18n/navigation', () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
+    const translations: Record<string, string> = {
+      'cards.addSelectedCards': 'Add selected cards',
+      'cards.back': 'Back',
+      'cards.browseCards': 'Browse cards',
+      'cards.browseCardsDescription':
+        'Scan your card library and select cards for this deck.',
+      'cards.deckColumn': 'Deck',
+      'cards.deckMembershipCount': `${values?.count ?? 0} deck${
+        values?.count === 1 ? '' : 's'
+      }`,
+      'cards.front': 'Front',
+      'cards.loadingCards': 'Loading cards...',
+      'cards.noCardsMatch': 'No cards match your search.',
+      'cards.searchCards': 'Search cards',
+      'cards.selectCard': `Select ${values?.label ?? ''}`,
+      'cards.unassigned': 'Unassigned',
+      'common.cancel': 'Cancel',
+    };
+
+    return translations[key] ?? key;
+  },
+}));
+
 jest.mock('../hooks', () => ({
   useCardsListQuery: jest.fn(),
 }));

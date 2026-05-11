@@ -1,8 +1,10 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 
+import { TRANSLATION_KEYS } from '@/i18n';
 import {
   ErrorMessage,
   PageLoader,
@@ -20,6 +22,7 @@ import { resolveSingleParam } from '@/shared/utils';
 import EditCardForm from './components/EditCardForm';
 
 export default function EditCardPage() {
+  const t = useTranslations();
   const params = useParams();
   const router = useRouter();
   const id = resolveSingleParam(params?.id as string | string[] | undefined);
@@ -42,7 +45,7 @@ export default function EditCardPage() {
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-2xl p-6">
-        <CardsPageHeader title="Edit Card" />
+        <CardsPageHeader title={t(TRANSLATION_KEYS.cards.editTitle)} />
 
         {cardQuery.isLoading && <PageLoader />}
         {cardQuery.error && <ErrorMessage message={cardQuery.error.message} />}
