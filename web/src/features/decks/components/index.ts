@@ -1,3 +1,4 @@
+export { default as CardLibraryPicker } from './CardLibraryPicker';
 export { default as CreateDeckForm } from './CreateDeckForm';
 export { default as DeckCardSelectionPanel } from './DeckCardSelectionPanel';
 export { default as DeckChunkSelectionPanel } from './DeckChunkSelectionPanel';

@@ -1,6 +1,6 @@
 # Memora: Step 20 — Deck Composition Scale and Card Discovery
 
-**Status:** In progress — T1-T2 done  
+**Status:** In progress — T1-T3 done  
 **Date:** 2026-05-09  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 20  
 **Priority:** Medium — quality-of-life fixes for users with larger card and chunk libraries
@@ -326,10 +326,16 @@ Verification completed — 2026-05-11:
 
 ### T3 — Card library picker
 
-- Build `CardLibraryPicker`.
-- Reuse `cardService.getAll()` or add a browse method if necessary.
-- Add client-side pagination/search first unless data volume requires server pagination.
-- Wire picker into deck create/edit card selection panels.
+- ✅ Build `CardLibraryPicker`.
+- ✅ Reuse `cardService.getAll()` through `useCardsListQuery`.
+- ✅ Add client-side pagination/search first unless data volume requires server pagination.
+- ✅ Wire picker into deck create/edit card selection panels.
+
+Verification completed — 2026-05-11:
+
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CardLibraryPicker.test.tsx src/features/decks/components/DeckSelectedItemsGrid.test.tsx` — passed, 6 tests.
+- `cd web && npx tsc --noEmit` — passed.
+- `cd web && npx eslint src/features/decks/components/CardLibraryPicker.tsx src/features/decks/components/CardLibraryPickerGrid.tsx src/features/decks/components/CardLibraryPicker.test.tsx src/features/decks/components/DeckCardSelectionPanel.tsx src/features/decks/components/cardLibraryPickerHelpers.ts src/features/decks/components/index.ts src/features/decks/index.ts src/features/decks/constants/index.ts` — passed.
 
 ### T4 — Deck library picker for card create/edit
 

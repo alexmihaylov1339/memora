@@ -1,4 +1,5 @@
 // Components
+export { CardLibraryPicker } from './components';
 export { CreateDeckForm } from './components';
 export { DeckCardSelectionPanel } from './components';
 export { DeckChunkSelectionPanel } from './components';
