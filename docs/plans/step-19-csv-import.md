@@ -400,6 +400,7 @@ Remaining before Step 19 sign-off:
 31. `cd web && npx tsc --noEmit` — passes after adding a compatibility redirect route at `/decks/[id]/review`.
 32. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
 33. `cd web && npm test -- --runInBand --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx src/app/[locale]/review/components/ReviewScreen.test.tsx src/app/[locale]/cards/page.test.tsx src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx` — all pass.
+34. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/ImportCsvModal.test.tsx src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
 
 Live API verification completed — 2026-05-20:
 
@@ -432,6 +433,12 @@ Additional automated coverage added — 2026-05-20:
 - `DeckEditForm.test.tsx`
   - import button opens the modal in deck context
   - modal completion forwards the import result back to the deck edit screen
+- `ImportCsvModal.test.tsx`
+  - preview state renders parsed rows
+  - skipped-row warnings render with row number + reason
+  - deferred mode queues cards without calling the API
+  - immediate import mode calls the API and forwards completion
+  - import failure shows retry UI and can reset to idle
 - Existing regression suites rerun for Step 19 sign-off:
   - `cards.service.spec.ts`
   - `useReviewScreen.test.tsx`
@@ -451,6 +458,7 @@ Compatibility note:
 - [x] Header rows are correctly detected and skipped.
 - [x] Cards are assigned to deck and get `ReviewState` (due = now) when `deckId` is provided.
 - [ ] Preview modal shows parsed rows and skipped-row warnings before confirmation.
+- [x] Preview modal shows parsed rows and skipped-row warnings before confirmation.
 - [ ] "Import CSV" button on `/cards` works end-to-end (Entry A).
 - [ ] "Import CSV" in deck create form stores pending state and imports on deck submit (Entry B).
 - [ ] "Import CSV" in deck edit form immediately imports to the existing deck (Entry C).
