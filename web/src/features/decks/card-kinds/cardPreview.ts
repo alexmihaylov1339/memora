@@ -17,6 +17,18 @@ function getClozePrompt(text: string): string {
 }
 
 export function getCardPreview(card: CardRecord): CardPreview {
+  if (card.kind === 'image_audio') {
+    const label = normalizeText(card.fields.label);
+    const altText = normalizeText(card.fields.altText);
+
+    if (label) {
+      return {
+        front: label,
+        back: altText || 'Kids mode image + audio card',
+      };
+    }
+  }
+
   if (card.kind === 'cloze_text') {
     const text = normalizeText(card.fields.text);
     const answer = normalizeText(card.fields.answer);

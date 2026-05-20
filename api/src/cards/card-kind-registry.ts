@@ -6,6 +6,7 @@ import {
   cardFieldsInvalidForKind,
 } from './card-errors';
 import type { CardKindDefinition, SupportedCardKind } from './card-kind-types';
+import { imageAudioCardKindDefinition } from './image-audio-card-kind';
 import { isNil, isObjectRecord, isString } from '../common/utils/type-guards';
 
 function normalizeRequiredString(
@@ -194,6 +195,7 @@ const clozeTextCardKindDefinition: CardKindDefinition = {
 const cardKindRegistry: Record<SupportedCardKind, CardKindDefinition> = {
   basic: basicCardKindDefinition,
   cloze_text: clozeTextCardKindDefinition,
+  image_audio: imageAudioCardKindDefinition,
 };
 
 export function isSupportedKind(kind: string): kind is SupportedCardKind {

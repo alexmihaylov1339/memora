@@ -19,6 +19,7 @@ export {
 export {
   useCreateCardMutation,
   useMoveDeckCardsMutation,
+  useUploadCardAssetMutation,
   useUpdateCardMutation,
   useDeleteCardMutation,
 } from './useCardMutations';

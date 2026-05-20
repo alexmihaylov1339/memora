@@ -142,7 +142,7 @@ Verification completed:
 ### T2 - Add the kids media card kind and storage-backed asset support
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a new supported card kind for kids decks:
@@ -185,6 +185,23 @@ Copy/public-deck expectations:
 Exit criteria:
 - a user can create, edit, persist, and reload an `image_audio` card end to end.
 - images and audio are stored via `memora-bucket`, not embedded in card JSON or the repo.
+
+Implementation notes:
+- Added backend `image_audio` card-kind validation/normalization with strict `label`, `imageAsset`, `audioAsset`, and optional `altText` handling.
+- Added `POST /v1/cards/assets` authenticated upload endpoint with multipart file handling and `assetType=image|audio`.
+- Added a backend Supabase Storage service that:
+  - uploads into `memora-bucket`
+  - writes object paths under `kids-images/...` and `kids-audio/...`
+  - returns signed read URLs for authoring/reload flows
+- Card create/read/update/list now hydrate `image_audio` assets with signed URLs on API responses while storing only asset metadata/path in the card payload.
+- Added frontend `image_audio` card-kind support, upload mutation/service wiring, card preview handling, and dedicated image/audio upload UI inside card create/edit forms.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/cards/card-kind-registry.spec.ts src/cards/dto/card-validation.spec.ts src/cards/cards.service.spec.ts src/cards/card-assets.controller.spec.ts src/cards/cards.controller.spec.ts` passed.
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/card-kinds/registry.test.ts src/features/decks/card-kinds/cardPreview.test.ts` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd api && npx eslint --fix ...` and `cd web && npx eslint --fix ...` completed cleanly for the touched files.
 
 ---
 

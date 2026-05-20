@@ -11,12 +11,14 @@ describe('card-kinds registry', () => {
     expect(resolveSupportedCardKind(undefined)).toBe('basic');
     expect(resolveSupportedCardKind('audio_gap')).toBe('basic');
     expect(resolveSupportedCardKind('cloze_text')).toBe('cloze_text');
+    expect(resolveSupportedCardKind('image_audio')).toBe('image_audio');
   });
 
-  it('returns options for both supported kinds', () => {
+  it('returns options for all supported kinds', () => {
     expect(getCardKindOptions()).toEqual([
       { value: 'basic', label: 'Basic' },
       { value: 'cloze_text', label: 'Cloze Text' },
+      { value: 'image_audio', label: 'Image + Audio' },
     ]);
   });
 
@@ -79,5 +81,81 @@ describe('card-kinds registry', () => {
       hint: 'Verb',
     });
   });
-});
 
+  it('builds image_audio fields and serializes/parses correctly', () => {
+    const imageAudioFields = getCardKindFields('image_audio');
+    expect(imageAudioFields.map((field) => field.name)).toEqual([
+      'label',
+      'altText',
+    ]);
+
+    expect(
+      serializeCardKindFields('image_audio', {
+        kind: 'image_audio',
+        label: '  Car ',
+        altText: ' Red toy car ',
+        imageAsset: {
+          path: 'kids-images/user-1/asset-1/car.jpg',
+          mimeType: 'image/jpeg',
+          size: 2048,
+          url: 'https://example.com/image',
+        },
+        audioAsset: {
+          path: 'kids-audio/user-1/asset-2/car.mp3',
+          mimeType: 'audio/mpeg',
+          size: 4096,
+          url: 'https://example.com/audio',
+        },
+      }),
+    ).toEqual({
+      label: 'Car',
+      altText: 'Red toy car',
+      imageAsset: {
+        path: 'kids-images/user-1/asset-1/car.jpg',
+        mimeType: 'image/jpeg',
+        size: 2048,
+        url: 'https://example.com/image',
+      },
+      audioAsset: {
+        path: 'kids-audio/user-1/asset-2/car.mp3',
+        mimeType: 'audio/mpeg',
+        size: 4096,
+        url: 'https://example.com/audio',
+      },
+    });
+
+    expect(
+      parseCardKindFields('image_audio', {
+        label: '  Car ',
+        altText: ' Red toy car ',
+        imageAsset: {
+          path: 'kids-images/user-1/asset-1/car.jpg',
+          mimeType: 'image/jpeg',
+          size: 2048,
+          url: 'https://example.com/image',
+        },
+        audioAsset: {
+          path: 'kids-audio/user-1/asset-2/car.mp3',
+          mimeType: 'audio/mpeg',
+          size: 4096,
+          url: 'https://example.com/audio',
+        },
+      }),
+    ).toEqual({
+      label: 'Car',
+      altText: 'Red toy car',
+      imageAsset: {
+        path: 'kids-images/user-1/asset-1/car.jpg',
+        mimeType: 'image/jpeg',
+        size: 2048,
+        url: 'https://example.com/image',
+      },
+      audioAsset: {
+        path: 'kids-audio/user-1/asset-2/car.mp3',
+        mimeType: 'audio/mpeg',
+        size: 4096,
+        url: 'https://example.com/audio',
+      },
+    });
+  });
+});

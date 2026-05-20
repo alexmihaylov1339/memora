@@ -9,4 +9,9 @@ export {
   resolveSupportedCardKind,
   serializeCardKindFields,
 } from './registry';
-export type { CardKindDefinition, CardKindFormValues, SupportedCardKind } from './types';
+export type {
+  CardAssetValue,
+  CardKindDefinition,
+  CardKindFormValues,
+  SupportedCardKind,
+} from './types';

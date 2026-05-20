@@ -10,6 +10,7 @@ describe('card-kind-registry', () => {
     it('returns true for supported kinds', () => {
       expect(isSupportedKind('basic')).toBe(true);
       expect(isSupportedKind('cloze_text')).toBe(true);
+      expect(isSupportedKind('image_audio')).toBe(true);
     });
 
     it('returns false for unsupported kinds', () => {
@@ -50,6 +51,27 @@ describe('card-kind-registry', () => {
       ).not.toThrow();
     });
 
+    it('accepts valid fields for image_audio cards', () => {
+      expect(() =>
+        validateCardFields('image_audio', {
+          label: 'Car',
+          imageAsset: {
+            path: 'kids-images/user-1/asset-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 2048,
+            url: 'https://example.com/image',
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/asset-2/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 4096,
+            url: 'https://example.com/audio',
+          },
+          altText: 'Red car',
+        }),
+      ).not.toThrow();
+    });
+
     it('rejects cloze_text fields when marker is missing', () => {
       expect(() =>
         validateCardFields('cloze_text', {
@@ -64,6 +86,19 @@ describe('card-kind-registry', () => {
         validateCardFields('cloze_text', {
           text: 'Ich {{c1::spiele}} gern Tennis.',
           answer: 'lernst',
+        }),
+      ).toThrow(BadRequestException);
+    });
+
+    it('rejects image_audio fields when audio is missing', () => {
+      expect(() =>
+        validateCardFields('image_audio', {
+          label: 'Car',
+          imageAsset: {
+            path: 'kids-images/user-1/asset-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 2048,
+          },
         }),
       ).toThrow(BadRequestException);
     });
@@ -91,6 +126,40 @@ describe('card-kind-registry', () => {
         text: 'Ich {{c1::spiele}} gern Tennis.',
         answer: 'spiele',
         hint: 'Verb',
+      });
+    });
+
+    it('returns canonical normalized fields for image_audio cards', () => {
+      expect(
+        normalizeCardFields('image_audio', {
+          label: '  Car ',
+          imageAsset: {
+            path: 'kids-images/user-1/asset-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 2048,
+            url: 'https://example.com/image',
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/asset-2/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 4096,
+            url: 'https://example.com/audio',
+          },
+          altText: '  Red toy car ',
+        }),
+      ).toEqual({
+        label: 'Car',
+        imageAsset: {
+          path: 'kids-images/user-1/asset-1/car.jpg',
+          mimeType: 'image/jpeg',
+          size: 2048,
+        },
+        audioAsset: {
+          path: 'kids-audio/user-1/asset-2/car.mp3',
+          mimeType: 'audio/mpeg',
+          size: 4096,
+        },
+        altText: 'Red toy car',
       });
     });
   });

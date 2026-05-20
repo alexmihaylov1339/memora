@@ -69,6 +69,27 @@ describe('card-validation', () => {
       ).not.toThrow();
     });
 
+    it('accepts valid image_audio card input', () => {
+      expect(() =>
+        validateCreateCardInput({
+          kind: 'image_audio',
+          fields: {
+            label: 'Car',
+            imageAsset: {
+              path: 'kids-images/user-1/asset-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 2048,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/asset-2/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 4096,
+            },
+          },
+        }),
+      ).not.toThrow();
+    });
+
     it('accepts unique deck IDs on create', () => {
       expect(() =>
         validateCreateCardInput({
@@ -127,6 +148,27 @@ describe('card-validation', () => {
           fields: {
             text: 'Wir {{c1::lernen}} Deutsch.',
             answer: 'lernen',
+          },
+        }),
+      ).not.toThrow();
+    });
+
+    it('accepts image_audio updates with image and audio assets', () => {
+      expect(() =>
+        validateUpdateCardInput({
+          kind: 'image_audio',
+          fields: {
+            label: 'Car',
+            imageAsset: {
+              path: 'kids-images/user-1/asset-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 2048,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/asset-2/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 4096,
+            },
           },
         }),
       ).not.toThrow();

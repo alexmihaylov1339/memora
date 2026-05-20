@@ -6,4 +6,5 @@ export { default as DeckCardSelectionPanel } from './DeckCardSelectionPanel';
 export { default as DeckChunkSelectionPanel } from './DeckChunkSelectionPanel';
 export { default as DeckSelectedItemsGrid } from './DeckSelectedItemsGrid';
 export { ImportCsvModal } from './ImportCsvModal';
+export { ImageAudioCardAssetsSection } from './ImageAudioCardAssetsSection';
 export type { ImportCsvModalProps } from './ImportCsvModal';

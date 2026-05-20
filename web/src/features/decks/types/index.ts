@@ -118,3 +118,17 @@ export interface ImportCsvParams {
   file: File;
   deckId?: string;
 }
+
+export type CardAssetType = 'image' | 'audio';
+
+export interface UploadedCardAsset {
+  path: string;
+  mimeType: string;
+  size: number;
+  url: string;
+}
+
+export interface UploadCardAssetParams {
+  file: File;
+  assetType: CardAssetType;
+}

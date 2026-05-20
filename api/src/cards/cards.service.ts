@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from '../decks/deck-access';
+import { CardAssetsService } from './card-assets.service';
 import { normalizeCardFields } from './card-kind-registry';
 import {
   buildAccessibleCardWhere,
@@ -18,7 +19,10 @@ export type { CardRecord } from './cards.helpers';
 
 @Injectable()
 export class CardsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cardAssets: CardAssetsService,
+  ) {}
 
   async findAll(userId: string): Promise<CardRecord[]> {
     const deckIds = await getAccessibleDeckIds(this.prisma, userId);
@@ -29,7 +33,9 @@ export class CardsService {
       include: { deckCards: { select: { deckId: true } } },
     })) as PersistedCardRecord[];
 
-    return cards.map(mapCardRecord);
+    return Promise.all(
+      cards.map((card) => this.hydrateCardRecord(mapCardRecord(card))),
+    );
   }
 
   async create(
@@ -59,7 +65,7 @@ export class CardsService {
 
       await createCardDeckMemberships(tx, card.id, deckIds);
 
-      return { ...mapCardRecord(card), deckIds };
+      return this.hydrateCardRecord({ ...mapCardRecord(card), deckIds });
     });
   }
 
@@ -71,7 +77,7 @@ export class CardsService {
       include: { deckCards: { select: { deckId: true } } },
     })) as PersistedCardRecord | null;
 
-    return card ? mapCardRecord(card) : null;
+    return card ? this.hydrateCardRecord(mapCardRecord(card)) : null;
   }
 
   async update(
@@ -113,14 +119,14 @@ export class CardsService {
         where: { id },
         data: {
           deckId:
-            data.deckIds === undefined ? undefined : data.deckIds[0] ?? null,
+            data.deckIds === undefined ? undefined : (data.deckIds[0] ?? null),
           kind: data.kind,
           fields: nextFields,
         },
         include: { deckCards: { select: { deckId: true } } },
       })) as PersistedCardRecord;
 
-      return mapCardRecord(card);
+      return this.hydrateCardRecord(mapCardRecord(card));
     });
   }
 
@@ -134,5 +140,12 @@ export class CardsService {
 
     await this.prisma.card.delete({ where: { id } });
     return true;
+  }
+
+  private async hydrateCardRecord(card: CardRecord): Promise<CardRecord> {
+    return {
+      ...card,
+      fields: await this.cardAssets.resolveCardFields(card.kind, card.fields),
+    };
   }
 }

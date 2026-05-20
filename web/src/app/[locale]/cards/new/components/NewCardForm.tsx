@@ -7,8 +7,10 @@ import { FormBuilder } from '@shared/components';
 import { APP_ROUTES, BUTTON_STYLES } from '@shared/constants';
 import {
   CardDeckSelectionPanel,
+  type CardAssetValue,
   type CardKindFormValues,
   getCardKindOptions,
+  ImageAudioCardAssetsSection,
   resolveSupportedCardKind,
   serializeCardKindFields,
   type SupportedCardKind,
@@ -34,6 +36,8 @@ export default function NewCardForm({
     useState<SupportedCardKind>(initialKind);
   const [selectedDecks, setSelectedDecks] =
     useState<SearchResultItem[]>(initialSelectedDecks);
+  const [imageAsset, setImageAsset] = useState<CardAssetValue | undefined>();
+  const [audioAsset, setAudioAsset] = useState<CardAssetValue | undefined>();
   const kindOptions = useMemo(() => getCardKindOptions(), []);
   const fields = useCreateCardFormFields(selectedKind);
 
@@ -48,12 +52,14 @@ export default function NewCardForm({
   function handleCreate(values: CardKindFormValues) {
     void createCard.fetch({
       deckIds: selectedDecks.map((deck) => deck.id),
-      kind: selectedKind,
-      fields: serializeCardKindFields(selectedKind, {
-        ...values,
         kind: selectedKind,
-      }),
-    });
+        fields: serializeCardKindFields(selectedKind, {
+          ...values,
+          kind: selectedKind,
+          imageAsset,
+          audioAsset,
+        }),
+      });
   }
 
   return (
@@ -85,6 +91,15 @@ export default function NewCardForm({
         selectedDecks={selectedDecks}
         onSelectionChange={setSelectedDecks}
       />
+
+      {selectedKind === 'image_audio' && (
+        <ImageAudioCardAssetsSection
+          imageAsset={imageAsset}
+          audioAsset={audioAsset}
+          onImageAssetChange={setImageAsset}
+          onAudioAssetChange={setAudioAsset}
+        />
+      )}
 
       <FormBuilder<CardKindFormValues>
         key={selectedKind}

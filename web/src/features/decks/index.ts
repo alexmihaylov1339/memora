@@ -6,6 +6,7 @@ export { DeckLibraryPicker } from './components';
 export { DeckCardSelectionPanel } from './components';
 export { DeckChunkSelectionPanel } from './components';
 export { DeckSelectedItemsGrid } from './components';
+export { ImageAudioCardAssetsSection } from './components';
 export { ImportCsvModal } from './components';
 export type { ImportCsvModalProps } from './components';
 
@@ -24,6 +25,7 @@ export {
   useCreateCardMutation,
   useImportCardsMutation,
   useMoveDeckCardsMutation,
+  useUploadCardAssetMutation,
   useUpdateCardMutation,
   useDeleteCardMutation,
   useDeckEditFormFields,
@@ -44,6 +46,7 @@ export type {
   CreateDeckDto,
   CreateDeckResponse,
   CardRecord,
+  CardAssetType,
   Deck,
   ImportCardsResponse,
   ImportCsvParams,
@@ -59,6 +62,8 @@ export type {
   GetDeckByIdResponse,
   MoveDeckCardsDto,
   MoveDeckCardsParams,
+  UploadCardAssetParams,
+  UploadedCardAsset,
   CreateDeckShareDto,
   CreateDeckShareResponse,
   ListDeckSharesResponse,
@@ -81,6 +86,7 @@ export {
   serializeCardKindFields,
 } from './card-kinds';
 export type {
+  CardAssetValue,
   CardKindDefinition,
   CardKindFormValues,
   CardPreview,

@@ -1,6 +1,13 @@
 import type { FieldConfig } from '@shared/components';
 
-export type SupportedCardKind = 'basic' | 'cloze_text';
+export type SupportedCardKind = 'basic' | 'cloze_text' | 'image_audio';
+
+export interface CardAssetValue {
+  path: string;
+  mimeType: string;
+  size: number;
+  url?: string;
+}
 
 export interface CardKindFormValues {
   kind: SupportedCardKind;
@@ -9,6 +16,10 @@ export interface CardKindFormValues {
   text?: string;
   answer?: string;
   hint?: string;
+  label?: string;
+  altText?: string;
+  imageAsset?: CardAssetValue;
+  audioAsset?: CardAssetValue;
 }
 
 export interface CardKindDefinition {
@@ -18,4 +29,3 @@ export interface CardKindDefinition {
   parseFields: (fields: Record<string, unknown>) => Partial<CardKindFormValues>;
   serializeFields: (values: CardKindFormValues) => Record<string, unknown>;
 }
-
