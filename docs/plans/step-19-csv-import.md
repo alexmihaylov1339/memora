@@ -398,6 +398,8 @@ Remaining before Step 19 sign-off:
 29. `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards-import.service.spec.ts src/cards/cards.controller.spec.ts src/cards/csv/csv-parser.spec.ts` — all pass.
 30. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
 31. `cd web && npx tsc --noEmit` — passes after adding a compatibility redirect route at `/decks/[id]/review`.
+32. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
+33. `cd web && npm test -- --runInBand --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx src/app/[locale]/review/components/ReviewScreen.test.tsx src/app/[locale]/cards/page.test.tsx src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx` — all pass.
 
 Live API verification completed — 2026-05-20:
 
@@ -430,6 +432,11 @@ Additional automated coverage added — 2026-05-20:
 - `DeckEditForm.test.tsx`
   - import button opens the modal in deck context
   - modal completion forwards the import result back to the deck edit screen
+- Existing regression suites rerun for Step 19 sign-off:
+  - `cards.service.spec.ts`
+  - `useReviewScreen.test.tsx`
+  - `ReviewScreen.test.tsx`
+  - `cards/page.test.tsx`
 
 Compatibility note:
 
@@ -448,7 +455,7 @@ Compatibility note:
 - [ ] "Import CSV" in deck create form stores pending state and imports on deck submit (Entry B).
 - [ ] "Import CSV" in deck edit form immediately imports to the existing deck (Entry C).
 - [x] Error states (invalid file, no file, wrong deck) surface to the user clearly.
-- [ ] `csv-parser.ts` unit tests all pass.
+- [x] `csv-parser.ts` unit tests all pass.
 - [x] `CardsImportService` bulk-import tests pass.
 - [x] `tsc --noEmit` passes in both `api/` and `web/`.
-- [ ] No regressions in existing card create, deck create, or review flows.
+- [x] No regressions in existing card create, deck create, or review flows.
