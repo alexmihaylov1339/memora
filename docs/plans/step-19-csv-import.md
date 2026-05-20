@@ -303,7 +303,6 @@ A summary line below the "Import CSV" button shows the pending state:
 Remaining before Step 19 sign-off:
 
 - Manual browser/API verification steps 1–25 below.
-- Resolve the current web `tsc --noEmit` blocker caused by generated Next validator output still referencing `/src/app/[locale]/decks/[id]/review/page.tsx`, then rerun the full web typecheck.
 
 #### `csv-parser.spec.ts`
 
@@ -398,6 +397,7 @@ Remaining before Step 19 sign-off:
 28. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
 29. `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards-import.service.spec.ts src/cards/cards.controller.spec.ts src/cards/csv/csv-parser.spec.ts` — all pass.
 30. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
+31. `cd web && npx tsc --noEmit` — passes after adding a compatibility redirect route at `/decks/[id]/review`.
 
 Additional automated coverage added — 2026-05-20:
 
@@ -409,11 +409,10 @@ Additional automated coverage added — 2026-05-20:
   - import button opens the modal in deck context
   - modal completion forwards the import result back to the deck edit screen
 
-Web typecheck note:
+Compatibility note:
 
-- `cd web && npx tsc --noEmit` is still blocked by generated `.next/types/validator.ts` referencing the removed route `/src/app/[locale]/decks/[id]/review/page.tsx`.
-- Clearing `.next/types` and `.next/dev/types` was not enough because the validator is regenerated with the stale route reference.
-- This blocker is unrelated to the new CSV regression tests and remains open for follow-up.
+- Added `web/src/app/[locale]/decks/[id]/review/page.tsx` as a lightweight compatibility redirect to the current deck-scoped review URL (`/[locale]/review?deckId=...`).
+- This keeps older route expectations and generated Next route validation aligned without changing the current review entry-point design.
 
 ---
 
