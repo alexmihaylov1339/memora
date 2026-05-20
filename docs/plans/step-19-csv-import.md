@@ -302,7 +302,7 @@ A summary line below the "Import CSV" button shows the pending state:
 
 Remaining before Step 19 sign-off:
 
-- Manual browser/API verification steps 1–25 below.
+- Manual browser verification for the UI-only steps below.
 
 #### `csv-parser.spec.ts`
 
@@ -399,6 +399,28 @@ Remaining before Step 19 sign-off:
 30. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
 31. `cd web && npx tsc --noEmit` — passes after adding a compatibility redirect route at `/decks/[id]/review`.
 
+Live API verification completed — 2026-05-20:
+
+- Started the local API against the existing Supabase dev database and reused `POST /v1/auth/dev-login` for disposable verification users.
+- `POST /v1/cards/import` with `/tmp/memora-valid.csv` and no `deckId` returned `{"created":2,"skipped":[]}`.
+- `GET /v1/cards` for the disposable user showed:
+  - `Alpha -> Beta`
+  - `Gamma -> Delta`
+  - both with `kind = basic`
+  - both with `deckId = null`
+- `POST /v1/cards/import` with `/tmp/memora-header.csv` and `deckId=<verification-deck-id>` returned `{"created":2,"skipped":[]}`.
+- `GET /v1/cards` then showed only the data rows:
+  - `One -> Two`
+  - `Three -> Four`
+  - both assigned to the verification deck (`deckId` and `deckIds` populated)
+- Direct Prisma query of `ReviewState` confirmed deck-imported cards were created with:
+  - `due` equal to the import timestamp window
+  - `consecutiveSuccessCount = 0`
+- `POST /v1/cards/import` with `/tmp/memora-invalid-row.csv` returned `{"created":1,"skipped":[{"row":3,"reason":"missing back side"}]}`.
+- `POST /v1/cards/import` with no file returned `400` and `No file uploaded`.
+- `POST /v1/cards/import` with an empty CSV returned `400` and `No valid rows found in CSV`.
+- `POST /v1/cards/import` as a second disposable user against the first user’s deck returned `403` and `deck not found or not accessible`.
+
 Additional automated coverage added — 2026-05-20:
 
 - `CreateDeckForm.test.tsx`
@@ -418,15 +440,15 @@ Compatibility note:
 
 ## Exit criteria
 
-- [ ] `POST /v1/cards/import` creates cards with correct `front`/`back` from a NotebookLM CSV.
-- [ ] Header rows are correctly detected and skipped.
-- [ ] Cards are assigned to deck and get `ReviewState` (due = now) when `deckId` is provided.
+- [x] `POST /v1/cards/import` creates cards with correct `front`/`back` from a NotebookLM CSV.
+- [x] Header rows are correctly detected and skipped.
+- [x] Cards are assigned to deck and get `ReviewState` (due = now) when `deckId` is provided.
 - [ ] Preview modal shows parsed rows and skipped-row warnings before confirmation.
 - [ ] "Import CSV" button on `/cards` works end-to-end (Entry A).
 - [ ] "Import CSV" in deck create form stores pending state and imports on deck submit (Entry B).
 - [ ] "Import CSV" in deck edit form immediately imports to the existing deck (Entry C).
-- [ ] Error states (invalid file, no file, wrong deck) surface to the user clearly.
+- [x] Error states (invalid file, no file, wrong deck) surface to the user clearly.
 - [ ] `csv-parser.ts` unit tests all pass.
 - [x] `CardsImportService` bulk-import tests pass.
-- [ ] `tsc --noEmit` passes in both `api/` and `web/`.
+- [x] `tsc --noEmit` passes in both `api/` and `web/`.
 - [ ] No regressions in existing card create, deck create, or review flows.
