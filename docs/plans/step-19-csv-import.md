@@ -303,6 +303,7 @@ A summary line below the "Import CSV" button shows the pending state:
 Remaining before Step 19 sign-off:
 
 - Manual browser/API verification steps 1–25 below.
+- Resolve the current web `tsc --noEmit` blocker caused by generated Next validator output still referencing `/src/app/[locale]/decks/[id]/review/page.tsx`, then rerun the full web typecheck.
 
 #### `csv-parser.spec.ts`
 
@@ -396,6 +397,23 @@ Remaining before Step 19 sign-off:
 27. `cd web && npx tsc --noEmit` — passes with no errors.
 28. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
 29. `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards-import.service.spec.ts src/cards/cards.controller.spec.ts src/cards/csv/csv-parser.spec.ts` — all pass.
+30. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
+
+Additional automated coverage added — 2026-05-20:
+
+- `CreateDeckForm.test.tsx`
+  - deferred CSV selection stores pending-import summary state
+  - deck create submit triggers `create deck -> import csv -> redirect to deck edit`
+  - failed deferred CSV import still redirects and shows the retry warning
+- `DeckEditForm.test.tsx`
+  - import button opens the modal in deck context
+  - modal completion forwards the import result back to the deck edit screen
+
+Web typecheck note:
+
+- `cd web && npx tsc --noEmit` is still blocked by generated `.next/types/validator.ts` referencing the removed route `/src/app/[locale]/decks/[id]/review/page.tsx`.
+- Clearing `.next/types` and `.next/dev/types` was not enough because the validator is regenerated with the stale route reference.
+- This blocker is unrelated to the new CSV regression tests and remains open for follow-up.
 
 ---
 
