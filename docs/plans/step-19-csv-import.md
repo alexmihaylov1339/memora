@@ -284,8 +284,8 @@ A summary line below the "Import CSV" button shows the pending state:
 13. ✅ **Deck create form** — "Import CSV" button added as `leadingAction` in `FormBuilder`. `deferred` mode wired with `onDeferredConfirm` → stores `pendingCsvFile` + `pendingCsvRowCount`. `handleSubmit` does two-step: create deck → import CSV → navigate to deck edit on success (or `/decks` if no CSV). Warning toast on import failure with retry instruction. `decks.csvImportFailed` key added to all 3 locales. `tsc --noEmit` clean.
 14. **Manual verification** of all flows and edge cases.  
     - 2026-05-10 executor note: not marked done. Browser/manual flow verification still needs to be performed for Entries A/B/C and edge cases. Automated evidence collected today is listed below.
-15. **TypeScript + tests** — ensure `tsc --noEmit` passes, all new tests pass.  
-    - 2026-05-10 executor note: targeted parser/controller tests and TypeScript checks passed. `CardsImportService` unit tests listed below are still not present, so this is not marked done yet.
+15. ✅ **TypeScript + tests** — ensure `tsc --noEmit` passes, all new tests pass.  
+    - 2026-05-20 executor note: added `CardsImportService` unit coverage for no-deck import and empty-row no-op paths, complementing the existing deck-import and forbidden-deck tests. Focused backend TypeScript and test verification passed.
 
 ---
 
@@ -303,7 +303,6 @@ A summary line below the "Import CSV" button shows the pending state:
 Remaining before Step 19 sign-off:
 
 - Manual browser/API verification steps 1–25 below.
-- `CardsImportService` unit tests for no-deck import, deck import + review-state initialization, empty rows, and not-owned deck.
 
 #### `csv-parser.spec.ts`
 
@@ -322,11 +321,11 @@ Remaining before Step 19 sign-off:
 - **All rows skipped:** Returns `{ rows: [], skipped: [...] }` without error.
 - **Mixed valid/invalid:** 10 rows, 3 invalid → `rows.length = 7`, `skipped.length = 3`.
 
-#### `cards.service.spec.ts` additions
+#### `cards-import.service.spec.ts`
 
-- **`bulkImportFromCsv` — no deck:** Creates N cards with `kind = 'basic'`, `ownerId = userId`, `deckId = null`. Returns `{ created: N, skipped: [] }`.
-- **`bulkImportFromCsv` — with deck:** Creates N cards with `deckId` set. Verifies `initStandaloneCardReviewState` is called for all created card IDs.
-- **`bulkImportFromCsv` — empty rows list:** Returns `{ created: 0, skipped: [] }` without error.
+- **`bulkImportFromCsv` — no deck:** Creates N cards with `kind = 'basic'`, `ownerId = userId`, `deckId = null`, and no deck memberships or review-state initialization.
+- **`bulkImportFromCsv` — with deck:** Creates N cards with `deckId` set. Verifies deck memberships are created and standalone review state is initialized for all created card IDs.
+- **`bulkImportFromCsv` — empty rows list:** Returns `{ created: 0 }` without opening a transaction.
 - **`bulkImportFromCsv` — deck not owned by user:** Throws `ForbiddenException` before creating any cards.
 
 #### Integration / controller test
@@ -396,6 +395,7 @@ Remaining before Step 19 sign-off:
 26. `cd api && npx tsc --noEmit` — passes with no errors.
 27. `cd web && npx tsc --noEmit` — passes with no errors.
 28. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
+29. `cd api && npm test -- --runInBand --runTestsByPath src/cards/cards-import.service.spec.ts src/cards/cards.controller.spec.ts src/cards/csv/csv-parser.spec.ts` — all pass.
 
 ---
 
@@ -410,6 +410,6 @@ Remaining before Step 19 sign-off:
 - [ ] "Import CSV" in deck edit form immediately imports to the existing deck (Entry C).
 - [ ] Error states (invalid file, no file, wrong deck) surface to the user clearly.
 - [ ] `csv-parser.ts` unit tests all pass.
-- [ ] `cards.service.ts` bulk-import tests pass.
+- [x] `CardsImportService` bulk-import tests pass.
 - [ ] `tsc --noEmit` passes in both `api/` and `web/`.
 - [ ] No regressions in existing card create, deck create, or review flows.
