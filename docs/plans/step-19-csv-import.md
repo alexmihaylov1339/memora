@@ -401,6 +401,7 @@ Remaining before Step 19 sign-off:
 32. `cd api && npm test -- --runInBand --runTestsByPath src/cards/csv/csv-parser.spec.ts src/cards/cards.service.spec.ts` — all pass.
 33. `cd web && npm test -- --runInBand --runTestsByPath src/features/reviews/hooks/useReviewScreen.test.tsx src/app/[locale]/review/components/ReviewScreen.test.tsx src/app/[locale]/cards/page.test.tsx src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx` — all pass.
 34. `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/ImportCsvModal.test.tsx src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/app/[locale]/cards/page.test.tsx` — all pass.
+35. `cd api && npm run test:e2e -- app.e2e-spec.ts --runInBand` — passes after aligning legacy queue/membership assertions to the current deck-scoped review and many-deck membership model, and adding CSV import endpoint coverage.
 
 Live API verification completed — 2026-05-20:
 
@@ -439,11 +440,18 @@ Additional automated coverage added — 2026-05-20:
   - deferred mode queues cards without calling the API
   - immediate import mode calls the API and forwards completion
   - import failure shows retry UI and can reset to idle
+- `api/test/app.e2e-spec.ts`
+  - standalone CSV import creates `basic` cards with no deck assignment
+  - deck-scoped CSV import skips header rows and initializes `ReviewState`
+  - skipped-row response is asserted end to end
+  - `400` no-file and empty-file responses are asserted end to end
+  - `403` forbidden deck import is asserted end to end
 - Existing regression suites rerun for Step 19 sign-off:
   - `cards.service.spec.ts`
   - `useReviewScreen.test.tsx`
   - `ReviewScreen.test.tsx`
   - `cards/page.test.tsx`
+  - `api/test/app.e2e-spec.ts`
 
 Compatibility note:
 
