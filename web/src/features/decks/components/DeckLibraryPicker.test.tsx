@@ -52,6 +52,7 @@ const decks: Deck[] = [
     count: 12,
     dueCount: 3,
     presentationMode: 'standard',
+    isPublic: false,
   },
   {
     id: 'deck-2',
@@ -59,6 +60,7 @@ const decks: Deck[] = [
     count: 5,
     dueCount: 0,
     presentationMode: 'kids',
+    isPublic: true,
   },
 ];
 

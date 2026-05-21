@@ -6,6 +6,7 @@ export interface DeckListItem {
   count: number;
   dueCount: number;
   presentationMode: DeckPresentationMode;
+  isPublic: boolean;
 }
 
 export interface DeckRecord {
@@ -13,6 +14,7 @@ export interface DeckRecord {
   name: string;
   description?: string;
   presentationMode: DeckPresentationMode;
+  isPublic: boolean;
   reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;
@@ -34,6 +36,18 @@ export interface DeckDetail extends DeckRecord {
   sharedUsers: DeckShareSummary[];
 }
 
+export interface PublicDeckListItem {
+  id: string;
+  name: string;
+  description?: string;
+  count: number;
+  presentationMode: DeckPresentationMode;
+  ownerDisplayName: string;
+  ownerUserId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type CreateDeckResult =
   | { status: 'created'; deck: DeckRecord }
   | { status: 'invalid_cards' }
@@ -52,6 +66,14 @@ export type ShareDeckResult =
   | { status: 'share_target_ambiguous' }
   | { status: 'already_shared' }
   | { status: 'cannot_share_with_self' };
+
+export type UpdateDeckPublicationResult =
+  | { status: 'updated'; deck: DeckDetail }
+  | { status: 'not_found' };
+
+export type CopyPublicDeckResult =
+  | { status: 'copied'; deck: DeckRecord }
+  | { status: 'not_found' };
 
 export interface DeckCardMembershipMutationResult {
   deckId: string;

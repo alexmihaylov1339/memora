@@ -36,6 +36,7 @@ describe('DecksWorkspace', () => {
             count: 12,
             dueCount: 3,
             presentationMode: 'standard',
+            isPublic: false,
           },
           {
             id: 'deck-2',
@@ -43,6 +44,7 @@ describe('DecksWorkspace', () => {
             count: 5,
             dueCount: 0,
             presentationMode: 'kids',
+            isPublic: true,
           },
         ]}
       />,
@@ -55,6 +57,9 @@ describe('DecksWorkspace', () => {
     expect(
       screen.getByRole('columnheader', { name: 'Due cards' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Browse Public Decks' }),
+    ).toHaveAttribute('href', '/public-decks');
     expect(screen.getByRole('cell', { name: '12' })).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: '3' })).toBeInTheDocument();
   });

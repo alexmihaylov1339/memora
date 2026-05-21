@@ -10,6 +10,7 @@ export interface DeckListItem {
   name: string;
   count: number;
   presentationMode: DeckPresentationMode;
+  isPublic: boolean;
 }
 
 export interface DeckRecord {
@@ -17,6 +18,7 @@ export interface DeckRecord {
   name: string;
   description?: string;
   presentationMode: DeckPresentationMode;
+  isPublic: boolean;
   reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +40,18 @@ export interface DeckDetail extends DeckRecord {
   sharedUsers: DeckShareSummary[];
 }
 
+export interface PublicDeckListItem {
+  id: string;
+  name: string;
+  description?: string;
+  count: number;
+  presentationMode: DeckPresentationMode;
+  ownerDisplayName: string;
+  ownerUserId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type DeckShareWithUser = Prisma.DeckShareGetPayload<{
   include: {
     user: {
@@ -54,6 +68,13 @@ export type DeckShareWithUser = Prisma.DeckShareGetPayload<{
 
 type DeckWithShareUsers = Prisma.DeckGetPayload<{
   include: {
+    owner: {
+      select: {
+        id: true;
+        email: true;
+        name: true;
+      };
+    };
     shares: {
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }];
       include: {
@@ -72,6 +93,18 @@ type DeckWithShareUsers = Prisma.DeckGetPayload<{
 }>;
 
 export type DeckWithShares = DeckWithShareUsers;
+
+export type PublicDeckWithOwner = Prisma.DeckGetPayload<{
+  include: {
+    owner: {
+      select: {
+        id: true;
+        email: true;
+        name: true;
+      };
+    };
+  };
+}>;
 
 type DeckPersistenceClient = Pick<
   PrismaService,
@@ -134,17 +167,51 @@ export function mapDeckShareSummary(
 
 export function mapDeckDetail(deck: DeckWithShares, count: number): DeckDetail {
   return {
+    ...resolveDeckRecord(deck),
+    count,
+    sharedUsers: deck.shares.map((share) => mapDeckShareSummary(share)),
+  };
+}
+
+export function resolveDeckRecord(deck: {
+  id: string;
+  name: string;
+  description: string | null;
+  presentationMode: string;
+  isPublic: boolean;
+  reviewIntervalHours: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}): DeckRecord {
+  return {
     id: deck.id,
     name: deck.name,
     description: deck.description ?? undefined,
     presentationMode: deck.presentationMode as DeckPresentationMode,
+    isPublic: deck.isPublic,
     reviewIntervalHours: resolveDeckReviewIntervalHours(
       deck.reviewIntervalHours,
     ),
-    count,
     createdAt: deck.createdAt,
     updatedAt: deck.updatedAt,
-    sharedUsers: deck.shares.map((share) => mapDeckShareSummary(share)),
+  };
+}
+
+export function mapPublicDeckListItem(
+  deck: PublicDeckWithOwner,
+  count: number,
+): PublicDeckListItem {
+  return {
+    id: deck.id,
+    name: deck.name,
+    description: deck.description ?? undefined,
+    count,
+    presentationMode: deck.presentationMode as DeckPresentationMode,
+    ownerDisplayName:
+      deck.owner?.name ?? deck.owner?.email ?? 'Unknown deck owner',
+    ownerUserId: deck.owner?.id ?? null,
+    createdAt: deck.createdAt,
+    updatedAt: deck.updatedAt,
   };
 }
 

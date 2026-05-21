@@ -1,10 +1,13 @@
 export {
   useDecksListQuery,
   useDeckDetailQuery,
+  usePublicDecksQuery,
 } from './useDeckQueries';
 export {
+  useCopyPublicDeckMutation,
   useCreateDeckMutation,
   useUpdateDeckMutation,
+  useUpdateDeckPublicationMutation,
   useDeleteDeckMutation,
 } from './useDeckMutations';
 export {

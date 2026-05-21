@@ -1,4 +1,5 @@
 export {
+  copyPublicDeck,
   createDeck,
   createDeckShare,
   detachDeckCards,
@@ -9,6 +10,12 @@ export {
   moveDeckChunks,
   removeDeck,
   removeDeckShare,
+  updateDeckPublication,
   updateDeck,
 } from './deck-mutations';
-export { getDeckDetail, listDeckShares, listDecks } from './deck-queries';
+export {
+  getDeckDetail,
+  listDeckShares,
+  listDecks,
+  listPublicDecks,
+} from './deck-queries';

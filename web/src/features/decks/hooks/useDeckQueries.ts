@@ -1,10 +1,24 @@
 import { useServiceQuery, type UseServiceQueryOptions } from '@shared/hooks';
 import { DECKS_QUERY_KEYS } from '../constants';
 import { deckService } from '../services';
-import type { Deck, GetDeckByIdResponse } from '../types';
+import type {
+  Deck,
+  GetDeckByIdResponse,
+  ListPublicDecksResponse,
+} from '../types';
 
 export function useDecksListQuery(options?: UseServiceQueryOptions<Deck[]>) {
   return useServiceQuery(DECKS_QUERY_KEYS.all, deckService.getAll, options);
+}
+
+export function usePublicDecksQuery(
+  options?: UseServiceQueryOptions<ListPublicDecksResponse>,
+) {
+  return useServiceQuery(
+    DECKS_QUERY_KEYS.public,
+    deckService.getPublic,
+    options,
+  );
 }
 
 export function useDeckDetailQuery(

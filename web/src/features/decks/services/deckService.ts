@@ -1,5 +1,6 @@
 import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import type {
+  CopyPublicDeckResponse,
   CreateDeckShareDto,
   CreateDeckShareResponse,
   CreateDeckDto,
@@ -7,8 +8,11 @@ import type {
   DeckIdParams,
   DeckShareParams,
   GetDeckByIdResponse,
+  ListPublicDecksResponse,
   ListDeckSharesResponse,
   RemoveDeckShareParams,
+  UpdateDeckPublicationDto,
+  UpdateDeckPublicationResponse,
   UpdateDeckDto,
   UpdateDeckResponse,
 } from '../types';
@@ -41,6 +45,13 @@ export const deckService = {
       .setHeaders(getAuthHeaders())
       .execRequest<Parameters<typeof mapDeckListResponse>[0]>()
       .then(mapDeckListResponse);
+  },
+
+  getPublic() {
+    return api
+      .prepareRequest(DECK_ENDPOINTS.PUBLIC, HTTP_METHODS.GET)
+      .setHeaders(getAuthHeaders())
+      .execRequest<ListPublicDecksResponse>();
   },
 
   /**
@@ -99,6 +110,16 @@ export const deckService = {
       .execRequest<UpdateDeckResponse>();
   },
 
+  updatePublication(params: DeckIdParams & UpdateDeckPublicationDto) {
+    const { id, ...data } = params;
+
+    return api
+      .prepareRequest(DECK_ENDPOINTS.PUBLICATION(id), HTTP_METHODS.PUT)
+      .setHeaders(getAuthHeaders())
+      .setBody(data)
+      .execRequest<UpdateDeckPublicationResponse>();
+  },
+
   /**
    * Delete a deck
    * @example
@@ -143,5 +164,12 @@ export const deckService = {
       )
       .setHeaders(getAuthHeaders())
       .execRequest<void>();
+  },
+
+  copyPublicDeck(params: DeckIdParams) {
+    return api
+      .prepareRequest(DECK_ENDPOINTS.PUBLIC_COPY(params.id), HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .execRequest<CopyPublicDeckResponse>();
   },
 };

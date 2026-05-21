@@ -1,11 +1,11 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import type { DeckPresentationMode } from './deck-presentation-mode';
-import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 import {
   hasExistingCards,
   hasExistingChunks,
   replaceDeckCards,
   replaceDeckChunks,
+  resolveDeckRecord,
 } from './decks.helpers';
 import type { UpdateDeckResult } from './decks.types';
 
@@ -63,6 +63,13 @@ export async function updateDeck(
         reviewIntervalHours: data.reviewIntervalHours,
       },
       include: {
+        owner: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
         shares: {
           orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
           include: {
@@ -84,16 +91,8 @@ export async function updateDeck(
     return {
       status: 'updated',
       deck: {
-        id: deck.id,
-        name: deck.name,
-        description: deck.description ?? undefined,
-        presentationMode: deck.presentationMode as DeckPresentationMode,
-        reviewIntervalHours: resolveDeckReviewIntervalHours(
-          deck.reviewIntervalHours,
-        ),
+        ...resolveDeckRecord(deck),
         count: cardCount,
-        createdAt: deck.createdAt,
-        updatedAt: deck.updatedAt,
         sharedUsers: deck.shares.map((share) => ({
           id: share.id,
           deckId: share.deckId,

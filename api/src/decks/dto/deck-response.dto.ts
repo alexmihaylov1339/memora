@@ -10,6 +10,7 @@ export interface DeckListItemDto {
   count: number;
   dueCount: number;
   presentationMode: string;
+  isPublic: boolean;
 }
 
 export interface DeckDetailDto {
@@ -17,6 +18,7 @@ export interface DeckDetailDto {
   name: string;
   description?: string;
   presentationMode: string;
+  isPublic: boolean;
   reviewIntervalHours: number[];
   count: number;
   sharedUsers: DeckShareDto[];
@@ -29,7 +31,20 @@ export interface DeckRecordDto {
   name: string;
   description?: string;
   presentationMode: string;
+  isPublic: boolean;
   reviewIntervalHours: number[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicDeckListItemDto {
+  id: string;
+  name: string;
+  description?: string;
+  count: number;
+  presentationMode: string;
+  ownerDisplayName: string;
+  ownerUserId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,6 +56,7 @@ export function serializeDeckListItem(deck: DeckListItem): DeckListItemDto {
     count: deck.count,
     dueCount: deck.dueCount,
     presentationMode: deck.presentationMode,
+    isPublic: deck.isPublic,
   };
 }
 
@@ -56,6 +72,7 @@ export function serializeDeckDetail(deck: DeckDetail): DeckDetailDto {
     name: deck.name,
     description: deck.description,
     presentationMode: deck.presentationMode,
+    isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
     count: deck.count,
     sharedUsers: serializeDeckShareListResponse(deck.sharedUsers),
@@ -70,8 +87,35 @@ export function serializeDeckRecord(deck: DeckRecord): DeckRecordDto {
     name: deck.name,
     description: deck.description,
     presentationMode: deck.presentationMode,
+    isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
     createdAt: deck.createdAt.toISOString(),
     updatedAt: deck.updatedAt.toISOString(),
   };
+}
+
+export function serializePublicDeckListResponse(
+  decks: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    count: number;
+    presentationMode: string;
+    ownerDisplayName: string;
+    ownerUserId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }>,
+): PublicDeckListItemDto[] {
+  return decks.map((deck) => ({
+    id: deck.id,
+    name: deck.name,
+    description: deck.description,
+    count: deck.count,
+    presentationMode: deck.presentationMode,
+    ownerDisplayName: deck.ownerDisplayName,
+    ownerUserId: deck.ownerUserId,
+    createdAt: deck.createdAt.toISOString(),
+    updatedAt: deck.updatedAt.toISOString(),
+  }));
 }

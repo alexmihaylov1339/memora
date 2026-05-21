@@ -94,6 +94,10 @@ interface DeckMembershipChunksValidationInput {
   chunkIds?: unknown;
 }
 
+interface UpdateDeckPublicationValidationInput {
+  isPublic?: unknown;
+}
+
 export function validateCreateDeckShareInput(
   body: CreateDeckShareValidationInput | undefined,
 ): {
@@ -150,6 +154,16 @@ export function validateDeckMoveChunksInput(
   return {
     chunkIds: body.chunkIds.map((id) => id.trim()),
   };
+}
+
+export function validateUpdateDeckPublicationInput(
+  body: UpdateDeckPublicationValidationInput | undefined,
+): { isPublic: boolean } {
+  if (!body || typeof body.isPublic !== 'boolean') {
+    throw new BadRequestException(DECK_ERROR_MESSAGES.publicationFlagInvalid);
+  }
+
+  return { isPublic: body.isPublic };
 }
 
 function isValidDeckSharePermission(

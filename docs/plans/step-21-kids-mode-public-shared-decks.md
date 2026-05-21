@@ -284,7 +284,7 @@ Verification completed:
 ### T5 - Add public deck publishing, browse, and copy/add flow
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - let a deck owner explicitly publish or unpublish a deck.
@@ -304,6 +304,25 @@ Required metadata for public browse v1:
 
 Exit criteria:
 - a published kids deck can be discovered by another user and copied into that user’s own library.
+
+Implementation notes:
+- Added a persisted deck publication flag with `Deck.isPublic` in Prisma, migration, bootstrap SQL, and deck DTO serialization.
+- Added authenticated backend endpoints for:
+  - listing public decks
+  - publishing/unpublishing an owned deck
+  - copying a public deck into the current user’s library
+- Public deck copy creates a new owned deck and duplicates its cards/chunks/memberships under the new owner while keeping copied decks private by default.
+- Copied cards reuse the stored card field payloads, including `image_audio` asset references, so copied kids decks remain usable without duplicating bucket files in v1.
+- Added a protected public browse page on the web with a grid-based searchable surface and “Add to my decks” action.
+- Added publication controls to the deck share panel so deck owners can publish or unpublish directly from the deck workspace.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/deck-public.controller.spec.ts src/decks/decks.service.spec.ts src/decks/dto/deck-validation.spec.ts` passed.
+- `cd api && npx prisma validate && npx prisma generate` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/services/deckResponseMapper.test.ts src/features/decks/components/DeckLibraryPicker.test.tsx 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' 'src/app/[locale]/public-decks/page.test.tsx' 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx'` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `git diff --check` passed.
 
 ---
 

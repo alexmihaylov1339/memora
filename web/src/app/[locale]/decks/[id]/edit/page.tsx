@@ -117,6 +117,7 @@ export default function EditDeckPage() {
 
             <DeckSharePanel
               deckId={deck.id}
+              isPublic={deck.isPublic}
               sharedUsers={deck.sharedUsers ?? []}
               onChanged={() => void deckQuery.refetch()}
             />

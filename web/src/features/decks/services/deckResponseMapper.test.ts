@@ -18,6 +18,7 @@ describe('mapDeckListResponse', () => {
         count: 3,
         dueCount: 0,
         presentationMode: 'standard',
+        isPublic: false,
       },
     ]);
   });
@@ -39,6 +40,7 @@ describe('mapDeckListResponse', () => {
         count: 1,
         dueCount: 0,
         presentationMode: 'standard',
+        isPublic: false,
       },
     ]);
   });

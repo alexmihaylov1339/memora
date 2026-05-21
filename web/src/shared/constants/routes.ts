@@ -8,6 +8,7 @@ export const APP_ROUTES = {
   decks: '/decks',
   chunks: '/chunks',
   cards: '/cards',
+  publicDecks: '/public-decks',
   review: '/review',
   practice: '/practice',
   newDeck: '/decks/new',

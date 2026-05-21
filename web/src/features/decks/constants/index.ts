@@ -9,6 +9,7 @@ const DECKS_KEY = 'decks';
 export const DECKS_QUERY_KEYS = {
   all: [DECKS_KEY],
   detail: (id: string) => [DECKS_KEY, id],
+  public: [DECKS_KEY, 'public'],
 };
 
 export const DECK_SELECTED_ITEMS_PAGE_SIZE = 5;

@@ -46,6 +46,7 @@ model Deck {
   name        String
   description String?
   presentationMode String @default("standard")
+  isPublic    Boolean  @default(false)
   reviewIntervalHours Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

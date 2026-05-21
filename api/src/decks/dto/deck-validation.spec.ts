@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 
 import {
   validateCreateDeckInput,
+  validateUpdateDeckPublicationInput,
   validateUpdateDeckInput,
 } from './deck-validation';
 
@@ -39,6 +40,22 @@ describe('deck-validation', () => {
       validateUpdateDeckInput({
         presentationMode: 'storybook',
       }),
+    ).toThrow(BadRequestException);
+  });
+
+  it('accepts valid deck publication input', () => {
+    expect(() =>
+      validateUpdateDeckPublicationInput({
+        isPublic: true,
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects invalid deck publication input', () => {
+    expect(() =>
+      validateUpdateDeckPublicationInput({
+        isPublic: 'yes',
+      } as never),
     ).toThrow(BadRequestException);
   });
 });

@@ -1,13 +1,13 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  moveCardsToDeck,
-  moveChunksToDeck,
   hasExistingCards,
   hasExistingChunks,
+  moveCardsToDeck,
+  moveChunksToDeck,
+  resolveDeckRecord,
 } from './decks.helpers';
 import type { DeckPresentationMode } from './deck-presentation-mode';
-import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
-import type { CreateDeckResult, DeckRecord } from './decks.types';
+import type { CreateDeckResult } from './decks.types';
 
 export async function createDeck(
   prisma: PrismaService,
@@ -41,22 +41,18 @@ export async function createDeck(
         name: input.name,
         description: input.description,
         presentationMode: input.presentationMode,
+        isPublic: false,
         reviewIntervalHours: input.reviewIntervalHours,
         ownerId: input.userId,
       },
-    })) as unknown as DeckRecord;
+    })) as Parameters<typeof resolveDeckRecord>[0];
 
     await moveCardsToDeck(tx, deck.id, input.cardIds);
     await moveChunksToDeck(tx, deck.id, input.chunkIds);
 
     return {
       status: 'created',
-      deck: {
-        ...deck,
-        reviewIntervalHours: resolveDeckReviewIntervalHours(
-          deck.reviewIntervalHours,
-        ),
-      },
+      deck: resolveDeckRecord(deck),
     } satisfies CreateDeckResult;
   });
 }
