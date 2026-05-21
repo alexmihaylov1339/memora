@@ -243,7 +243,7 @@ Verification completed:
 ### T4 - Build the dedicated kids practice/player experience
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - build a separate kids presentation path that is visually and behaviorally distinct from normal review/practice.
@@ -263,6 +263,21 @@ Required UX behavior:
 
 Exit criteria:
 - a caregiver can open a kids deck on mobile or desktop web and move through image/audio cards smoothly.
+
+Implementation notes:
+- Kept the existing deck-scoped `/practice?deckId=...` route and added a page-level branch so `presentationMode: "kids"` mounts a dedicated kids player while `standard` decks keep the existing practice screen.
+- Added a practice-specific renderer resolver so `image_audio` cards can render in practice even though they remain outside the normal review scheduler path.
+- Added a dedicated kids player UI with:
+  - oversized image-first card layout
+  - large manual audio playback control
+  - large previous/next navigation controls
+  - distinct kids-mode header styling
+  - unsupported-card fallback when a kids deck contains a non-`image_audio` card
+- Left the review scheduler and standard review renderer behavior untouched for normal decks and normal practice.
+
+Verification completed:
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/reviews/practice-kind-registry.test.ts 'src/app/[locale]/practice/components/PracticeScreen.test.tsx' 'src/app/[locale]/practice/components/KidsPracticeScreen.test.tsx' 'src/app/[locale]/practice/page.test.tsx' src/features/reviews/review-kind-registry.test.ts` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
 
 ---
 

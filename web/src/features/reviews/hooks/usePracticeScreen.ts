@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { resolveReviewRenderer } from '../review-kind-registry';
 import type { ReviewRenderableItem } from '../types';
 import { usePracticeQuery } from './useReviewQueries';
 
@@ -11,7 +10,6 @@ export function usePracticeScreen(deckId: string | null) {
 
   const items = practiceQuery.result?.items ?? [];
   const currentItem = items[currentIndex] ?? null;
-  const reviewRenderer = resolveReviewRenderer(currentItem);
   const isAnswerRevealed = currentItem?.cardId === revealedCardId;
   const missingDeckErrorMessage = deckId ? undefined : 'Choose a deck to practice.';
 
@@ -60,7 +58,6 @@ export function usePracticeScreen(deckId: string | null) {
     isAnswerRevealed,
     isLoading: practiceQuery.isLoading,
     positionLabel,
-    reviewRenderer,
     totalCount: items.length,
     handleNextItem,
     handlePreviousItem,

@@ -2,6 +2,7 @@ export { reviewService } from './services';
 export {
   resolveReviewRenderer,
 } from './review-kind-registry';
+export { resolvePracticeRenderer } from './practice-kind-registry';
 export {
   REVIEW_QUEUE_STATES,
   REVIEW_UI_EVENTS,
@@ -10,10 +11,17 @@ export {
 export type {
   ReviewRendererResolution,
   SupportedReviewRenderer,
+  UnsupportedReviewRenderer,
 } from './review-kind-registry';
+export type {
+  PracticeRendererResolution,
+  SupportedPracticeRenderer,
+} from './practice-kind-registry';
 export type {
   BasicReviewCardFields,
   ClozeTextReviewCardFields,
+  ImageAudioPracticeCardFields,
+  PracticeAssetFields,
 } from './review-kind-fields';
 export type {
   ReviewQueueState,

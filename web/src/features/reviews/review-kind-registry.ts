@@ -20,7 +20,7 @@ type ClozeTextReviewRenderer = {
   clozeTextCardFields: ClozeTextReviewCardFields;
 };
 
-type UnsupportedReviewRenderer = {
+export type UnsupportedReviewRenderer = {
   renderer: 'unsupported';
   reason: ReviewUnsupportedReason;
 };

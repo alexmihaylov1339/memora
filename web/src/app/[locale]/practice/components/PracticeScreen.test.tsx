@@ -1,10 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import type React from 'react';
 
-import { usePracticeScreen } from '@features/reviews';
+import {
+  resolveReviewRenderer,
+  usePracticeScreen,
+} from '@features/reviews';
 import PracticeScreen from './PracticeScreen';
 
 jest.mock('@features/reviews', () => ({
+  resolveReviewRenderer: jest.fn(),
   usePracticeScreen: jest.fn(),
 }));
 
@@ -55,10 +59,13 @@ jest.mock('../../review/components/ReviewCurrentItemCard', () => {
 const mockedUsePracticeScreen = usePracticeScreen as jest.MockedFunction<
   typeof usePracticeScreen
 >;
+const mockedResolveReviewRenderer =
+  resolveReviewRenderer as jest.MockedFunction<typeof resolveReviewRenderer>;
 
 describe('PracticeScreen', () => {
   beforeEach(() => {
     mockedUsePracticeScreen.mockReset();
+    mockedResolveReviewRenderer.mockReset();
   });
 
   it('renders non-mutating practice navigation for a deck item', () => {
@@ -81,14 +88,14 @@ describe('PracticeScreen', () => {
       isAnswerRevealed: false,
       isLoading: false,
       positionLabel: '1 of 2',
-      reviewRenderer: {
-        renderer: 'basic',
-        basicCardFields: { front: 'eins', back: 'one' },
-      },
       totalCount: 2,
       handleNextItem: jest.fn(),
       handlePreviousItem: jest.fn(),
       handleRevealAnswer: jest.fn(),
+    });
+    mockedResolveReviewRenderer.mockReturnValue({
+      renderer: 'basic',
+      basicCardFields: { front: 'eins', back: 'one' },
     });
 
     render(<PracticeScreen deckId="deck-1" />);

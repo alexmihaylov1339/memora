@@ -1,19 +1,21 @@
 import {
-  resolveReviewRenderer,
+  resolvePracticeRenderer,
   usePracticeScreen,
 } from '@features/reviews';
 import { ErrorMessage, PageLoader } from '@shared/components';
-import ReviewCurrentItemCard from '../../review/components/ReviewCurrentItemCard';
 import PracticeEmptyState from './PracticeEmptyState';
-import PracticeHeader from './PracticeHeader';
-import PracticeNavigation from './PracticeNavigation';
 import PracticeUnsupportedCard from './PracticeUnsupportedCard';
+import KidsPracticeCard from './KidsPracticeCard';
+import KidsPracticeHeader from './KidsPracticeHeader';
+import KidsPracticeNavigation from './KidsPracticeNavigation';
 
-interface PracticeScreenProps {
+interface KidsPracticeScreenProps {
   deckId: string | null;
 }
 
-export default function PracticeScreen({ deckId }: PracticeScreenProps) {
+export default function KidsPracticeScreen({
+  deckId,
+}: KidsPracticeScreenProps) {
   const {
     currentItem,
     errorMessage,
@@ -21,13 +23,10 @@ export default function PracticeScreen({ deckId }: PracticeScreenProps) {
     hasPreviousItem,
     handleNextItem,
     handlePreviousItem,
-    handleRevealAnswer,
-    isAnswerRevealed,
     isLoading,
     positionLabel,
-    totalCount,
   } = usePracticeScreen(deckId);
-  const reviewRenderer = resolveReviewRenderer(currentItem);
+  const practiceRenderer = resolvePracticeRenderer(currentItem);
 
   if (isLoading) {
     return <PageLoader />;
@@ -40,7 +39,7 @@ export default function PracticeScreen({ deckId }: PracticeScreenProps) {
   if (!currentItem) {
     return (
       <PracticeEmptyState
-        description="This deck does not have any practice cards yet."
+        description="This kids deck does not have any picture cards yet."
         title="Nothing to practice"
       />
     );
@@ -48,28 +47,27 @@ export default function PracticeScreen({ deckId }: PracticeScreenProps) {
 
   return (
     <div className="space-y-6">
-      <PracticeHeader deckId={deckId} positionLabel={positionLabel} />
+      <KidsPracticeHeader positionLabel={positionLabel} />
 
-      {!reviewRenderer ||
-      reviewRenderer.renderer === 'unsupported' ? (
+      {!practiceRenderer || practiceRenderer.renderer === 'unsupported' ? (
         <PracticeUnsupportedCard
           item={currentItem}
-          reason={reviewRenderer?.reason ?? currentItem.reviewUnsupportedReason}
+          reason={practiceRenderer?.reason ?? currentItem.reviewUnsupportedReason}
         />
+      ) : practiceRenderer.renderer === 'image_audio' ? (
+        <KidsPracticeCard cardFields={practiceRenderer.imageAudioCardFields} />
       ) : (
-        <ReviewCurrentItemCard
-          isAnswerRevealed={isAnswerRevealed}
-          onRevealAnswer={handleRevealAnswer}
-          reviewRenderer={reviewRenderer}
+        <PracticeUnsupportedCard
+          item={currentItem}
+          reason={currentItem.reviewUnsupportedReason}
         />
       )}
 
-      <PracticeNavigation
+      <KidsPracticeNavigation
         hasNextItem={hasNextItem}
         hasPreviousItem={hasPreviousItem}
         onNext={handleNextItem}
         onPrevious={handlePreviousItem}
-        totalCount={totalCount}
       />
     </div>
   );
