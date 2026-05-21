@@ -26,6 +26,7 @@ export const TRANSLATION_KEYS = {
     description: 'decks.description',
     descriptionPlaceholder: 'decks.descriptionPlaceholder',
     namePlaceholder: 'decks.namePlaceholder',
+    presentationMode: 'decks.presentationMode',
     reviewIntervals: 'decks.reviewIntervals',
     reviewIntervalsPlaceholder: 'decks.reviewIntervalsPlaceholder',
     createButton: 'decks.createButton',

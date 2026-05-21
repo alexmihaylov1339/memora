@@ -1,4 +1,5 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 import {
   hasExistingCards,
@@ -16,6 +17,7 @@ export async function updateDeck(
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    presentationMode?: DeckPresentationMode;
     reviewIntervalHours?: number[];
   },
   userId: string,
@@ -57,6 +59,7 @@ export async function updateDeck(
       data: {
         name: data.name,
         description: data.description,
+        presentationMode: data.presentationMode,
         reviewIntervalHours: data.reviewIntervalHours,
       },
       include: {
@@ -84,6 +87,7 @@ export async function updateDeck(
         id: deck.id,
         name: deck.name,
         description: deck.description ?? undefined,
+        presentationMode: deck.presentationMode as DeckPresentationMode,
         reviewIntervalHours: resolveDeckReviewIntervalHours(
           deck.reviewIntervalHours,
         ),

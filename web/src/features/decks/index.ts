@@ -96,7 +96,9 @@ export type {
 // Constants
 export {
   CARD_LIBRARY_PICKER_PAGE_SIZE,
+  DECK_PRESENTATION_MODE_OPTIONS,
   DECKS_QUERY_KEYS,
   DECK_ENDPOINTS,
   DECK_SELECTED_ITEMS_PAGE_SIZE,
 } from './constants';
+export type { DeckPresentationMode } from './constants';

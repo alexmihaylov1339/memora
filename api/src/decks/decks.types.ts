@@ -1,14 +1,18 @@
+import type { DeckPresentationMode } from './deck-presentation-mode';
+
 export interface DeckListItem {
   id: string;
   name: string;
   count: number;
   dueCount: number;
+  presentationMode: DeckPresentationMode;
 }
 
 export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  presentationMode: DeckPresentationMode;
   reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;

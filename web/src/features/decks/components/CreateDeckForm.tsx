@@ -19,8 +19,10 @@ import DeckChunkSelectionPanel from './DeckChunkSelectionPanel';
 import { ImportCsvModal } from './ImportCsvModal';
 
 import styles from './CreateDeckForm.module.scss';
+import type { DeckPresentationMode } from '../constants';
 
 interface CreateDeckFormValues extends Omit<CreateDeckDto, 'reviewIntervalHours'> {
+  presentationMode: DeckPresentationMode;
   reviewIntervalsInput: string;
 }
 
@@ -95,6 +97,7 @@ export default function CreateDeckForm() {
         description: values.description?.trim() || undefined,
         cardIds: values.cardIds,
         chunkIds: values.chunkIds,
+        presentationMode: values.presentationMode,
         reviewIntervalHours,
       });
     } catch {

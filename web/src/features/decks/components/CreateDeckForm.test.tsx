@@ -46,8 +46,19 @@ jest.mock('../hooks', () => ({
   }),
 }));
 
-jest.mock('./DeckCardSelectionPanel', () => () => <div>card selection</div>);
-jest.mock('./DeckChunkSelectionPanel', () => () => <div>chunk selection</div>);
+jest.mock('./DeckCardSelectionPanel', () => ({
+  __esModule: true,
+  default: function MockDeckCardSelectionPanel() {
+    return <div>card selection</div>;
+  },
+}));
+
+jest.mock('./DeckChunkSelectionPanel', () => ({
+  __esModule: true,
+  default: function MockDeckChunkSelectionPanel() {
+    return <div>chunk selection</div>;
+  },
+}));
 jest.mock('./CreateDeckForm.module.scss', () => ({
   actionRow: 'action-row',
   container: 'container',
@@ -108,6 +119,7 @@ jest.mock('@shared/components', () => ({
       description?: string;
       cardIds?: string[];
       chunkIds?: string[];
+      presentationMode: 'standard' | 'kids';
       reviewIntervalsInput: string;
     }) => Promise<void> | void;
     submitLabel: string;
@@ -122,6 +134,7 @@ jest.mock('@shared/components', () => ({
             description: '  For toddlers  ',
             cardIds: ['card-1'],
             chunkIds: ['chunk-1'],
+            presentationMode: 'kids',
             reviewIntervalsInput: '1d, 2d',
           })
         }
@@ -173,6 +186,7 @@ describe('CreateDeckForm CSV import flow', () => {
         description: 'For toddlers',
         cardIds: ['card-1'],
         chunkIds: ['chunk-1'],
+        presentationMode: 'kids',
         reviewIntervalHours: [24, 48],
       });
       expect(mockImportFetch).toHaveBeenCalledWith({

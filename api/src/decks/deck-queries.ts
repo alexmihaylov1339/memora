@@ -1,5 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import { getDueCardCountsByDeck } from './deck-review-counts';
 import {
   getDeckCardCounts,
@@ -30,6 +31,7 @@ export async function listDecks(
     name: deck.name,
     count: cardCounts.get(deck.id) ?? 0,
     dueCount: dueCounts.get(deck.id) ?? 0,
+    presentationMode: deck.presentationMode as DeckPresentationMode,
   }));
 }
 

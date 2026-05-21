@@ -9,12 +9,14 @@ export interface DeckListItemDto {
   name: string;
   count: number;
   dueCount: number;
+  presentationMode: string;
 }
 
 export interface DeckDetailDto {
   id: string;
   name: string;
   description?: string;
+  presentationMode: string;
   reviewIntervalHours: number[];
   count: number;
   sharedUsers: DeckShareDto[];
@@ -26,6 +28,7 @@ export interface DeckRecordDto {
   id: string;
   name: string;
   description?: string;
+  presentationMode: string;
   reviewIntervalHours: number[];
   createdAt: string;
   updatedAt: string;
@@ -37,6 +40,7 @@ export function serializeDeckListItem(deck: DeckListItem): DeckListItemDto {
     name: deck.name,
     count: deck.count,
     dueCount: deck.dueCount,
+    presentationMode: deck.presentationMode,
   };
 }
 
@@ -51,6 +55,7 @@ export function serializeDeckDetail(deck: DeckDetail): DeckDetailDto {
     id: deck.id,
     name: deck.name,
     description: deck.description,
+    presentationMode: deck.presentationMode,
     reviewIntervalHours: deck.reviewIntervalHours,
     count: deck.count,
     sharedUsers: serializeDeckShareListResponse(deck.sharedUsers),
@@ -64,6 +69,7 @@ export function serializeDeckRecord(deck: DeckRecord): DeckRecordDto {
     id: deck.id,
     name: deck.name,
     description: deck.description,
+    presentationMode: deck.presentationMode,
     reviewIntervalHours: deck.reviewIntervalHours,
     createdAt: deck.createdAt.toISOString(),
     updatedAt: deck.updatedAt.toISOString(),

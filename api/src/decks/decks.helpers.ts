@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 
@@ -8,12 +9,14 @@ export interface DeckListItem {
   id: string;
   name: string;
   count: number;
+  presentationMode: DeckPresentationMode;
 }
 
 export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  presentationMode: DeckPresentationMode;
   reviewIntervalHours: number[];
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +137,7 @@ export function mapDeckDetail(deck: DeckWithShares, count: number): DeckDetail {
     id: deck.id,
     name: deck.name,
     description: deck.description ?? undefined,
+    presentationMode: deck.presentationMode as DeckPresentationMode,
     reviewIntervalHours: resolveDeckReviewIntervalHours(
       deck.reviewIntervalHours,
     ),

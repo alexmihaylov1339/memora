@@ -81,10 +81,12 @@ describe('DecksService', () => {
         {
           id: 'deck-owned',
           name: 'Owned',
+          presentationMode: 'standard',
         },
         {
           id: 'deck-shared',
           name: 'Shared',
+          presentationMode: 'kids',
         },
       ]);
     prisma.deckCard.groupBy.mockResolvedValueOnce([
@@ -140,8 +142,20 @@ describe('DecksService', () => {
     ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
-      { id: 'deck-owned', name: 'Owned', count: 4, dueCount: 2 },
-      { id: 'deck-shared', name: 'Shared', count: 2, dueCount: 1 },
+      {
+        id: 'deck-owned',
+        name: 'Owned',
+        count: 4,
+        dueCount: 2,
+        presentationMode: 'standard',
+      },
+      {
+        id: 'deck-shared',
+        name: 'Shared',
+        count: 2,
+        dueCount: 1,
+        presentationMode: 'kids',
+      },
     ]);
 
     jest.useRealTimers();
@@ -156,6 +170,7 @@ describe('DecksService', () => {
       id: 'deck-1',
       name: 'Deck 1',
       description: null,
+      presentationMode: 'kids',
       reviewIntervalHours: [2, 24],
       ownerId: 'user-1',
       createdAt: now,
@@ -163,7 +178,15 @@ describe('DecksService', () => {
     });
 
     await expect(
-      service.create('Deck 1', undefined, ['card-1'], [], 'user-1', [2, 24]),
+      service.create(
+        'Deck 1',
+        undefined,
+        ['card-1'],
+        [],
+        'user-1',
+        'kids',
+        [2, 24],
+      ),
     ).resolves.toEqual(
       expect.objectContaining({
         status: 'created',
@@ -201,6 +224,7 @@ describe('DecksService', () => {
       data: {
         name: 'Deck 1',
         description: undefined,
+        presentationMode: 'kids',
         reviewIntervalHours: [2, 24],
         ownerId: 'user-1',
       },
@@ -218,6 +242,7 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      presentationMode: 'kids',
       reviewIntervalHours: [4, 24],
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
@@ -244,6 +269,7 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      presentationMode: 'kids',
       reviewIntervalHours: [4, 24],
       count: 3,
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
@@ -272,6 +298,7 @@ describe('DecksService', () => {
       id: 'deck-1',
       name: 'Deck 1',
       description: null,
+      presentationMode: 'kids',
       reviewIntervalHours: [1, 24, 168],
       createdAt,
       updatedAt,
@@ -287,6 +314,7 @@ describe('DecksService', () => {
         id: 'deck-1',
         name: 'Deck 1',
         description: undefined,
+        presentationMode: 'kids',
         reviewIntervalHours: [1, 24, 168],
         count: 0,
         createdAt,

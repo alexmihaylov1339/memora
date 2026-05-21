@@ -208,7 +208,7 @@ Verification completed:
 ### T3 - Add deck-level kids mode configuration and authoring rules
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a deck-level presentation mode field or equivalent persisted configuration:
@@ -221,6 +221,22 @@ What to do:
 
 Exit criteria:
 - deck configuration persists and drives downstream routing/UI decisions.
+
+Implementation notes:
+- Added persisted deck-level `presentationMode` support in Prisma with migration and full-schema SQL updates.
+- Added backend normalization/validation for `presentationMode: "standard" | "kids"` and threaded it through deck create, update, list, and detail responses.
+- Added frontend deck contract support for `presentationMode` across deck list/detail/create/update types.
+- Added a presentation-mode select field to deck create and deck edit forms so authors can mark a deck as kids mode explicitly.
+- Updated deck response mapping to default legacy/missing list values to `standard` on the web side.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/decks.service.spec.ts src/decks/dto/deck-validation.spec.ts` passed.
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/services/deckResponseMapper.test.ts src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' src/features/decks/components/DeckLibraryPicker.test.tsx` passed.
+- `cd api && npx prisma validate && npx prisma generate` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `git diff --check` passed.
+- Targeted `eslint` for the touched deck files passed on both `api` and `web`.
 
 ---
 

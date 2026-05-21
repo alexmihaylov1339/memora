@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
+import { normalizeDeckPresentationMode } from './deck-presentation-mode';
 import { normalizeDeckReviewIntervalHours } from './deck-review-intervals';
 import type { CreateDeckDto } from './dto/create-deck.dto';
 import type { DeckIdParamDto } from './dto/deck-id-param.dto';
@@ -58,6 +59,9 @@ export class DecksController {
     const reviewIntervalHours = normalizeDeckReviewIntervalHours(
       body.reviewIntervalHours,
     );
+    const presentationMode = normalizeDeckPresentationMode(
+      body.presentationMode,
+    );
 
     const result = await this.decks.create(
       body.name.trim(),
@@ -65,6 +69,7 @@ export class DecksController {
       normalizedCardIds,
       normalizedChunkIds,
       user.id,
+      presentationMode,
       reviewIntervalHours,
     );
 
@@ -111,6 +116,10 @@ export class DecksController {
     const reviewIntervalHours = normalizeDeckReviewIntervalHours(
       body.reviewIntervalHours,
     );
+    const presentationMode =
+      body.presentationMode === undefined
+        ? undefined
+        : normalizeDeckPresentationMode(body.presentationMode);
 
     const result = await this.decks.update(
       id,
@@ -119,6 +128,7 @@ export class DecksController {
         description: body.description?.trim(),
         cardIds: normalizedCardIds,
         chunkIds: normalizedChunkIds,
+        presentationMode,
         reviewIntervalHours,
       },
       user.id,

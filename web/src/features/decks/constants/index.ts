@@ -16,3 +16,7 @@ export const CARD_LIBRARY_PICKER_PAGE_SIZE = 6;
 
 export { createDeckFormFields } from './formFields';
 export { DECK_ENDPOINTS } from './endpoints';
+export {
+  DECK_PRESENTATION_MODE_OPTIONS,
+  type DeckPresentationMode,
+} from './presentationModes';

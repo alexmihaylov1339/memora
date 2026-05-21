@@ -1,10 +1,12 @@
 import type { SupportedCardKind } from '../card-kinds';
+import type { DeckPresentationMode } from '../constants';
 
 export interface CreateDeckDto {
   name: string;
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
 }
 
@@ -13,12 +15,14 @@ export interface DeckListItem {
   name: string;
   count: number;
   dueCount: number;
+  presentationMode: DeckPresentationMode;
 }
 
 export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  presentationMode: DeckPresentationMode;
   reviewIntervalHours: number[];
   createdAt: string;
   updatedAt: string;
@@ -47,6 +51,7 @@ export interface UpdateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
 }
 

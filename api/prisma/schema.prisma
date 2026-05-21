@@ -45,6 +45,7 @@ model Deck {
   ownerId     String?
   name        String
   description String?
+  presentationMode String @default("standard")
   reviewIntervalHours Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

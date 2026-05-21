@@ -19,13 +19,31 @@ jest.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
+jest.mock('@/features/auth/account/hooks', () => ({
+  useGetCurrentUser: () => ({
+    data: { name: 'Alex', email: 'alex@example.com' },
+  }),
+}));
+
 describe('DecksWorkspace', () => {
   it('shows total cards and due cards as separate deck grid columns', () => {
     render(
       <DecksWorkspace
         decks={[
-          { id: 'deck-1', name: 'Spanish', count: 12, dueCount: 3 },
-          { id: 'deck-2', name: 'German', count: 5, dueCount: 0 },
+          {
+            id: 'deck-1',
+            name: 'Spanish',
+            count: 12,
+            dueCount: 3,
+            presentationMode: 'standard',
+          },
+          {
+            id: 'deck-2',
+            name: 'German',
+            count: 5,
+            dueCount: 0,
+            presentationMode: 'kids',
+          },
         ]}
       />,
     );

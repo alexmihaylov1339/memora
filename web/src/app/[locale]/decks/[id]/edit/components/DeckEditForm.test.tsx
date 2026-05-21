@@ -71,6 +71,7 @@ describe('DeckEditForm CSV import flow', () => {
       <DeckEditForm
         id="deck-1"
         name="Kids deck"
+        presentationMode="kids"
         reviewIntervalHours={[0, 24]}
         onDelete={jest.fn()}
         isDeleting={false}

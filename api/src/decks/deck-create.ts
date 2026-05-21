@@ -5,6 +5,7 @@ import {
   hasExistingCards,
   hasExistingChunks,
 } from './decks.helpers';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 import type { CreateDeckResult, DeckRecord } from './decks.types';
 
@@ -15,6 +16,7 @@ export async function createDeck(
     description?: string;
     cardIds: string[];
     chunkIds: string[];
+    presentationMode: DeckPresentationMode;
     reviewIntervalHours?: number[];
     userId: string;
   },
@@ -38,6 +40,7 @@ export async function createDeck(
       data: {
         name: input.name,
         description: input.description,
+        presentationMode: input.presentationMode,
         reviewIntervalHours: input.reviewIntervalHours,
         ownerId: input.userId,
       },

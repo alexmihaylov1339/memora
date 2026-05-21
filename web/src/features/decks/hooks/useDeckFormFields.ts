@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { FieldConfig } from '@shared/components';
+import { DECK_PRESENTATION_MODE_OPTIONS } from '../constants';
 
 export function useDeckEditFormFields(): FieldConfig[] {
   return useMemo<FieldConfig[]>(
@@ -25,6 +26,18 @@ export function useDeckEditFormFields(): FieldConfig[] {
         rows: 3,
         inputClassName:
           'w-full rounded-[4px] border border-line bg-white px-3 py-2 text-sm text-ink-strong outline-none resize-y focus:border-brand-accent',
+      },
+      {
+        type: 'select',
+        name: 'presentationMode',
+        label: 'Presentation mode',
+        required: true,
+        defaultValue: 'standard',
+        options: [...DECK_PRESENTATION_MODE_OPTIONS],
+        fieldWrapperClassName: 'mb-5',
+        labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
       },
       {
         type: 'text',
