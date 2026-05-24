@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { getCurrentUser } from '@/services';
+import { getCurrentUser } from '../../services';
 import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
 
 export function useGetCurrentUser() {

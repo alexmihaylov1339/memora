@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateAccount, type UpdateAccountInput } from '@/services';
+import { updateAccount, type UpdateAccountInput } from '../../services';
 import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
 
 export function useUpdateAccountMutation() {

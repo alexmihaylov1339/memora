@@ -1,6 +1,7 @@
 import { ManageService, HTTP_METHODS } from '@shared/services';
-import { AUTH_ENDPOINTS } from '@features/auth/constants';
-import { API_V1_URL } from './config';
+import { API_V1_URL } from '@/services/config';
+
+import { AUTH_ENDPOINTS } from '../constants';
 
 const api = ManageService(API_V1_URL);
 

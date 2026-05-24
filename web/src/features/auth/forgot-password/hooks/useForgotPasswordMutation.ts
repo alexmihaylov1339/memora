@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 
-import { forgotPassword } from '@/services';
+import { forgotPassword } from '../../services';
 
 export function useForgotPasswordMutation() {
   return useMutation({
