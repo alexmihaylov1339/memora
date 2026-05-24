@@ -26,6 +26,7 @@ function createPrismaMock() {
       deleteMany: jest.fn(),
     },
     reviewState: {
+      createMany: jest.fn(),
       upsert: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -82,26 +83,20 @@ describe('CardsService', () => {
     });
     expect(prisma.chunk.create).not.toHaveBeenCalled();
     expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
-    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
-      where: { cardId: 'card-1' },
-      update: {
-        due: now,
-        interval: 0,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-      create: {
-        cardId: 'card-1',
-        ease: 2.5,
-        interval: 0,
-        due: now,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      ],
+      skipDuplicates: true,
     });
 
     jest.useRealTimers();
@@ -122,7 +117,10 @@ describe('CardsService', () => {
       createdAt: now,
       deckCards: [{ deckId: 'deck-1' }],
     });
-    prisma.deck.findMany.mockResolvedValue([{ id: 'deck-1' }, { id: 'deck-2' }]);
+    prisma.deck.findMany.mockResolvedValue([
+      { id: 'deck-1' },
+      { id: 'deck-2' },
+    ]);
     prisma.card.update.mockResolvedValue({
       id: 'card-1',
       ownerId: 'user-1',
@@ -152,26 +150,20 @@ describe('CardsService', () => {
       ],
       skipDuplicates: true,
     });
-    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
-      where: { cardId: 'card-1' },
-      update: {
-        due: now,
-        interval: 0,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-      create: {
-        cardId: 'card-1',
-        ease: 2.5,
-        interval: 0,
-        due: now,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      ],
+      skipDuplicates: true,
     });
 
     jest.useRealTimers();

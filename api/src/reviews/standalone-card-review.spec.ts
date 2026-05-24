@@ -12,6 +12,10 @@ function createPrismaMock() {
     deckShare: {
       findMany: jest.fn(),
     },
+    deckCard: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    },
     card: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -20,6 +24,7 @@ function createPrismaMock() {
       findMany: jest.fn(),
     },
     reviewState: {
+      createMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       upsert: jest.fn(),
@@ -72,26 +77,40 @@ describe('standalone card review', () => {
       now,
     );
 
-    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
-      where: { cardId: 'card-1' },
-      update: {
-        due: now,
-        interval: 0,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-      create: {
-        cardId: 'card-1',
-        ease: 2.5,
-        interval: 0,
-        due: now,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      ],
+      skipDuplicates: true,
+    });
+  });
+
+  it('initializes multiple standalone card review states in one batch', async () => {
+    const prisma = createPrismaMock();
+
+    await initStandaloneCardReviewState(prisma as unknown as PrismaService, [
+      'card-1',
+      'card-2',
+      'card-3',
+    ]);
+
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: expect.arrayContaining([
+        expect.objectContaining({ cardId: 'card-1' }),
+        expect.objectContaining({ cardId: 'card-2' }),
+        expect.objectContaining({ cardId: 'card-3' }),
+      ]),
+      skipDuplicates: true,
     });
   });
 
@@ -104,13 +123,16 @@ describe('standalone card review', () => {
     async (grade, intervalHours, consecutiveSuccessCount, wasSuccessful) => {
       const prisma = createPrismaMock();
       const now = new Date('2026-05-06T10:00:00.000Z');
-      const nextDue = new Date(
-        now.getTime() + intervalHours * 60 * 60 * 1000,
-      );
+      const nextDue = new Date(now.getTime() + intervalHours * 60 * 60 * 1000);
 
       prisma.deck.findMany.mockResolvedValue([{ id: 'deck-1' }]);
       prisma.deckShare.findMany.mockResolvedValue([]);
-      prisma.card.findFirst.mockResolvedValue(buildCard());
+      prisma.deckCard.findFirst.mockResolvedValue({
+        deckId: 'deck-1',
+        deck: { reviewIntervalHours: [4, 8, 12, 24] },
+        card: buildCard(),
+      });
+      prisma.deckCard.findMany.mockResolvedValue([]);
       prisma.chunk.findMany.mockResolvedValue([]);
       prisma.card.findMany.mockResolvedValue([]);
 
@@ -135,6 +157,7 @@ describe('standalone card review', () => {
       );
       expect(prisma.reviewState.update).toHaveBeenCalledWith({
         where: { cardId: 'card-1' },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         data: expect.objectContaining({
           due: nextDue,
           interval: intervalHours,
@@ -151,22 +174,29 @@ describe('standalone card review', () => {
 
     prisma.deck.findMany.mockResolvedValue([{ id: 'deck-1' }]);
     prisma.deckShare.findMany.mockResolvedValue([]);
-    prisma.card.findFirst.mockResolvedValue(buildCard());
-    prisma.chunk.findMany.mockResolvedValue([]);
-    prisma.card.findMany.mockResolvedValue([
+    prisma.deckCard.findFirst.mockResolvedValue({
+      deckId: 'deck-1',
+      deck: { reviewIntervalHours: [4, 8, 12, 24] },
+      card: buildCard(),
+    });
+    prisma.deckCard.findMany.mockResolvedValue([
       {
-        id: 'card-1',
         deckId: 'deck-1',
-        kind: 'basic',
-        fields: { front: 'front', back: 'back' },
-        createdAt: new Date('2026-05-06T09:00:00.000Z'),
-        state: {
-          due: now,
-          consecutiveSuccessCount: 0,
-          lastGrade: 'again',
+        card: {
+          id: 'card-1',
+          kind: 'basic',
+          fields: { front: 'front', back: 'back' },
+          createdAt: new Date('2026-05-06T09:00:00.000Z'),
+          state: {
+            due: now,
+            consecutiveSuccessCount: 0,
+            lastGrade: 'again',
+          },
         },
       },
     ]);
+    prisma.chunk.findMany.mockResolvedValue([]);
+    prisma.card.findMany.mockResolvedValue([]);
 
     const result = await applyGradeToStandaloneCard({
       cardId: 'card-1',
@@ -182,6 +212,7 @@ describe('standalone card review', () => {
         cardId: 'card-1',
         grade: 'again',
         intervalHours: 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         nextActionableItem: expect.objectContaining({
           cardId: 'card-1',
         }),

@@ -15,6 +15,7 @@ function createPrismaMock() {
       createMany: jest.fn(),
     },
     reviewState: {
+      createMany: jest.fn(),
       upsert: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -77,7 +78,31 @@ describe('CardsImportService', () => {
       ],
       skipDuplicates: true,
     });
-    expect(prisma.reviewState.upsert).toHaveBeenCalledTimes(2);
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+        {
+          cardId: 'card-2',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      ],
+      skipDuplicates: true,
+    });
 
     jest.useRealTimers();
   });

@@ -19,31 +19,19 @@ export async function initStandaloneCardReviewState(
     return;
   }
 
-  await Promise.all(
-    cardIds.map((cardId) =>
-      prisma.reviewState.upsert({
-        where: { cardId },
-        update: {
-          due: now,
-          interval: 0,
-          reps: 0,
-          lapses: 0,
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-        },
-        create: {
-          cardId,
-          ease: DEFAULT_REVIEW_EASE,
-          interval: 0,
-          due: now,
-          reps: 0,
-          lapses: 0,
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-        },
-      }),
-    ),
-  );
+  await prisma.reviewState.createMany({
+    data: cardIds.map((cardId) => ({
+      cardId,
+      ease: DEFAULT_REVIEW_EASE,
+      interval: 0,
+      due: now,
+      reps: 0,
+      lapses: 0,
+      consecutiveSuccessCount: 0,
+      lastGrade: null,
+    })),
+    skipDuplicates: true,
+  });
 }
 
 export async function createMissingStandaloneReviewState(

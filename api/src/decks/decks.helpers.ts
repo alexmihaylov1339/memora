@@ -233,24 +233,22 @@ export async function moveChunksToDeck(
   });
 
   const now = new Date();
-  await Promise.all(
-    chunkIds.map(async (chunkId) =>
-      client.chunkReviewState.upsert({
-        where: { chunkId },
-        update: {
-          due: now,
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-        },
-        create: {
-          chunkId,
-          due: now,
-          consecutiveSuccessCount: 0,
-          lastGrade: null,
-        },
-      }),
-    ),
-  );
+  for (const chunkId of chunkIds) {
+    await client.chunkReviewState.upsert({
+      where: { chunkId },
+      update: {
+        due: now,
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+      },
+      create: {
+        chunkId,
+        due: now,
+        consecutiveSuccessCount: 0,
+        lastGrade: null,
+      },
+    });
+  }
 }
 
 export async function replaceDeckChunks(

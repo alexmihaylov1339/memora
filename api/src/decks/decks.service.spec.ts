@@ -45,6 +45,7 @@ function createPrismaMock() {
       upsert: jest.fn(),
     },
     reviewState: {
+      createMany: jest.fn(),
       upsert: jest.fn(),
     },
     chunkCard: {
@@ -176,26 +177,20 @@ describe('DecksService', () => {
       data: [{ deckId: 'deck-1', cardId: 'card-1' }],
       skipDuplicates: true,
     });
-    expect(prisma.reviewState.upsert).toHaveBeenCalledWith({
-      where: { cardId: 'card-1' },
-      update: {
-        due: now,
-        interval: 0,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
-      create: {
-        cardId: 'card-1',
-        ease: 2.5,
-        interval: 0,
-        due: now,
-        reps: 0,
-        lapses: 0,
-        consecutiveSuccessCount: 0,
-        lastGrade: null,
-      },
+    expect(prisma.reviewState.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          cardId: 'card-1',
+          ease: 2.5,
+          interval: 0,
+          due: now,
+          reps: 0,
+          lapses: 0,
+          consecutiveSuccessCount: 0,
+          lastGrade: null,
+        },
+      ],
+      skipDuplicates: true,
     });
     expect(prisma.deck.create).toHaveBeenCalledWith({
       data: {
