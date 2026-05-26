@@ -24,8 +24,18 @@ export default function usePublicDeckGridColumns({
       },
       {
         headerName: 'Mode',
-        valueGetter: (deck) =>
-          deck.presentationMode === 'kids' ? 'Kids' : 'Standard',
+        valueGetter: (deck) => (
+          <span
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+              deck.presentationMode === 'kids'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            {deck.presentationMode === 'kids' ? 'Kids' : 'Standard'}
+          </span>
+        ),
+        searchValueGetter: (deck) => deck.presentationMode,
       },
       {
         headerName: 'Actions',

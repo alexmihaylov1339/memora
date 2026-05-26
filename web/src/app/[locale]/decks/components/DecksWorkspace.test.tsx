@@ -57,10 +57,19 @@ describe('DecksWorkspace', () => {
     expect(
       screen.getByRole('columnheader', { name: 'Due cards' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Mode' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'Visibility' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Browse Public Decks' }),
     ).toHaveAttribute('href', '/public-decks');
+    expect(screen.getByRole('link', { name: 'Kids Mode' })).toHaveAttribute(
+      'href',
+      '/practice?deckId=deck-2',
+    );
     expect(screen.getByRole('cell', { name: '12' })).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: '3' })).toBeInTheDocument();
+    expect(screen.getByText('Public')).toBeInTheDocument();
   });
 });

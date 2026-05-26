@@ -91,7 +91,12 @@ export default function EditDeckPage() {
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
-        <EditDeckHeader />
+        <EditDeckHeader
+          deckId={deck?.id}
+          deckName={deck?.name}
+          isPublic={deck?.isPublic}
+          presentationMode={deck?.presentationMode}
+        />
 
         {isLoading && <PageLoader />}
         {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}

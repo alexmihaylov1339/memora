@@ -329,7 +329,7 @@ Verification completed:
 ### T6 - Align navigation and deck surfaces around kids mode and public decks
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a visible kids-mode action on eligible deck surfaces.
@@ -338,6 +338,21 @@ What to do:
 
 Exit criteria:
 - users can discover the new features without hidden settings or unclear route jumps.
+
+Implementation notes:
+- Updated the owned deck grid so rows now show explicit mode and visibility badges.
+- Kids-mode decks now surface a `Kids Mode` action directly in the deck grid, while standard decks keep the existing `Review` / `Practice` language.
+- Updated the deck edit header to show deck-mode and visibility badges plus quick links for:
+  - opening kids mode when the deck is a kids deck
+  - opening due review for standard decks
+  - jumping to the public deck browse page
+- Kept public deck discovery easy to reach from the main decks workspace without displacing the existing owned-deck flow.
+- Updated the public deck grid to render a visible mode badge instead of plain text so kids decks are easier to spot while browsing.
+
+Verification completed:
+- `cd web && npm test -- --runInBand --runTestsByPath 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.test.tsx' 'src/app/[locale]/decks/[id]/edit/components/EditDeckHeader.test.tsx' 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx'` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `git diff --check` passed.
 
 ---
 

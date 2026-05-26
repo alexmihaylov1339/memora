@@ -103,6 +103,7 @@ describe('PublicDecksWorkspace', () => {
     );
 
     expect(screen.getByText('1 kids decks ready to reuse.')).toBeInTheDocument();
+    expect(screen.getByText('Kids')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Add to my decks' }));
 
