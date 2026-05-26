@@ -1,6 +1,6 @@
 # Memora: Step 21 — Kids Mode, Public Shared Decks, and Mobile Readiness
 
-**Status:** Proposed  
+**Status:** Done
 **Date:** 2026-05-20  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 21  
 **Priority:** High — validate a new child-focused learning loop before investing in native apps
@@ -392,7 +392,7 @@ Verification completed:
 ### T8 - Regression coverage, verification, and documentation updates
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add focused backend tests for:
@@ -416,6 +416,29 @@ Exit criteria:
 - private content never appears in public listings.
 - copied public decks are owned and editable by the receiving user.
 - kids player works with uploaded image/audio assets on reload.
+
+Implementation notes:
+- Consolidated backend coverage across cards and decks to verify the full Step 21 contract:
+  - `image_audio` validation and normalization
+  - upload-controller contract coverage for asset-backed card authoring
+  - `presentationMode` validation and persistence
+  - publish/unpublish authorization
+  - public deck listing filters
+  - public deck copy/import semantics, including copied kids decks that retain reusable asset references
+- Consolidated frontend coverage across deck authoring, kids practice, public browse, and standard review surfaces to confirm:
+  - `image_audio` authoring parse/serialize behavior
+  - kids-mode deck configuration UI on create and edit
+  - kids player renderer selection and unsupported-card fallback
+  - public deck browse and copy actions
+  - mobile-safe kids card rendering
+  - unchanged standard review behavior for non-kids decks
+- Closed the step-level documentation by marking all Step 21 tasks done and recording the final verification pass.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/cards/card-kind-registry.spec.ts src/cards/dto/card-validation.spec.ts src/cards/card-assets.controller.spec.ts src/cards/cards.service.spec.ts src/decks/dto/deck-validation.spec.ts src/decks/deck-public.controller.spec.ts src/decks/decks.service.spec.ts` passed.
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/card-kinds/registry.test.ts src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/features/reviews/practice-kind-registry.test.ts 'src/app/[locale]/practice/components/KidsPracticeScreen.test.tsx' 'src/app/[locale]/practice/components/KidsPracticeCard.test.tsx' 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx' 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' 'src/app/[locale]/review/components/ReviewScreen.test.tsx'` passed.
+- `cd api && npx tsc --noEmit --pretty false` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
 
 ---
 
