@@ -47,25 +47,26 @@ export default function KidsPracticeCard({
   }
 
   return (
-    <section className="rounded-[32px] border border-amber-100 bg-[linear-gradient(180deg,#ffffff_0%,#fff7ed_40%,#eff6ff_100%)] p-4 shadow-sm sm:p-6">
-      <div className="rounded-[28px] bg-white/90 p-4 shadow-inner sm:p-6">
-        <div className="overflow-hidden rounded-[24px] border-4 border-white bg-slate-100 shadow-md">
+    <section className="rounded-[28px] border border-amber-100 bg-[linear-gradient(180deg,#ffffff_0%,#fff7ed_40%,#eff6ff_100%)] p-3 shadow-sm sm:rounded-[32px] sm:p-6">
+      <div className="rounded-[24px] bg-white/90 p-3 shadow-inner sm:rounded-[28px] sm:p-6">
+        <div className="overflow-hidden rounded-[20px] border-4 border-white bg-slate-100 shadow-md sm:rounded-[24px]">
           <img
             src={cardFields.imageAsset.url}
             alt={cardFields.altText ?? cardFields.label}
-            className="h-[52vh] min-h-72 w-full object-cover"
+            className="h-[48vh] min-h-[17rem] w-full object-cover sm:h-[52vh] sm:min-h-72"
+            loading="eager"
           />
         </div>
 
-        <div className="mt-5 text-center">
-          <p className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
+        <div className="mt-4 text-center sm:mt-5">
+          <p className="text-3xl font-black tracking-tight text-slate-900 sm:text-5xl">
             {cardFields.label}
           </p>
         </div>
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-5 flex justify-center sm:mt-6">
           <Button
-            className="min-h-20 rounded-full bg-[linear-gradient(135deg,#f97316_0%,#fb7185_100%)] px-8 py-5 text-xl font-black text-white shadow-lg transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-20 w-full max-w-sm rounded-full bg-[linear-gradient(135deg,#f97316_0%,#fb7185_100%)] px-6 py-5 text-lg font-black text-white shadow-lg transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:px-8 sm:text-xl"
             onClick={() => void handlePlayAudio()}
             type="button"
           >
@@ -80,7 +81,12 @@ export default function KidsPracticeCard({
         )}
       </div>
 
-      <audio ref={audioElementRef} preload="metadata" src={cardFields.audioAsset.url} />
+      <audio
+        ref={audioElementRef}
+        playsInline
+        preload="metadata"
+        src={cardFields.audioAsset.url}
+      />
     </section>
   );
 }

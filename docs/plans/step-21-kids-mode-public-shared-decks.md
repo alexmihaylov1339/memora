@@ -359,7 +359,7 @@ Verification completed:
 ### T7 - Mobile-web hardening and native-app readiness notes
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - validate kids player behavior on phone-sized layouts.
@@ -369,6 +369,23 @@ What to do:
 
 Exit criteria:
 - the web implementation does not create avoidable blockers for a future React Native / wrapper / mobile-client decision.
+
+Implementation notes:
+- Tightened the kids player layout for phone-sized portrait screens by:
+  - reducing the smallest image height so the card remains usable on short mobile viewports
+  - making the primary audio action full-width on small screens
+  - ensuring the header/back action stack cleanly on narrow devices
+  - keeping the previous/next controls large and easy to tap without hover-dependent affordances
+- Added `playsInline` to the kids audio element so mobile browsers use inline media playback instead of forcing an unexpected full-screen media experience.
+- Added explicit native follow-up notes to the roadmap:
+  - validate and iterate on the web kids player first
+  - if a mobile wrapper/native client is pursued later, prioritize the kids player and public deck import flows
+  - keep full authoring/editing out of the first mobile delivery unless the web behavior has already stabilized
+
+Verification completed:
+- `cd web && npm test -- --runInBand --runTestsByPath 'src/app/[locale]/practice/components/KidsPracticeCard.test.tsx' 'src/app/[locale]/practice/components/KidsPracticeScreen.test.tsx'` passed.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `git diff --check` passed.
 
 ---
 

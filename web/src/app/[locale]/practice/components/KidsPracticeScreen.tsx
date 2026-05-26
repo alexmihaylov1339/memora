@@ -46,7 +46,7 @@ export default function KidsPracticeScreen({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-6 sm:space-y-6 sm:pb-8">
       <KidsPracticeHeader positionLabel={positionLabel} />
 
       {!practiceRenderer || practiceRenderer.renderer === 'unsupported' ? (

@@ -584,6 +584,10 @@ Memora now has deck-scoped review/practice, sharing foundations, CSV import, and
 - public deck publish/browse/copy flow
 - mobile-web hardening and native follow-up notes
 
+**Native follow-up note:**
+- Validate the kids web player first.
+- If Memora later ships a mobile wrapper or native client, the first target should be the kids player and public deck import flow, not the full deck/card authoring workspace.
+
 **Exit criteria:**
 - All exit criteria in `docs/plans/step-21-kids-mode-public-shared-decks.md` satisfied.
 
