@@ -81,7 +81,9 @@ describe('DeckPublicController', () => {
 
   it('rejects invalid publication payloads', async () => {
     await expect(
-      controller.updatePublication(mockUser, { id: 'deck-1' }, { isPublic: 'yes' } as never),
+      controller.updatePublication(mockUser, { id: 'deck-1' }, {
+        isPublic: 'yes',
+      } as never),
     ).rejects.toThrow(
       new BadRequestException(DECK_ERROR_MESSAGES.publicationFlagInvalid),
     );
