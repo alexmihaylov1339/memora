@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: memora-api
+    runtime: node
+    rootDir: api
+    buildCommand: npm install --include=dev && npm run build:render
+    startCommand: node dist/src/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=1024

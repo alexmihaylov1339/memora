@@ -5,10 +5,10 @@ This folder holds **implementation and architecture plans** for Memora (decision
 - Add new plans as dated or named Markdown files (e.g. `feature-name.md`).
 - Keep plans **updated** when scope changes, or add a short “Superseded by …” note at the top of older files.
 - When product rules change after a step is marked `Done`, update the completed step with a brief “Product correction after completion” note and put implementation work in the next future task. Do not reopen completed tasks just to carry future work.
-- Latest completed product-polish step: `docs/plans/step-17-user-testing-bugs-and-small-improvements.md`.
+- Latest completed product-polish step: `docs/plans/step-21-kids-mode-public-shared-decks.md`.
 - Latest completed fix step: `docs/plans/step-18-review-model-fix.md`.
-- Current planned/in-progress step: `docs/plans/step-19-csv-import.md`.
-- Next planned step: `docs/plans/step-20-deck-composition-scale-and-card-discovery.md`.
+- Current planned/in-progress step: `docs/plans/step-22-what-did-you-hear-quiz-mode.md`.
+- Next planned step: `docs/plans/step-22-what-did-you-hear-quiz-mode.md`.
 
 Why keep plans in the repo:
 

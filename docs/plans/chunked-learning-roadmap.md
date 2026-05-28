@@ -596,6 +596,29 @@ Implementation plan:
 
 ---
 
+## Step 22: What Did You Hear? quiz mode
+
+**Objective:** Add a second media-based exercise mode that reuses existing `image_audio` cards, plays the prompt audio, and asks the learner to choose the correct image from generated same-deck choices while still writing back into the real review schedule.
+
+**Why now:**
+Step 21 established the card/media/storage/public-deck foundation. The next natural extension is listening comprehension without introducing duplicate upload workflows or a second parallel content model.
+
+**Deliverables:**
+- dedicated `What Did You Hear?` exercise mode over existing `image_audio` cards
+- same-deck distractor generation with disabled placeholders when there are not enough candidate cards
+- deck-level choice-count setting with default `4`
+- optional `topic` and `quizTags` metadata on `image_audio` cards
+- dedicated quiz query/submit contracts that still reuse the shared review engine
+- public/copy compatibility and future reward-hook readiness
+
+**Exit criteria:**
+- All exit criteria in `docs/plans/step-22-what-did-you-hear-quiz-mode.md` satisfied.
+
+Implementation plan:
+- `docs/plans/step-22-what-did-you-hear-quiz-mode.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -620,6 +643,7 @@ Implementation plan:
 20. Step 19
 21. Step 20
 22. Step 21
+23. Step 22
 
 ---
 
