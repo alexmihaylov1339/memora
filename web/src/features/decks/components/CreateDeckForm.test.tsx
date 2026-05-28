@@ -121,6 +121,7 @@ jest.mock('@shared/components', () => ({
       chunkIds?: string[];
       presentationMode: 'standard' | 'kids';
       reviewIntervalsInput: string;
+      whatDidYouHearChoiceCount: '2' | '3' | '4';
     }) => Promise<void> | void;
     submitLabel: string;
   }) => (
@@ -136,6 +137,7 @@ jest.mock('@shared/components', () => ({
             chunkIds: ['chunk-1'],
             presentationMode: 'kids',
             reviewIntervalsInput: '1d, 2d',
+            whatDidYouHearChoiceCount: '3',
           })
         }
       >
@@ -188,6 +190,11 @@ describe('CreateDeckForm CSV import flow', () => {
         chunkIds: ['chunk-1'],
         presentationMode: 'kids',
         reviewIntervalHours: [24, 48],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 3,
+          },
+        },
       });
       expect(mockImportFetch).toHaveBeenCalledWith({
         file: expect.any(File),

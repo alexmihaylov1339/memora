@@ -18,6 +18,8 @@ export interface CardKindFormValues {
   hint?: string;
   label?: string;
   altText?: string;
+  topic?: string;
+  quizTagsInput?: string;
   imageAsset?: CardAssetValue;
   audioAsset?: CardAssetValue;
 }

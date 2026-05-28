@@ -55,6 +55,8 @@ describe('card-kind-registry', () => {
       expect(() =>
         validateCardFields('image_audio', {
           label: 'Car',
+          topic: 'Vehicles',
+          quizTags: ['transport', 'road'],
           imageAsset: {
             path: 'kids-images/user-1/asset-1/car.jpg',
             mimeType: 'image/jpeg',
@@ -133,6 +135,8 @@ describe('card-kind-registry', () => {
       expect(
         normalizeCardFields('image_audio', {
           label: '  Car ',
+          topic: '  Vehicles ',
+          quizTags: [' transport ', 'road', 'road', ''],
           imageAsset: {
             path: 'kids-images/user-1/asset-1/car.jpg',
             mimeType: 'image/jpeg',
@@ -160,6 +164,8 @@ describe('card-kind-registry', () => {
           size: 4096,
         },
         altText: 'Red toy car',
+        topic: 'Vehicles',
+        quizTags: ['transport', 'road'],
       });
     });
   });

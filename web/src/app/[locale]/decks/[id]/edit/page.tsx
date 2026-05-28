@@ -73,6 +73,11 @@ export default function EditDeckPage() {
     chunkIds?: string[];
     presentationMode?: 'standard' | 'kids';
     reviewIntervalHours?: number[];
+    exerciseSettings?: {
+      whatDidYouHear: {
+        choiceCount: 2 | 3 | 4;
+      };
+    };
   }): Promise<void> {
     await updateDeck.fetch(payload);
   }
@@ -110,6 +115,7 @@ export default function EditDeckPage() {
               description={deck.description}
               presentationMode={deck.presentationMode}
               reviewIntervalHours={deck.reviewIntervalHours}
+              exerciseSettings={deck.exerciseSettings}
               initialCards={cards.map(cardToSearchResultItem)}
               initialChunks={chunks.map(chunkToSearchResultItem)}
               onUpdate={handleUpdateDeck}

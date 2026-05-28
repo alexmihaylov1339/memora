@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { normalizeDeckExerciseSettings } from '../deck-exercise-settings';
 import { normalizeDeckReviewIntervalHours } from '../deck-review-intervals';
 import { DECK_ERROR_MESSAGES } from '../deck-errors';
 import { normalizeDeckPresentationMode } from '../deck-presentation-mode';
@@ -41,6 +42,7 @@ export function validateCreateDeckInput(body: CreateDeckDto) {
 
   normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
   normalizeDeckPresentationMode(body.presentationMode);
+  normalizeDeckExerciseSettings(body.exerciseSettings);
 }
 
 export function validateUpdateDeckInput(body: UpdateDeckDto) {
@@ -51,7 +53,8 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
       isUndefined(body.cardIds) &&
       isUndefined(body.chunkIds) &&
       isUndefined(body.presentationMode) &&
-      isUndefined(body.reviewIntervalHours))
+      isUndefined(body.reviewIntervalHours) &&
+      isUndefined(body.exerciseSettings))
   ) {
     throw new BadRequestException(DECK_ERROR_MESSAGES.atLeastOneFieldRequired);
   }
@@ -78,6 +81,9 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
   normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
   if (!isUndefined(body.presentationMode)) {
     normalizeDeckPresentationMode(body.presentationMode);
+  }
+  if (!isUndefined(body.exerciseSettings)) {
+    normalizeDeckExerciseSettings(body.exerciseSettings);
   }
 }
 

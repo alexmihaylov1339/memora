@@ -5,4 +5,5 @@ export interface UpdateDeckDto {
   chunkIds?: string[];
   presentationMode?: string;
   reviewIntervalHours?: number[];
+  exerciseSettings?: unknown;
 }

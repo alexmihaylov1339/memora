@@ -1,4 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckExerciseSettings } from './deck-exercise-settings';
+import { serializeDeckExerciseSettings } from './deck-exercise-settings';
 import type { DeckPresentationMode } from './deck-presentation-mode';
 import {
   hasExistingCards,
@@ -19,6 +21,7 @@ export async function updateDeck(
     chunkIds?: string[];
     presentationMode?: DeckPresentationMode;
     reviewIntervalHours?: number[];
+    exerciseSettings?: DeckExerciseSettings;
   },
   userId: string,
 ): Promise<UpdateDeckResult> {
@@ -61,6 +64,7 @@ export async function updateDeck(
         description: data.description,
         presentationMode: data.presentationMode,
         reviewIntervalHours: data.reviewIntervalHours,
+        exerciseSettings: serializeDeckExerciseSettings(data.exerciseSettings),
       },
       include: {
         owner: {

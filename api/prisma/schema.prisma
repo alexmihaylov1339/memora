@@ -48,6 +48,7 @@ model Deck {
   presentationMode String @default("standard")
   isPublic    Boolean  @default(false)
   reviewIntervalHours Json?
+  exerciseSettings Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

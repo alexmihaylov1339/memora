@@ -12,6 +12,8 @@ export const DECK_ERROR_MESSAGES = {
     'chunkIds must reference existing chunks',
   reviewIntervalHoursInvalid:
     'reviewIntervalHours must be a non-empty array of positive whole hours',
+  exerciseSettingsInvalid:
+    'exerciseSettings.whatDidYouHear.choiceCount must be one of: 2, 3, 4',
   moveCardIdsMustBeUniqueStrings:
     'cardIds must be an array of unique non-empty strings',
   moveChunkIdsMustBeUniqueStrings:

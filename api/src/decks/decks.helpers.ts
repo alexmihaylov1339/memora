@@ -1,6 +1,10 @@
 import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { DeckSharePermission } from './deck-share.types';
+import {
+  resolveDeckExerciseSettings,
+  type DeckExerciseSettings,
+} from './deck-exercise-settings';
 import type { DeckPresentationMode } from './deck-presentation-mode';
 import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
@@ -20,6 +24,7 @@ export interface DeckRecord {
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
   reviewIntervalHours: number[];
+  exerciseSettings: DeckExerciseSettings;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +51,7 @@ export interface PublicDeckListItem {
   description?: string;
   count: number;
   presentationMode: DeckPresentationMode;
+  exerciseSettings: DeckExerciseSettings;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: Date;
@@ -180,6 +186,7 @@ export function resolveDeckRecord(deck: {
   presentationMode: string;
   isPublic: boolean;
   reviewIntervalHours: unknown;
+  exerciseSettings: unknown;
   createdAt: Date;
   updatedAt: Date;
 }): DeckRecord {
@@ -192,6 +199,7 @@ export function resolveDeckRecord(deck: {
     reviewIntervalHours: resolveDeckReviewIntervalHours(
       deck.reviewIntervalHours,
     ),
+    exerciseSettings: resolveDeckExerciseSettings(deck.exerciseSettings),
     createdAt: deck.createdAt,
     updatedAt: deck.updatedAt,
   };
@@ -207,6 +215,7 @@ export function mapPublicDeckListItem(
     description: deck.description ?? undefined,
     count,
     presentationMode: deck.presentationMode as DeckPresentationMode,
+    exerciseSettings: resolveDeckExerciseSettings(deck.exerciseSettings),
     ownerDisplayName:
       deck.owner?.name ?? deck.owner?.email ?? 'Unknown deck owner',
     ownerUserId: deck.owner?.id ?? null,

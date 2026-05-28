@@ -1,11 +1,11 @@
 import type { FieldConfig } from '@shared/components';
 import { isString } from '@/shared/utils';
 import type {
-  CardAssetValue,
   CardKindDefinition,
   CardKindFormValues,
   SupportedCardKind,
 } from './types';
+import { imageAudioCardKindDefinition } from './kinds/imageAudioCardKind';
 
 const DEFAULT_KIND: SupportedCardKind = 'basic';
 
@@ -17,29 +17,6 @@ const TEXTAREA_INPUT_CLASS =
 
 function normalizeText(value: unknown): string {
   return isString(value) ? value.trim() : '';
-}
-
-function parseAsset(value: unknown): CardAssetValue | undefined {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return undefined;
-  }
-
-  const assetRecord = value as Record<string, unknown>;
-  const path = normalizeText(assetRecord.path);
-  const mimeType = normalizeText(assetRecord.mimeType);
-  const size = assetRecord.size;
-  const url = normalizeText(assetRecord.url);
-
-  if (!path || !mimeType || typeof size !== 'number' || size <= 0) {
-    return undefined;
-  }
-
-  return {
-    path,
-    mimeType,
-    size,
-    ...(url ? { url } : {}),
-  };
 }
 
 const basicKindDefinition: CardKindDefinition = {
@@ -124,51 +101,10 @@ const clozeTextKindDefinition: CardKindDefinition = {
   },
 };
 
-const imageAudioKindDefinition: CardKindDefinition = {
-  kind: 'image_audio',
-  label: 'Image + Audio',
-  buildFields: () => [
-    {
-      type: 'text',
-      name: 'label',
-      label: 'Label',
-      required: true,
-      fieldWrapperClassName: 'mb-4',
-      labelClassName: KIND_FIELD_LABEL_CLASS,
-      inputClassName: KIND_SELECT_INPUT_CLASS,
-    },
-    {
-      type: 'text',
-      name: 'altText',
-      label: 'Alt Text',
-      fieldWrapperClassName: 'mb-0',
-      labelClassName: KIND_FIELD_LABEL_CLASS,
-      inputClassName: KIND_SELECT_INPUT_CLASS,
-    },
-  ],
-  parseFields: (fields) => ({
-    label: normalizeText(fields.label),
-    altText: normalizeText(fields.altText),
-    imageAsset: parseAsset(fields.imageAsset),
-    audioAsset: parseAsset(fields.audioAsset),
-  }),
-  serializeFields: (values) => {
-    const label = normalizeText(values.label);
-    const altText = normalizeText(values.altText);
-
-    return {
-      label,
-      imageAsset: values.imageAsset,
-      audioAsset: values.audioAsset,
-      ...(altText ? { altText } : {}),
-    };
-  },
-};
-
 const CARD_KIND_DEFINITIONS: Record<SupportedCardKind, CardKindDefinition> = {
   basic: basicKindDefinition,
   cloze_text: clozeTextKindDefinition,
-  image_audio: imageAudioKindDefinition,
+  image_audio: imageAudioCardKindDefinition,
 };
 
 export function isSupportedCardKind(kind: string): kind is SupportedCardKind {

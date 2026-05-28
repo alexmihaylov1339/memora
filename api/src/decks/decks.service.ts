@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckExerciseSettings } from './deck-exercise-settings';
 import type { DeckPresentationMode } from './deck-presentation-mode';
 import type { DeckSharePermission } from './deck-share.types';
 import {
@@ -56,6 +57,7 @@ export class DecksService {
     userId: string = '',
     presentationMode: DeckPresentationMode = 'standard',
     reviewIntervalHours?: number[],
+    exerciseSettings?: DeckExerciseSettings,
   ) {
     return createDeck(this.prisma, {
       name,
@@ -64,6 +66,7 @@ export class DecksService {
       chunkIds,
       presentationMode,
       reviewIntervalHours,
+      exerciseSettings,
       userId,
     });
   }
@@ -81,6 +84,7 @@ export class DecksService {
       chunkIds?: string[];
       presentationMode?: DeckPresentationMode;
       reviewIntervalHours?: number[];
+      exerciseSettings?: DeckExerciseSettings;
     },
     userId: string,
   ) {

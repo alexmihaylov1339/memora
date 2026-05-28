@@ -192,7 +192,7 @@ Verification completed:
 ### T2 - Extend deck/card contracts for quiz settings and metadata
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add deck-level exercise settings with a dedicated `What Did You Hear?` choice-count default.
@@ -219,6 +219,22 @@ Important architecture rule:
 
 Exit criteria:
 - deck settings and optional card quiz metadata can persist and serialize without changing the Step 21 upload model.
+
+Implementation notes:
+- Added a dedicated deck exercise-settings contract on the backend with strict `whatDidYouHear.choiceCount` validation plus a single JSON serialization seam, so future exercise settings can expand without spreading Prisma JSON details across the feature.
+- Extended the `Deck` persistence model with `exerciseSettings` and threaded it through create, update, detail, public-list, and public-copy flows while preserving the existing Step 21 asset and copy contracts.
+- Added a single deck-level `What Did You Hear?` choice-count field to the shared deck forms on the frontend, defaulting to `4` and allowing only `2`, `3`, or `4`.
+- Extended `image_audio` card metadata with optional `topic` and `quizTags` fields while keeping image/audio asset ownership unchanged.
+- Refactored the frontend `image_audio` card kind into its own local definition file so the new quiz metadata stays collocated with the only card type that owns it.
+- Added frontend deck-response normalization so missing or stale `exerciseSettings` payloads safely fall back to the default quiz choice count.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/dto/deck-validation.spec.ts src/decks/deck-public.controller.spec.ts src/decks/decks.service.spec.ts src/cards/dto/card-validation.spec.ts src/cards/card-kind-registry.spec.ts`
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/services/deckResponseMapper.test.ts src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/features/decks/card-kinds/registry.test.ts 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx'`
+- `cd api && npx prisma generate`
+- `cd api && npx tsc --noEmit --pretty false`
+- `cd web && npx tsc --noEmit --pretty false`
+- `git diff --check`
 
 ---
 

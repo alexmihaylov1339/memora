@@ -86,12 +86,22 @@ describe('DecksService', () => {
           name: 'Owned',
           presentationMode: 'standard',
           isPublic: false,
+          exerciseSettings: {
+            whatDidYouHear: {
+              choiceCount: 4,
+            },
+          },
         },
         {
           id: 'deck-shared',
           name: 'Shared',
           presentationMode: 'kids',
           isPublic: true,
+          exerciseSettings: {
+            whatDidYouHear: {
+              choiceCount: 3,
+            },
+          },
         },
       ]);
     prisma.deckCard.groupBy.mockResolvedValueOnce([
@@ -180,6 +190,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: false,
       reviewIntervalHours: [2, 24],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 4,
+        },
+      },
       ownerId: 'user-1',
       createdAt: now,
       updatedAt: now,
@@ -194,6 +209,11 @@ describe('DecksService', () => {
         'user-1',
         'kids',
         [2, 24],
+        {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
       ),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -229,6 +249,11 @@ describe('DecksService', () => {
         presentationMode: 'kids',
         isPublic: false,
         reviewIntervalHours: [2, 24],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         ownerId: 'user-1',
       },
     });
@@ -248,6 +273,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: true,
       reviewIntervalHours: [4, 24],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 3,
+        },
+      },
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
       owner: {
@@ -281,6 +311,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: true,
       reviewIntervalHours: [4, 24],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 3,
+        },
+      },
       count: 3,
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
@@ -311,6 +346,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: false,
       reviewIntervalHours: [1, 24, 168],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 2,
+        },
+      },
       createdAt,
       updatedAt,
       owner: {
@@ -333,6 +373,11 @@ describe('DecksService', () => {
         presentationMode: 'kids',
         isPublic: false,
         reviewIntervalHours: [1, 24, 168],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 2,
+          },
+        },
         count: 0,
         createdAt,
         updatedAt,
@@ -457,6 +502,11 @@ describe('DecksService', () => {
         presentationMode: 'kids',
         isPublic: true,
         reviewIntervalHours: [1, 24],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         createdAt: new Date('2026-05-21T10:00:00.000Z'),
         updatedAt: new Date('2026-05-21T11:00:00.000Z'),
         owner: {
@@ -477,6 +527,11 @@ describe('DecksService', () => {
         description: 'Picture deck',
         count: 6,
         presentationMode: 'kids',
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         ownerDisplayName: 'Alex',
         ownerUserId: 'user-1',
         createdAt: new Date('2026-05-21T10:00:00.000Z'),
@@ -496,6 +551,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: true,
       reviewIntervalHours: [1, 24],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 4,
+        },
+      },
       deckCards: [
         {
           cardId: 'card-1',
@@ -533,6 +593,11 @@ describe('DecksService', () => {
       presentationMode: 'kids',
       isPublic: false,
       reviewIntervalHours: [1, 24],
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: 4,
+        },
+      },
       createdAt: now,
       updatedAt: now,
     });
@@ -554,6 +619,11 @@ describe('DecksService', () => {
         presentationMode: 'kids',
         isPublic: false,
         reviewIntervalHours: [1, 24],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         createdAt: now,
         updatedAt: now,
       },

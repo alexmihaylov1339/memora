@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser, type AuthUser } from '../auth/current-user.decorator';
 import { DECK_ERROR_MESSAGES } from './deck-errors';
+import { normalizeDeckExerciseSettings } from './deck-exercise-settings';
 import { normalizeDeckPresentationMode } from './deck-presentation-mode';
 import { normalizeDeckReviewIntervalHours } from './deck-review-intervals';
 import type { CreateDeckDto } from './dto/create-deck.dto';
@@ -59,6 +60,9 @@ export class DecksController {
     const reviewIntervalHours = normalizeDeckReviewIntervalHours(
       body.reviewIntervalHours,
     );
+    const exerciseSettings = normalizeDeckExerciseSettings(
+      body.exerciseSettings,
+    );
     const presentationMode = normalizeDeckPresentationMode(
       body.presentationMode,
     );
@@ -71,6 +75,7 @@ export class DecksController {
       user.id,
       presentationMode,
       reviewIntervalHours,
+      exerciseSettings,
     );
 
     if (result.status === 'invalid_cards') {
@@ -116,6 +121,10 @@ export class DecksController {
     const reviewIntervalHours = normalizeDeckReviewIntervalHours(
       body.reviewIntervalHours,
     );
+    const exerciseSettings =
+      body.exerciseSettings === undefined
+        ? undefined
+        : normalizeDeckExerciseSettings(body.exerciseSettings);
     const presentationMode =
       body.presentationMode === undefined
         ? undefined
@@ -130,6 +139,7 @@ export class DecksController {
         chunkIds: normalizedChunkIds,
         presentationMode,
         reviewIntervalHours,
+        exerciseSettings,
       },
       user.id,
     );

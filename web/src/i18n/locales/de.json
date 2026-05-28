@@ -23,6 +23,7 @@
     "namePlaceholder": "Deck-Name eingeben",
     "presentationMode": "Präsentationsmodus",
     "reviewIntervals": "Wiederholungsintervalle",
+    "whatDidYouHearChoiceCount": "Optionen für „Was hast du gehört?“",
     "reviewIntervalsPlaceholder": "Beispiel: 4h, 8h, 1d, 2d",
     "createButton": "Deck erstellen",
     "creating": "Wird erstellt...",

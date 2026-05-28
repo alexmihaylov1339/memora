@@ -87,6 +87,8 @@ describe('card-kinds registry', () => {
     expect(imageAudioFields.map((field) => field.name)).toEqual([
       'label',
       'altText',
+      'topic',
+      'quizTagsInput',
     ]);
 
     expect(
@@ -94,6 +96,8 @@ describe('card-kinds registry', () => {
         kind: 'image_audio',
         label: '  Car ',
         altText: ' Red toy car ',
+        topic: ' Vehicles ',
+        quizTagsInput: ' transport, road, road ',
         imageAsset: {
           path: 'kids-images/user-1/asset-1/car.jpg',
           mimeType: 'image/jpeg',
@@ -110,6 +114,8 @@ describe('card-kinds registry', () => {
     ).toEqual({
       label: 'Car',
       altText: 'Red toy car',
+      topic: 'Vehicles',
+      quizTags: ['transport', 'road'],
       imageAsset: {
         path: 'kids-images/user-1/asset-1/car.jpg',
         mimeType: 'image/jpeg',
@@ -128,6 +134,8 @@ describe('card-kinds registry', () => {
       parseCardKindFields('image_audio', {
         label: '  Car ',
         altText: ' Red toy car ',
+        topic: ' Vehicles ',
+        quizTags: ['transport', 'road'],
         imageAsset: {
           path: 'kids-images/user-1/asset-1/car.jpg',
           mimeType: 'image/jpeg',
@@ -144,6 +152,8 @@ describe('card-kinds registry', () => {
     ).toEqual({
       label: 'Car',
       altText: 'Red toy car',
+      topic: 'Vehicles',
+      quizTagsInput: 'transport, road',
       imageAsset: {
         path: 'kids-images/user-1/asset-1/car.jpg',
         mimeType: 'image/jpeg',

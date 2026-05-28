@@ -18,6 +18,11 @@ export const CARD_LIBRARY_PICKER_PAGE_SIZE = 6;
 export { createDeckFormFields } from './formFields';
 export { DECK_ENDPOINTS } from './endpoints';
 export {
+  DEFAULT_DECK_EXERCISE_SETTINGS,
+  DEFAULT_WHAT_DID_YOU_HEAR_CHOICE_COUNT,
+  WHAT_DID_YOU_HEAR_CHOICE_COUNT_OPTIONS,
+} from './exerciseSettings';
+export {
   DECK_PRESENTATION_MODE_OPTIONS,
   type DeckPresentationMode,
 } from './presentationModes';

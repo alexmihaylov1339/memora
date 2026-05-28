@@ -24,6 +24,7 @@ import type { DeckPresentationMode } from '../constants';
 interface CreateDeckFormValues extends Omit<CreateDeckDto, 'reviewIntervalHours'> {
   presentationMode: DeckPresentationMode;
   reviewIntervalsInput: string;
+  whatDidYouHearChoiceCount: '2' | '3' | '4';
 }
 
 export default function CreateDeckForm() {
@@ -99,6 +100,11 @@ export default function CreateDeckForm() {
         chunkIds: values.chunkIds,
         presentationMode: values.presentationMode,
         reviewIntervalHours,
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: Number(values.whatDidYouHearChoiceCount) as 2 | 3 | 4,
+          },
+        },
       });
     } catch {
       return;

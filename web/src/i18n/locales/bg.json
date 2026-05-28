@@ -23,6 +23,7 @@
     "namePlaceholder": "Въведете име на тестето",
     "presentationMode": "Режим на представяне",
     "reviewIntervals": "Интервали за преговор",
+    "whatDidYouHearChoiceCount": "Възможности за „Какво чу?“",
     "reviewIntervalsPlaceholder": "Пример: 4h, 8h, 1d, 2d",
     "createButton": "Създай тесте",
     "creating": "Създаване...",

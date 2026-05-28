@@ -35,6 +35,11 @@ describe('DeckPublicController', () => {
         description: 'Picture deck',
         count: 6,
         presentationMode: 'kids',
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         ownerDisplayName: 'Alex',
         ownerUserId: 'user-1',
         createdAt: new Date('2026-05-21T10:00:00.000Z'),
@@ -49,6 +54,11 @@ describe('DeckPublicController', () => {
         description: 'Picture deck',
         count: 6,
         presentationMode: 'kids',
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
         ownerDisplayName: 'Alex',
         ownerUserId: 'user-1',
         createdAt: '2026-05-21T10:00:00.000Z',
@@ -61,14 +71,20 @@ describe('DeckPublicController', () => {
     decksService.updatePublication.mockResolvedValue({ status: 'not_found' });
 
     await expect(
-      controller.updatePublication(mockUser, { id: 'deck-1' }, { isPublic: true }),
+      controller.updatePublication(
+        mockUser,
+        { id: 'deck-1' },
+        { isPublic: true },
+      ),
     ).rejects.toThrow(new NotFoundException(DECK_ERROR_MESSAGES.deckNotFound));
   });
 
   it('rejects invalid publication payloads', async () => {
     await expect(
       controller.updatePublication(mockUser, { id: 'deck-1' }, { isPublic: 'yes' } as never),
-    ).rejects.toThrow(new BadRequestException(DECK_ERROR_MESSAGES.publicationFlagInvalid));
+    ).rejects.toThrow(
+      new BadRequestException(DECK_ERROR_MESSAGES.publicationFlagInvalid),
+    );
   });
 
   it('maps missing public decks on copy to not found', async () => {

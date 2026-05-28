@@ -19,7 +19,12 @@ import type {
 import type { SearchRequest, SearchResultItem } from '../../search/types';
 
 import { DECK_ENDPOINTS } from '../constants';
-import { mapDeckListResponse } from './deckResponseMapper';
+import {
+  mapDeckDetailResponse,
+  mapDeckListResponse,
+  mapDeckRecordResponse,
+  mapPublicDeckListResponse,
+} from './deckResponseMapper';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const api = ManageService(API_URL);
@@ -51,7 +56,8 @@ export const deckService = {
     return api
       .prepareRequest(DECK_ENDPOINTS.PUBLIC, HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
-      .execRequest<ListPublicDecksResponse>();
+      .execRequest<ListPublicDecksResponse>()
+      .then(mapPublicDeckListResponse);
   },
 
   /**
@@ -65,7 +71,8 @@ export const deckService = {
     return api
       .prepareRequest(DECK_ENDPOINTS.DETAIL(params.id), HTTP_METHODS.GET)
       .setHeaders(getAuthHeaders())
-      .execRequest<GetDeckByIdResponse>();
+      .execRequest<GetDeckByIdResponse>()
+      .then(mapDeckDetailResponse);
   },
 
   listShares(params: DeckShareParams) {
@@ -90,7 +97,8 @@ export const deckService = {
       .prepareRequest(DECK_ENDPOINTS.BASE, HTTP_METHODS.POST)
       .setHeaders(getAuthHeaders())
       .setBody(params)
-      .execRequest<CreateDeckResponse>();
+      .execRequest<CreateDeckResponse>()
+      .then(mapDeckRecordResponse);
   },
 
   /**
@@ -107,7 +115,8 @@ export const deckService = {
       .prepareRequest(DECK_ENDPOINTS.DETAIL(id), HTTP_METHODS.PUT)
       .setHeaders(getAuthHeaders())
       .setBody(data)
-      .execRequest<UpdateDeckResponse>();
+      .execRequest<UpdateDeckResponse>()
+      .then(mapDeckDetailResponse);
   },
 
   updatePublication(params: DeckIdParams & UpdateDeckPublicationDto) {
@@ -117,7 +126,8 @@ export const deckService = {
       .prepareRequest(DECK_ENDPOINTS.PUBLICATION(id), HTTP_METHODS.PUT)
       .setHeaders(getAuthHeaders())
       .setBody(data)
-      .execRequest<UpdateDeckPublicationResponse>();
+      .execRequest<UpdateDeckPublicationResponse>()
+      .then(mapDeckDetailResponse);
   },
 
   /**
@@ -170,6 +180,7 @@ export const deckService = {
     return api
       .prepareRequest(DECK_ENDPOINTS.PUBLIC_COPY(params.id), HTTP_METHODS.POST)
       .setHeaders(getAuthHeaders())
-      .execRequest<CopyPublicDeckResponse>();
+      .execRequest<CopyPublicDeckResponse>()
+      .then(mapDeckRecordResponse);
   },
 };

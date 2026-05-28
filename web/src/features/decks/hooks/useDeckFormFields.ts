@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import type { FieldConfig } from '@shared/components';
-import { DECK_PRESENTATION_MODE_OPTIONS } from '../constants';
+import {
+  DECK_PRESENTATION_MODE_OPTIONS,
+  DEFAULT_WHAT_DID_YOU_HEAR_CHOICE_COUNT,
+  WHAT_DID_YOU_HEAR_CHOICE_COUNT_OPTIONS,
+} from '../constants';
 
 export function useDeckEditFormFields(): FieldConfig[] {
   return useMemo<FieldConfig[]>(
@@ -45,6 +49,18 @@ export function useDeckEditFormFields(): FieldConfig[] {
         label: 'Review intervals',
         required: true,
         placeholder: 'Example: 4h, 8h, 1d, 2d',
+        fieldWrapperClassName: 'mb-5',
+        labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+        inputClassName:
+          'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
+      },
+      {
+        type: 'select',
+        name: 'whatDidYouHearChoiceCount',
+        label: 'What Did You Hear? choices',
+        required: true,
+        defaultValue: String(DEFAULT_WHAT_DID_YOU_HEAR_CHOICE_COUNT),
+        options: [...WHAT_DID_YOU_HEAR_CHOICE_COUNT_OPTIONS],
         fieldWrapperClassName: 'mb-5',
         labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
         inputClassName:

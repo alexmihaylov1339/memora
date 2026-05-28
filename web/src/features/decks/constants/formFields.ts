@@ -2,6 +2,10 @@ import type { FieldConfig } from '@shared/components';
 import { TRANSLATION_KEYS } from '@/i18n';
 import { formatDeckReviewIntervalsInput } from '../utils';
 import { DECK_PRESENTATION_MODE_OPTIONS } from './presentationModes';
+import {
+  DEFAULT_WHAT_DID_YOU_HEAR_CHOICE_COUNT,
+  WHAT_DID_YOU_HEAR_CHOICE_COUNT_OPTIONS,
+} from './exerciseSettings';
 
 export const createDeckFormFields: FieldConfig[] = [
   {
@@ -45,6 +49,18 @@ export const createDeckFormFields: FieldConfig[] = [
     required: true,
     placeholder: TRANSLATION_KEYS.decks.reviewIntervalsPlaceholder,
     defaultValue: formatDeckReviewIntervalsInput(),
+    fieldWrapperClassName: 'mb-5',
+    labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
+    inputClassName:
+      'h-9 w-full rounded-[4px] border border-line bg-white px-3 text-sm text-ink-strong outline-none focus:border-brand-accent',
+  },
+  {
+    type: 'select',
+    name: 'whatDidYouHearChoiceCount',
+    label: TRANSLATION_KEYS.decks.whatDidYouHearChoiceCount,
+    required: true,
+    defaultValue: String(DEFAULT_WHAT_DID_YOU_HEAR_CHOICE_COUNT),
+    options: [...WHAT_DID_YOU_HEAR_CHOICE_COUNT_OPTIONS],
     fieldWrapperClassName: 'mb-5',
     labelClassName: 'mb-2 block text-sm font-semibold text-ink-strong',
     inputClassName:

@@ -20,6 +20,11 @@ export interface DeckDetailDto {
   presentationMode: string;
   isPublic: boolean;
   reviewIntervalHours: number[];
+  exerciseSettings: {
+    whatDidYouHear: {
+      choiceCount: number;
+    };
+  };
   count: number;
   sharedUsers: DeckShareDto[];
   createdAt: string;
@@ -33,6 +38,11 @@ export interface DeckRecordDto {
   presentationMode: string;
   isPublic: boolean;
   reviewIntervalHours: number[];
+  exerciseSettings: {
+    whatDidYouHear: {
+      choiceCount: number;
+    };
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +53,11 @@ export interface PublicDeckListItemDto {
   description?: string;
   count: number;
   presentationMode: string;
+  exerciseSettings: {
+    whatDidYouHear: {
+      choiceCount: number;
+    };
+  };
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: string;
@@ -74,6 +89,7 @@ export function serializeDeckDetail(deck: DeckDetail): DeckDetailDto {
     presentationMode: deck.presentationMode,
     isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
+    exerciseSettings: deck.exerciseSettings,
     count: deck.count,
     sharedUsers: serializeDeckShareListResponse(deck.sharedUsers),
     createdAt: deck.createdAt.toISOString(),
@@ -89,6 +105,7 @@ export function serializeDeckRecord(deck: DeckRecord): DeckRecordDto {
     presentationMode: deck.presentationMode,
     isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
+    exerciseSettings: deck.exerciseSettings,
     createdAt: deck.createdAt.toISOString(),
     updatedAt: deck.updatedAt.toISOString(),
   };
@@ -101,6 +118,11 @@ export function serializePublicDeckListResponse(
     description?: string;
     count: number;
     presentationMode: string;
+    exerciseSettings: {
+      whatDidYouHear: {
+        choiceCount: number;
+      };
+    };
     ownerDisplayName: string;
     ownerUserId: string | null;
     createdAt: Date;
@@ -113,6 +135,7 @@ export function serializePublicDeckListResponse(
     description: deck.description,
     count: deck.count,
     presentationMode: deck.presentationMode,
+    exerciseSettings: deck.exerciseSettings,
     ownerDisplayName: deck.ownerDisplayName,
     ownerUserId: deck.ownerUserId,
     createdAt: deck.createdAt.toISOString(),

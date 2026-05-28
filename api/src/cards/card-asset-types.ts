@@ -13,6 +13,8 @@ export interface StoredImageAudioCardFields {
   imageAsset: StoredCardAsset;
   audioAsset: StoredCardAsset;
   altText?: string;
+  topic?: string;
+  quizTags?: string[];
 }
 
 export interface ResolvedImageAudioCardFields {
@@ -20,4 +22,6 @@ export interface ResolvedImageAudioCardFields {
   imageAsset: ResolvedCardAsset;
   audioAsset: ResolvedCardAsset;
   altText?: string;
+  topic?: string;
+  quizTags?: string[];
 }

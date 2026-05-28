@@ -1,4 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckExerciseSettings } from './deck-exercise-settings';
+import { serializeDeckExerciseSettings } from './deck-exercise-settings';
 import {
   hasExistingCards,
   hasExistingChunks,
@@ -18,6 +20,7 @@ export async function createDeck(
     chunkIds: string[];
     presentationMode: DeckPresentationMode;
     reviewIntervalHours?: number[];
+    exerciseSettings?: DeckExerciseSettings;
     userId: string;
   },
 ): Promise<CreateDeckResult> {
@@ -43,6 +46,7 @@ export async function createDeck(
         presentationMode: input.presentationMode,
         isPublic: false,
         reviewIntervalHours: input.reviewIntervalHours,
+        exerciseSettings: serializeDeckExerciseSettings(input.exerciseSettings),
         ownerId: input.userId,
       },
     })) as Parameters<typeof resolveDeckRecord>[0];

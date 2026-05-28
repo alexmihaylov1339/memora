@@ -5,4 +5,5 @@ export interface CreateDeckDto {
   chunkIds?: string[];
   presentationMode?: string;
   reviewIntervalHours?: number[];
+  exerciseSettings?: unknown;
 }

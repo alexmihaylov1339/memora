@@ -75,6 +75,8 @@ describe('card-validation', () => {
           kind: 'image_audio',
           fields: {
             label: 'Car',
+            topic: 'Vehicles',
+            quizTags: ['transport', 'road'],
             imageAsset: {
               path: 'kids-images/user-1/asset-1/car.jpg',
               mimeType: 'image/jpeg',
@@ -159,6 +161,8 @@ describe('card-validation', () => {
           kind: 'image_audio',
           fields: {
             label: 'Car',
+            topic: 'Vehicles',
+            quizTags: ['transport', 'road'],
             imageAsset: {
               path: 'kids-images/user-1/asset-1/car.jpg',
               mimeType: 'image/jpeg',

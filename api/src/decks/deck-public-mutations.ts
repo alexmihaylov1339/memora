@@ -34,6 +34,7 @@ interface SourcePublicDeck {
   presentationMode: string;
   isPublic: boolean;
   reviewIntervalHours: unknown;
+  exerciseSettings: unknown;
   deckCards: Array<{
     cardId: string;
     card: SourceDeckCard;
@@ -154,6 +155,7 @@ export async function copyPublicDeck(
         presentationMode: sourceDeck.presentationMode,
         isPublic: false,
         reviewIntervalHours: sourceDeck.reviewIntervalHours as never,
+        exerciseSettings: sourceDeck.exerciseSettings as never,
       },
     });
 

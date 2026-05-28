@@ -13,6 +13,11 @@ describe('deck-validation', () => {
         name: 'Kids deck',
         presentationMode: 'kids',
         reviewIntervalHours: [24, 48],
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 3,
+          },
+        },
       }),
     ).not.toThrow();
   });
@@ -31,6 +36,11 @@ describe('deck-validation', () => {
     expect(() =>
       validateUpdateDeckInput({
         presentationMode: 'standard',
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 2,
+          },
+        },
       }),
     ).not.toThrow();
   });
@@ -39,6 +49,19 @@ describe('deck-validation', () => {
     expect(() =>
       validateUpdateDeckInput({
         presentationMode: 'storybook',
+      }),
+    ).toThrow(BadRequestException);
+  });
+
+  it('rejects invalid exercise settings choice counts', () => {
+    expect(() =>
+      validateCreateDeckInput({
+        name: 'Kids deck',
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 5,
+          },
+        },
       }),
     ).toThrow(BadRequestException);
   });

@@ -73,6 +73,7 @@ describe('DeckEditForm CSV import flow', () => {
         name="Kids deck"
         presentationMode="kids"
         reviewIntervalHours={[0, 24]}
+        exerciseSettings={{ whatDidYouHear: { choiceCount: 4 } }}
         onDelete={jest.fn()}
         isDeleting={false}
         onUpdate={jest.fn()}

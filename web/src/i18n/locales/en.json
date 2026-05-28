@@ -23,6 +23,7 @@
     "namePlaceholder": "Enter deck name",
     "presentationMode": "Presentation mode",
     "reviewIntervals": "Review intervals",
+    "whatDidYouHearChoiceCount": "What Did You Hear? choices",
     "reviewIntervalsPlaceholder": "Example: 4h, 8h, 1d, 2d",
     "createButton": "Create Deck",
     "creating": "Creating...",

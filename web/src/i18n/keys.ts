@@ -28,6 +28,7 @@ export const TRANSLATION_KEYS = {
     namePlaceholder: 'decks.namePlaceholder',
     presentationMode: 'decks.presentationMode',
     reviewIntervals: 'decks.reviewIntervals',
+    whatDidYouHearChoiceCount: 'decks.whatDidYouHearChoiceCount',
     reviewIntervalsPlaceholder: 'decks.reviewIntervalsPlaceholder',
     createButton: 'decks.createButton',
     creating: 'decks.creating',

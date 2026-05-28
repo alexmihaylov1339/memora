@@ -5,6 +5,7 @@ import { BUTTON_STYLES } from '@shared/constants';
 import {
   DeckCardSelectionPanel,
   DeckChunkSelectionPanel,
+  type DeckExerciseSettings,
   type DeckPresentationMode,
   ImportCsvModal,
   formatDeckReviewIntervalsInput,
@@ -21,6 +22,7 @@ interface DeckEditFormProps {
   description?: string;
   presentationMode: DeckPresentationMode;
   reviewIntervalHours: number[];
+  exerciseSettings: DeckExerciseSettings;
   initialCards?: SearchResultItem[];
   initialChunks?: SearchResultItem[];
   onUpdate: (payload: {
@@ -31,6 +33,7 @@ interface DeckEditFormProps {
     chunkIds?: string[];
     presentationMode?: DeckPresentationMode;
     reviewIntervalHours?: number[];
+    exerciseSettings?: DeckExerciseSettings;
   }) => Promise<void> | void;
   onDelete: () => void;
   isDeleting: boolean;
@@ -45,6 +48,7 @@ export default function DeckEditForm({
   description,
   presentationMode,
   reviewIntervalHours,
+  exerciseSettings,
   initialCards = [],
   initialChunks = [],
   onUpdate,
@@ -104,6 +108,7 @@ export default function DeckEditForm({
     description?: string;
     presentationMode: DeckPresentationMode;
     reviewIntervalsInput: string;
+    whatDidYouHearChoiceCount: '2' | '3' | '4';
     cardIds?: string[];
     chunkIds?: string[];
   }) {
@@ -128,6 +133,11 @@ export default function DeckEditForm({
       chunkIds: values.chunkIds,
       presentationMode: values.presentationMode,
       reviewIntervalHours: nextReviewIntervalHours,
+      exerciseSettings: {
+        whatDidYouHear: {
+          choiceCount: Number(values.whatDidYouHearChoiceCount) as 2 | 3 | 4,
+        },
+      },
     });
   }
 
@@ -138,6 +148,7 @@ export default function DeckEditForm({
         description?: string;
         presentationMode: DeckPresentationMode;
         reviewIntervalsInput: string;
+        whatDidYouHearChoiceCount: '2' | '3' | '4';
         cardIds?: string[];
         chunkIds?: string[];
       }>
@@ -150,6 +161,9 @@ export default function DeckEditForm({
           reviewIntervalsInput: formatDeckReviewIntervalsInput(
             reviewIntervalHours,
           ),
+          whatDidYouHearChoiceCount: String(
+            exerciseSettings.whatDidYouHear.choiceCount,
+          ) as '2' | '3' | '4',
         }}
         submitLabel="Save Changes"
         submitButtonClassName={styles.primaryButton}

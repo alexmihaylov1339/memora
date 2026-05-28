@@ -30,6 +30,7 @@ CREATE TABLE "Deck" (
     "presentationMode" TEXT NOT NULL DEFAULT 'standard',
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "reviewIntervalHours" JSONB,
+    "exerciseSettings" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

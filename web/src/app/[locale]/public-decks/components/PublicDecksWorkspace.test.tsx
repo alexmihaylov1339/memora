@@ -63,6 +63,11 @@ describe('PublicDecksWorkspace', () => {
           presentationMode: 'kids',
           isPublic: false,
           reviewIntervalHours: [1, 24],
+          exerciseSettings: {
+            whatDidYouHear: {
+              choiceCount: 4,
+            },
+          },
           createdAt: '2026-05-21T10:00:00.000Z',
           updatedAt: '2026-05-21T10:00:00.000Z',
         });
@@ -72,6 +77,11 @@ describe('PublicDecksWorkspace', () => {
           presentationMode: 'kids',
           isPublic: false,
           reviewIntervalHours: [1, 24],
+          exerciseSettings: {
+            whatDidYouHear: {
+              choiceCount: 4,
+            },
+          },
           createdAt: '2026-05-21T10:00:00.000Z',
           updatedAt: '2026-05-21T10:00:00.000Z',
         };
@@ -93,6 +103,11 @@ describe('PublicDecksWorkspace', () => {
             description: 'Picture deck',
             count: 6,
             presentationMode: 'kids',
+            exerciseSettings: {
+              whatDidYouHear: {
+                choiceCount: 4,
+              },
+            },
             ownerDisplayName: 'Alex',
             ownerUserId: 'user-1',
             createdAt: '2026-05-21T10:00:00.000Z',

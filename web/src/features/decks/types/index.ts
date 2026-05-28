@@ -1,6 +1,14 @@
 import type { SupportedCardKind } from '../card-kinds';
 import type { DeckPresentationMode } from '../constants';
 
+export interface WhatDidYouHearExerciseSettings {
+  choiceCount: 2 | 3 | 4;
+}
+
+export interface DeckExerciseSettings {
+  whatDidYouHear: WhatDidYouHearExerciseSettings;
+}
+
 export interface CreateDeckDto {
   name: string;
   description?: string;
@@ -8,6 +16,7 @@ export interface CreateDeckDto {
   chunkIds?: string[];
   presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
+  exerciseSettings?: DeckExerciseSettings;
 }
 
 export interface DeckListItem {
@@ -26,6 +35,7 @@ export interface DeckRecord {
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
   reviewIntervalHours: number[];
+  exerciseSettings: DeckExerciseSettings;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,6 +51,7 @@ export interface PublicDeckRecord {
   description?: string;
   count: number;
   presentationMode: DeckPresentationMode;
+  exerciseSettings: DeckExerciseSettings;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: string;
@@ -67,6 +78,7 @@ export interface UpdateDeckDto {
   chunkIds?: string[];
   presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
+  exerciseSettings?: DeckExerciseSettings;
 }
 
 export interface UpdateDeckPublicationDto {

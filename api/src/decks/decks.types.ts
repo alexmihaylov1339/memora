@@ -1,4 +1,5 @@
 import type { DeckPresentationMode } from './deck-presentation-mode';
+import type { DeckExerciseSettings } from './deck-exercise-settings';
 
 export interface DeckListItem {
   id: string;
@@ -16,6 +17,7 @@ export interface DeckRecord {
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
   reviewIntervalHours: number[];
+  exerciseSettings: DeckExerciseSettings;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +44,7 @@ export interface PublicDeckListItem {
   description?: string;
   count: number;
   presentationMode: DeckPresentationMode;
+  exerciseSettings: DeckExerciseSettings;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: Date;
