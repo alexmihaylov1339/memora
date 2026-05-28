@@ -115,9 +115,8 @@ export class ReviewsService {
         .map((membership) => membership.card)
         .filter((card) => card.kind === 'image_audio'),
     );
-    const choiceCount = resolveDeckExerciseSettings(
-      deck.exerciseSettings,
-    ).whatDidYouHear.choiceCount;
+    const choiceCount = resolveDeckExerciseSettings(deck.exerciseSettings)
+      .whatDidYouHear.choiceCount;
 
     return buildWhatDidYouHearQuizRound({
       choiceCount,
