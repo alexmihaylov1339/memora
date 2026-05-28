@@ -163,7 +163,7 @@ Additional architecture decisions:
 ### T1 - Lock the Step 22 exercise contract in repo docs
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add this plan as the authoritative contract for the feature.
@@ -173,6 +173,19 @@ What to do:
 
 Exit criteria:
 - no ambiguity remains about whether this is a new card kind, how distractors are sourced, or how future rewards will plug into the flow.
+
+Implementation notes:
+- Added this Step 22 plan as the authoritative contract for the new `What Did You Hear?` mode.
+- Extended the roadmap with Step 22 as the next planned feature step after Step 21.
+- Locked the architectural decision that this feature is a new exercise mode over existing `image_audio` cards, not a new upload object and not a second media card kind.
+- Documented the future reward/prize seam as a follow-up requirement so the implementation can leave a clean post-correct extension point without pulling reward behavior into this step.
+- Updated plan/README references so the repo now points to Step 22 as the current forward feature plan.
+
+Verification completed:
+- Added `docs/plans/step-22-what-did-you-hear-quiz-mode.md`.
+- Added a Step 22 summary and execution-order entry to `docs/plans/chunked-learning-roadmap.md`.
+- Updated `docs/plans/README.md` to point to Step 22 as the current planned/in-progress step.
+- Updated the root `README.md` to reference Step 22 as the latest planned feature step.
 
 ---
 
