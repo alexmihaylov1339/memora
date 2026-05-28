@@ -19,13 +19,33 @@ jest.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
+jest.mock('@/features/auth/account/hooks', () => ({
+  useGetCurrentUser: () => ({
+    data: { name: 'Alex', email: 'alex@example.com' },
+  }),
+}));
+
 describe('DecksWorkspace', () => {
   it('shows total cards and due cards as separate deck grid columns', () => {
     render(
       <DecksWorkspace
         decks={[
-          { id: 'deck-1', name: 'Spanish', count: 12, dueCount: 3 },
-          { id: 'deck-2', name: 'German', count: 5, dueCount: 0 },
+          {
+            id: 'deck-1',
+            name: 'Spanish',
+            count: 12,
+            dueCount: 3,
+            presentationMode: 'standard',
+            isPublic: false,
+          },
+          {
+            id: 'deck-2',
+            name: 'German',
+            count: 5,
+            dueCount: 0,
+            presentationMode: 'kids',
+            isPublic: true,
+          },
         ]}
       />,
     );
@@ -37,7 +57,19 @@ describe('DecksWorkspace', () => {
     expect(
       screen.getByRole('columnheader', { name: 'Due cards' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Mode' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'Visibility' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Browse Public Decks' }),
+    ).toHaveAttribute('href', '/public-decks');
+    expect(screen.getByRole('link', { name: 'Kids Mode' })).toHaveAttribute(
+      'href',
+      '/practice?deckId=deck-2',
+    );
     expect(screen.getByRole('cell', { name: '12' })).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: '3' })).toBeInTheDocument();
+    expect(screen.getByText('Public')).toBeInTheDocument();
   });
 });

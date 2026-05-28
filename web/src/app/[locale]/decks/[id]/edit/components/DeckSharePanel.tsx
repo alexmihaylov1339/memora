@@ -4,18 +4,21 @@ import { Button, ErrorMessage, FormBuilder, type FieldConfig } from '@shared/com
 import {
   useCreateDeckShareMutation,
   useRemoveDeckShareMutation,
+  useUpdateDeckPublicationMutation,
 } from '@features/decks';
 import type { DeckShareRecord } from '@features/decks';
 import styles from '@features/decks/components/CreateDeckForm.module.scss';
 
 interface DeckSharePanelProps {
   deckId: string;
+  isPublic: boolean;
   sharedUsers?: DeckShareRecord[];
   onChanged: () => void;
 }
 
 export default function DeckSharePanel({
   deckId,
+  isPublic,
   sharedUsers = [],
   onChanged,
 }: DeckSharePanelProps) {
@@ -59,6 +62,9 @@ export default function DeckSharePanel({
   const removeDeckShare = useRemoveDeckShareMutation({
     onSuccess: onChanged,
   });
+  const updatePublication = useUpdateDeckPublicationMutation({
+    onSuccess: onChanged,
+  });
 
   async function handleSubmit(values: {
     identifier: string;
@@ -75,6 +81,10 @@ export default function DeckSharePanel({
     void removeDeckShare.fetch({ deckId, sharedUserId });
   }
 
+  function handleTogglePublication() {
+    void updatePublication.fetch({ id: deckId, isPublic: !isPublic });
+  }
+
   return (
     <section className={styles.shareSurface}>
       <div className="mb-4">
@@ -82,6 +92,37 @@ export default function DeckSharePanel({
         <p className="mt-1 text-sm text-ink-subtle">
           Invite by username or email. Shared users can see the deck and its content.
         </p>
+      </div>
+
+      <div className="mb-5 rounded-md border border-[var(--border)] bg-slate-50 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">
+              Public deck listing
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              {isPublic
+                ? 'This deck is visible in the public browse page and can be copied by other users.'
+                : 'This deck is private to you and invited users until you publish it.'}
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleTogglePublication}
+            isLoading={updatePublication.isLoading}
+            className="rounded-md bg-brand-accent px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+          >
+            {isPublic ? 'Unpublish deck' : 'Publish deck'}
+          </Button>
+        </div>
+
+        {updatePublication.error && (
+          <ErrorMessage
+            message={updatePublication.error.message}
+            className="mt-3"
+          />
+        )}
       </div>
 
       <FormBuilder<{ identifier: string; permission: DeckShareRecord['permission'] }>

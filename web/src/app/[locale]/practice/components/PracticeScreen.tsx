@@ -1,4 +1,7 @@
-import { usePracticeScreen } from '@features/reviews';
+import {
+  resolveReviewRenderer,
+  usePracticeScreen,
+} from '@features/reviews';
 import { ErrorMessage, PageLoader } from '@shared/components';
 import ReviewCurrentItemCard from '../../review/components/ReviewCurrentItemCard';
 import PracticeEmptyState from './PracticeEmptyState';
@@ -22,9 +25,9 @@ export default function PracticeScreen({ deckId }: PracticeScreenProps) {
     isAnswerRevealed,
     isLoading,
     positionLabel,
-    reviewRenderer,
     totalCount,
   } = usePracticeScreen(deckId);
+  const reviewRenderer = resolveReviewRenderer(currentItem);
 
   if (isLoading) {
     return <PageLoader />;
@@ -47,7 +50,8 @@ export default function PracticeScreen({ deckId }: PracticeScreenProps) {
     <div className="space-y-6">
       <PracticeHeader deckId={deckId} positionLabel={positionLabel} />
 
-      {!reviewRenderer || reviewRenderer.renderer === 'unsupported' ? (
+      {!reviewRenderer ||
+      reviewRenderer.renderer === 'unsupported' ? (
         <PracticeUnsupportedCard
           item={currentItem}
           reason={reviewRenderer?.reason ?? currentItem.reviewUnsupportedReason}

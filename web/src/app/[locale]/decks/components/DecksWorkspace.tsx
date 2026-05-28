@@ -38,12 +38,20 @@ export default function DecksWorkspace({ decks }: DecksWorkspaceProps) {
       </div>
 
       <div className="mb-4 flex justify-end">
-        <Link
-          href={APP_ROUTES.newDeck}
-          className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover"
-        >
-          Create Deck
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={APP_ROUTES.publicDecks}
+            className="rounded-[5px] border border-line-soft bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Browse Public Decks
+          </Link>
+          <Link
+            href={APP_ROUTES.newDeck}
+            className="rounded-[5px] bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_4px_rgba(0,0,0,0.15)] transition hover:bg-brand-accent-hover"
+          >
+            Create Deck
+          </Link>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-[5px] border border-line-soft bg-white">

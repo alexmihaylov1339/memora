@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { normalizeDeckReviewIntervalHours } from '../deck-review-intervals';
 import { DECK_ERROR_MESSAGES } from '../deck-errors';
+import { normalizeDeckPresentationMode } from '../deck-presentation-mode';
 import type { CreateDeckDto } from './create-deck.dto';
 import type { DeckSharePermission } from '../deck-share.types';
 import type { UpdateDeckDto } from './update-deck.dto';
@@ -39,6 +40,7 @@ export function validateCreateDeckInput(body: CreateDeckDto) {
   }
 
   normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
+  normalizeDeckPresentationMode(body.presentationMode);
 }
 
 export function validateUpdateDeckInput(body: UpdateDeckDto) {
@@ -48,6 +50,7 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
       isUndefined(body.description) &&
       isUndefined(body.cardIds) &&
       isUndefined(body.chunkIds) &&
+      isUndefined(body.presentationMode) &&
       isUndefined(body.reviewIntervalHours))
   ) {
     throw new BadRequestException(DECK_ERROR_MESSAGES.atLeastOneFieldRequired);
@@ -73,6 +76,9 @@ export function validateUpdateDeckInput(body: UpdateDeckDto) {
   }
 
   normalizeDeckReviewIntervalHours(body.reviewIntervalHours);
+  if (!isUndefined(body.presentationMode)) {
+    normalizeDeckPresentationMode(body.presentationMode);
+  }
 }
 
 interface CreateDeckShareValidationInput {
@@ -86,6 +92,10 @@ interface DeckMembershipCardsValidationInput {
 
 interface DeckMembershipChunksValidationInput {
   chunkIds?: unknown;
+}
+
+interface UpdateDeckPublicationValidationInput {
+  isPublic?: unknown;
 }
 
 export function validateCreateDeckShareInput(
@@ -144,6 +154,16 @@ export function validateDeckMoveChunksInput(
   return {
     chunkIds: body.chunkIds.map((id) => id.trim()),
   };
+}
+
+export function validateUpdateDeckPublicationInput(
+  body: UpdateDeckPublicationValidationInput | undefined,
+): { isPublic: boolean } {
+  if (!body || typeof body.isPublic !== 'boolean') {
+    throw new BadRequestException(DECK_ERROR_MESSAGES.publicationFlagInvalid);
+  }
+
+  return { isPublic: body.isPublic };
 }
 
 function isValidDeckSharePermission(

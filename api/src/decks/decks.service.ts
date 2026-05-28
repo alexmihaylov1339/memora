@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import type { DeckSharePermission } from './deck-share.types';
 import {
+  copyPublicDeck,
   createDeck,
   createDeckShare,
   detachDeckCards,
@@ -11,13 +13,16 @@ import {
   listMovableChunksForDeck,
   listDeckShares,
   listDecks,
+  listPublicDecks,
   moveDeckCards,
   moveDeckChunks,
   removeDeck,
   removeDeckShare,
+  updateDeckPublication,
   updateDeck,
 } from './decks.repository';
 export type {
+  CopyPublicDeckResult,
   DeckDetail,
   DeckListItem,
   DeckRecord,
@@ -27,7 +32,9 @@ export type {
   DetachDeckChunksResult,
   MoveDeckCardsResult,
   MoveDeckChunksResult,
+  PublicDeckListItem,
   UpdateDeckResult,
+  UpdateDeckPublicationResult,
   ShareDeckResult,
 } from './decks.types';
 export type { DeckMembershipCardRecord } from './deck-membership';
@@ -47,6 +54,7 @@ export class DecksService {
     cardIds: string[] = [],
     chunkIds: string[] = [],
     userId: string = '',
+    presentationMode: DeckPresentationMode = 'standard',
     reviewIntervalHours?: number[],
   ) {
     return createDeck(this.prisma, {
@@ -54,6 +62,7 @@ export class DecksService {
       description,
       cardIds,
       chunkIds,
+      presentationMode,
       reviewIntervalHours,
       userId,
     });
@@ -70,6 +79,7 @@ export class DecksService {
       description?: string;
       cardIds?: string[];
       chunkIds?: string[];
+      presentationMode?: DeckPresentationMode;
       reviewIntervalHours?: number[];
     },
     userId: string,
@@ -85,6 +95,10 @@ export class DecksService {
     return listDeckShares(this.prisma, deckId, userId);
   }
 
+  listPublic() {
+    return listPublicDecks(this.prisma);
+  }
+
   shareDeck(
     deckId: string,
     identifier: string,
@@ -96,6 +110,14 @@ export class DecksService {
 
   removeShare(deckId: string, sharedUserId: string, userId: string) {
     return removeDeckShare(this.prisma, deckId, sharedUserId, userId);
+  }
+
+  updatePublication(deckId: string, isPublic: boolean, userId: string) {
+    return updateDeckPublication(this.prisma, deckId, isPublic, userId);
+  }
+
+  copyPublicDeck(deckId: string, userId: string) {
+    return copyPublicDeck(this.prisma, deckId, userId);
   }
 
   listMovableCards(deckId: string, userId: string) {

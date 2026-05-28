@@ -71,6 +71,7 @@ export default function EditDeckPage() {
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    presentationMode?: 'standard' | 'kids';
     reviewIntervalHours?: number[];
   }): Promise<void> {
     await updateDeck.fetch(payload);
@@ -90,7 +91,12 @@ export default function EditDeckPage() {
   return (
     <ProtectedRoute>
       <main className="mx-auto w-full max-w-[1120px] px-6 py-8">
-        <EditDeckHeader />
+        <EditDeckHeader
+          deckId={deck?.id}
+          deckName={deck?.name}
+          isPublic={deck?.isPublic}
+          presentationMode={deck?.presentationMode}
+        />
 
         {isLoading && <PageLoader />}
         {deckQuery.error && <ErrorMessage message={deckQuery.error.message} />}
@@ -102,6 +108,7 @@ export default function EditDeckPage() {
               id={deck.id}
               name={deck.name}
               description={deck.description}
+              presentationMode={deck.presentationMode}
               reviewIntervalHours={deck.reviewIntervalHours}
               initialCards={cards.map(cardToSearchResultItem)}
               initialChunks={chunks.map(chunkToSearchResultItem)}
@@ -115,6 +122,7 @@ export default function EditDeckPage() {
 
             <DeckSharePanel
               deckId={deck.id}
+              isPublic={deck.isPublic}
               sharedUsers={deck.sharedUsers ?? []}
               onChanged={() => void deckQuery.refetch()}
             />

@@ -21,6 +21,7 @@
     "description": "Description",
     "descriptionPlaceholder": "Optional description",
     "namePlaceholder": "Enter deck name",
+    "presentationMode": "Presentation mode",
     "reviewIntervals": "Review intervals",
     "reviewIntervalsPlaceholder": "Example: 4h, 8h, 1d, 2d",
     "createButton": "Create Deck",

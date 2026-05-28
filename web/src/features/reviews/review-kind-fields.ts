@@ -1,4 +1,4 @@
-import { isString } from '@shared/utils';
+import { isNumber, isObjectRecord, isString } from '@shared/utils';
 import type { ReviewRenderableItem } from './types';
 
 export interface BasicReviewCardFields {
@@ -10,6 +10,20 @@ export interface ClozeTextReviewCardFields {
   prompt: string;
   answer: string;
   hint?: string;
+}
+
+export interface PracticeAssetFields {
+  path: string;
+  mimeType: string;
+  size: number;
+  url: string;
+}
+
+export interface ImageAudioPracticeCardFields {
+  label: string;
+  imageAsset: PracticeAssetFields;
+  audioAsset: PracticeAssetFields;
+  altText?: string;
 }
 
 export function parseBasicReviewFields(
@@ -70,5 +84,65 @@ export function parseClozeTextReviewFields(
     prompt: normalizedText.replace(/{{c1::(.*?)}}/g, '_____'),
     answer: normalizedAnswer,
     ...(isString(hint) ? { hint: hint.trim() } : {}),
+  };
+}
+
+export function parseImageAudioPracticeFields(
+  item: ReviewRenderableItem,
+): ImageAudioPracticeCardFields | null {
+  const label = item.fields.label;
+  const altText = item.fields.altText;
+  const imageAsset = parsePracticeAsset(item.fields.imageAsset);
+  const audioAsset = parsePracticeAsset(item.fields.audioAsset);
+
+  if (!isString(label) || !imageAsset || !audioAsset) {
+    return null;
+  }
+
+  const normalizedLabel = label.trim();
+  if (!normalizedLabel) {
+    return null;
+  }
+
+  if (altText !== undefined && (!isString(altText) || !altText.trim())) {
+    return null;
+  }
+
+  return {
+    label: normalizedLabel,
+    imageAsset,
+    audioAsset,
+    ...(isString(altText) ? { altText: altText.trim() } : {}),
+  };
+}
+
+function parsePracticeAsset(value: unknown): PracticeAssetFields | null {
+  if (!isObjectRecord(value)) {
+    return null;
+  }
+
+  const path = value.path;
+  const mimeType = value.mimeType;
+  const size = value.size;
+  const url = value.url;
+
+  if (
+    !isString(path) ||
+    !path.trim() ||
+    !isString(mimeType) ||
+    !mimeType.trim() ||
+    !isNumber(size) ||
+    size <= 0 ||
+    !isString(url) ||
+    !url.trim()
+  ) {
+    return null;
+  }
+
+  return {
+    path: path.trim(),
+    mimeType: mimeType.trim(),
+    size,
+    url: url.trim(),
   };
 }

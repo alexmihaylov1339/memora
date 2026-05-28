@@ -5,6 +5,7 @@ import { BUTTON_STYLES } from '@shared/constants';
 import {
   DeckCardSelectionPanel,
   DeckChunkSelectionPanel,
+  type DeckPresentationMode,
   ImportCsvModal,
   formatDeckReviewIntervalsInput,
   parseDeckReviewIntervalsInput,
@@ -18,6 +19,7 @@ interface DeckEditFormProps {
   id: string;
   name: string;
   description?: string;
+  presentationMode: DeckPresentationMode;
   reviewIntervalHours: number[];
   initialCards?: SearchResultItem[];
   initialChunks?: SearchResultItem[];
@@ -27,6 +29,7 @@ interface DeckEditFormProps {
     description?: string;
     cardIds?: string[];
     chunkIds?: string[];
+    presentationMode?: DeckPresentationMode;
     reviewIntervalHours?: number[];
   }) => Promise<void> | void;
   onDelete: () => void;
@@ -40,6 +43,7 @@ export default function DeckEditForm({
   id,
   name,
   description,
+  presentationMode,
   reviewIntervalHours,
   initialCards = [],
   initialChunks = [],
@@ -98,6 +102,7 @@ export default function DeckEditForm({
   async function handleSubmit(values: {
     name: string;
     description?: string;
+    presentationMode: DeckPresentationMode;
     reviewIntervalsInput: string;
     cardIds?: string[];
     chunkIds?: string[];
@@ -121,6 +126,7 @@ export default function DeckEditForm({
       description: values.description?.trim() || undefined,
       cardIds: values.cardIds,
       chunkIds: values.chunkIds,
+      presentationMode: values.presentationMode,
       reviewIntervalHours: nextReviewIntervalHours,
     });
   }
@@ -130,6 +136,7 @@ export default function DeckEditForm({
       <FormBuilder<{
         name: string;
         description?: string;
+        presentationMode: DeckPresentationMode;
         reviewIntervalsInput: string;
         cardIds?: string[];
         chunkIds?: string[];
@@ -139,6 +146,7 @@ export default function DeckEditForm({
         initialValues={{
           name,
           description: description ?? '',
+          presentationMode,
           reviewIntervalsInput: formatDeckReviewIntervalsInput(
             reviewIntervalHours,
           ),

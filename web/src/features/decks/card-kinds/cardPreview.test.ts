@@ -47,6 +47,24 @@ describe('getCardPreview', () => {
     });
   });
 
+  it('builds previews for image_audio cards', () => {
+    expect(
+      getCardPreview(
+        buildCard({
+          id: 'card-4',
+          kind: 'image_audio',
+          fields: {
+            label: '  Car ',
+            altText: ' Red toy car ',
+          },
+        }),
+      ),
+    ).toEqual({
+      front: 'Car',
+      back: 'Red toy car',
+    });
+  });
+
   it('falls back when fields are not readable', () => {
     expect(
       getCardPreview(

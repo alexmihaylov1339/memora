@@ -3,5 +3,6 @@ export interface UpdateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  presentationMode?: string;
   reviewIntervalHours?: number[];
 }

@@ -31,6 +31,32 @@ function createPrismaMock() {
 }
 
 describe('CardsImportService', () => {
+  it('creates standalone cards without deck memberships when no deck is provided', async () => {
+    const prisma = createPrismaMock();
+    const service = new CardsImportService(prisma as unknown as PrismaService);
+
+    prisma.card.createManyAndReturn.mockResolvedValue([{ id: 'card-1' }]);
+
+    await expect(
+      service.bulkImportFromCsv('user-1', [{ front: 'front', back: 'back' }]),
+    ).resolves.toEqual({ created: 1 });
+
+    expect(prisma.deck.findFirst).not.toHaveBeenCalled();
+    expect(prisma.card.createManyAndReturn).toHaveBeenCalledWith({
+      data: [
+        {
+          ownerId: 'user-1',
+          deckId: null,
+          kind: 'basic',
+          fields: { front: 'front', back: 'back' },
+        },
+      ],
+      select: { id: true },
+    });
+    expect(prisma.deckCard.createMany).not.toHaveBeenCalled();
+    expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+  });
+
   it('creates deck memberships and review state when importing into a deck', async () => {
     const now = new Date('2026-05-10T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
@@ -121,5 +147,18 @@ describe('CardsImportService', () => {
     ).rejects.toThrow(ForbiddenException);
 
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('returns without opening a transaction when no rows are provided', async () => {
+    const prisma = createPrismaMock();
+    const service = new CardsImportService(prisma as unknown as PrismaService);
+
+    await expect(service.bulkImportFromCsv('user-1', [])).resolves.toEqual({
+      created: 0,
+    });
+
+    expect(prisma.deck.findFirst).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.card.createManyAndReturn).not.toHaveBeenCalled();
   });
 });

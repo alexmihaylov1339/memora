@@ -6,10 +6,12 @@ import { FormBuilder } from '@shared/components';
 import { BUTTON_STYLES } from '@shared/constants';
 import {
   CardDeckSelectionPanel,
+  type CardAssetValue,
   type CardKindFormValues,
   type CardRecord,
   type Deck,
   getCardKindOptions,
+  ImageAudioCardAssetsSection,
   parseCardKindFields,
   resolveSupportedCardKind,
   serializeCardKindFields,
@@ -58,6 +60,12 @@ export default function EditCardForm({
         : parseCardKindFields(selectedKind, {}),
     [card.fields, cardKind, selectedKind],
   );
+  const [imageAsset, setImageAsset] = useState<CardAssetValue | undefined>(
+    () => parsedKindFields.imageAsset,
+  );
+  const [audioAsset, setAudioAsset] = useState<CardAssetValue | undefined>(
+    () => parsedKindFields.audioAsset,
+  );
 
   function handleUpdate(values: CardKindFormValues) {
     onUpdate({
@@ -67,6 +75,8 @@ export default function EditCardForm({
       fields: serializeCardKindFields(selectedKind, {
         ...values,
         kind: selectedKind,
+        imageAsset,
+        audioAsset,
       }),
     });
   }
@@ -97,6 +107,15 @@ export default function EditCardForm({
         selectedDecks={selectedDecks}
         onSelectionChange={setSelectedDecks}
       />
+
+      {selectedKind === 'image_audio' && (
+        <ImageAudioCardAssetsSection
+          imageAsset={imageAsset}
+          audioAsset={audioAsset}
+          onImageAssetChange={setImageAsset}
+          onAudioAssetChange={setAudioAsset}
+        />
+      )}
 
       <FormBuilder<CardKindFormValues>
         key={`${card.id}-${selectedKind}`}

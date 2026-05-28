@@ -1,4 +1,5 @@
 import type { PrismaService } from '../../prisma/prisma.service';
+import { CardAssetsService } from './card-assets.service';
 import { CardsService } from './cards.service';
 
 function createPrismaMock() {
@@ -44,7 +45,16 @@ function createPrismaMock() {
 describe('CardsService', () => {
   it('initializes standalone review state for newly created deck cards', async () => {
     const prisma = createPrismaMock();
-    const service = new CardsService(prisma as unknown as PrismaService);
+    const resolveCardFields = jest.fn(
+      (_kind: string, fields: unknown) => fields,
+    );
+    const cardAssets = {
+      resolveCardFields,
+    } as unknown as CardAssetsService;
+    const service = new CardsService(
+      prisma as unknown as PrismaService,
+      cardAssets,
+    );
     const now = new Date('2026-05-02T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
 
@@ -98,13 +108,26 @@ describe('CardsService', () => {
       ],
       skipDuplicates: true,
     });
+    expect(resolveCardFields).toHaveBeenCalledWith('basic', {
+      front: 'front',
+      back: 'back',
+    });
 
     jest.useRealTimers();
   });
 
   it('updates deck memberships without moving the card out of other selected decks', async () => {
     const prisma = createPrismaMock();
-    const service = new CardsService(prisma as unknown as PrismaService);
+    const resolveCardFields = jest.fn(
+      (_kind: string, fields: unknown) => fields,
+    );
+    const cardAssets = {
+      resolveCardFields,
+    } as unknown as CardAssetsService;
+    const service = new CardsService(
+      prisma as unknown as PrismaService,
+      cardAssets,
+    );
     const now = new Date('2026-05-02T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
 
@@ -164,6 +187,10 @@ describe('CardsService', () => {
         },
       ],
       skipDuplicates: true,
+    });
+    expect(resolveCardFields).toHaveBeenCalledWith('basic', {
+      front: 'front',
+      back: 'back',
     });
 
     jest.useRealTimers();

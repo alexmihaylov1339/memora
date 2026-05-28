@@ -7,6 +7,8 @@ import type {
   CardRecord,
   DeckCardMembershipMutationResult,
   MoveDeckCardsParams,
+  UploadCardAssetParams,
+  UploadedCardAsset,
 } from '../types';
 import { CARD_QUERY_KEYS } from './useCardQueries';
 
@@ -82,5 +84,14 @@ export function useMoveDeckCardsMutation(
         options?.onSuccess?.(data);
       },
     },
+  );
+}
+
+export function useUploadCardAssetMutation(
+  options?: UseServiceOptions<UploadedCardAsset>,
+) {
+  return useService<UploadCardAssetParams, UploadedCardAsset>(
+    cardService.uploadAsset,
+    options,
   );
 }

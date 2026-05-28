@@ -46,8 +46,22 @@ jest.mock('../hooks', () => ({
 const mockUseDecksListQuery = jest.mocked(useDecksListQuery);
 
 const decks: Deck[] = [
-  { id: 'deck-1', name: 'Spanish', count: 12, dueCount: 3 },
-  { id: 'deck-2', name: 'German', count: 5, dueCount: 0 },
+  {
+    id: 'deck-1',
+    name: 'Spanish',
+    count: 12,
+    dueCount: 3,
+    presentationMode: 'standard',
+    isPublic: false,
+  },
+  {
+    id: 'deck-2',
+    name: 'German',
+    count: 5,
+    dueCount: 0,
+    presentationMode: 'kids',
+    isPublic: true,
+  },
 ];
 
 const selectedDeck: SearchResultItem = {

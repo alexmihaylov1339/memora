@@ -21,6 +21,7 @@
     "description": "Beschreibung",
     "descriptionPlaceholder": "Optionale Beschreibung",
     "namePlaceholder": "Deck-Name eingeben",
+    "presentationMode": "Präsentationsmodus",
     "reviewIntervals": "Wiederholungsintervalle",
     "reviewIntervalsPlaceholder": "Beispiel: 4h, 8h, 1d, 2d",
     "createButton": "Deck erstellen",

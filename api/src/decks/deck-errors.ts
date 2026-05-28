@@ -26,5 +26,7 @@ export const DECK_ERROR_MESSAGES = {
   deckAlreadyShared: 'deck is already shared with this user',
   sharePermissionInvalid: 'share permission is invalid',
   sharedUserNotFound: 'shared user not found',
+  publicationFlagInvalid: 'isPublic must be a boolean',
+  publicDeckNotFound: 'public deck not found',
   deckNotFound: 'deck not found',
 } as const;

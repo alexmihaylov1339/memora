@@ -18,6 +18,19 @@ NestJS backend for Memora.
 npm run start:dev
 ```
 
+Copy `.env.example` to `.env` and fill in the real values before starting the API.
+
+Step 21 storage uploads require these additional server-side variables in `api/.env`:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET` (defaults to `memora-bucket` if omitted)
+
+Important:
+
+- use the Supabase `service_role` key here, not the publishable/anon key
+- keep the service-role key only in `api/.env`, never in `web/.env.local`
+
 ## Verification
 
 ```bash

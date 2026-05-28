@@ -1,14 +1,22 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
+import type { DeckPresentationMode } from './deck-presentation-mode';
 import { getDueCardCountsByDeck } from './deck-review-counts';
 import {
   getDeckCardCounts,
   mapDeckDetail,
+  mapPublicDeckListItem,
   mapDeckShareSummary,
   type DeckShareWithUser,
+  type PublicDeckWithOwner,
   type DeckWithShares,
 } from './decks.helpers';
-import type { DeckDetail, DeckListItem, DeckShareSummary } from './decks.types';
+import type {
+  DeckDetail,
+  DeckListItem,
+  DeckShareSummary,
+  PublicDeckListItem,
+} from './decks.types';
 
 export async function listDecks(
   prisma: PrismaService,
@@ -30,6 +38,8 @@ export async function listDecks(
     name: deck.name,
     count: cardCounts.get(deck.id) ?? 0,
     dueCount: dueCounts.get(deck.id) ?? 0,
+    presentationMode: deck.presentationMode as DeckPresentationMode,
+    isPublic: deck.isPublic,
   }));
 }
 
@@ -46,6 +56,13 @@ export async function getDeckDetail(
   const deck = (await prisma.deck.findFirst({
     where: { id },
     include: {
+      owner: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
       shares: {
         orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         include: {
@@ -70,6 +87,29 @@ export async function getDeckDetail(
   const count = await prisma.deckCard.count({ where: { deckId: id } });
 
   return mapDeckDetail(deck, count);
+}
+
+export async function listPublicDecks(
+  prisma: PrismaService,
+): Promise<PublicDeckListItem[]> {
+  const decks = (await prisma.deck.findMany({
+    where: { isPublic: true },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+  })) as PublicDeckWithOwner[];
+
+  const deckIds = decks.map((deck) => deck.id);
+  const cardCounts = await getDeckCardCounts(prisma, deckIds);
+
+  return decks.map((deck) => mapPublicDeckListItem(deck, cardCounts.get(deck.id) ?? 0));
 }
 
 export async function listDeckShares(

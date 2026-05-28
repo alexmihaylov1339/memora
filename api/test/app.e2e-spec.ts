@@ -348,17 +348,26 @@ describe('AppController (e2e)', () => {
       .expect(404);
 
     await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .expect(200)
       .expect((res) => {
         const body = asRecord(res.body);
         expectExactKeys(body, ['items']);
-        expect(getReviewItemsForDeck(body, deckId)).toEqual([]);
+        expect(getReviewItemsForDeck(body, deckId)).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              cardId,
+              deckId,
+              chunkId: `standalone:${cardId}`,
+              kind: 'basic',
+            }),
+          ]),
+        );
       });
 
     await request(server)
-      .post(`/v1/reviews/${cardId}/grade`)
+      .post(`/v1/reviews/${cardId}/grade?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .send({ grade: 'invalid-grade' })
       .expect(400)
@@ -373,7 +382,7 @@ describe('AppController (e2e)', () => {
       });
 
     await request(server)
-      .post('/v1/reviews/card-missing/grade')
+      .post(`/v1/reviews/card-missing/grade?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .send({ grade: 'good' })
       .expect(404)
@@ -432,6 +441,221 @@ describe('AppController (e2e)', () => {
       .expect(200);
     const fetchedChunk = asRecord(parseJson(getChunkRes.text));
     expect(fetchedChunk.deckId).toBeNull();
+  });
+
+  it('imports csv cards for standalone and deck-scoped flows', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `E2E CSV Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    const standaloneImportRes = await request(server)
+      .post('/v1/cards/import')
+      .set(authHeader)
+      .attach('file', Buffer.from('Alpha,Beta\nGamma,Delta\n'), {
+        filename: 'standalone.csv',
+        contentType: 'text/csv',
+      })
+      .expect(201);
+    const standaloneImportBody = asRecord(parseJson(standaloneImportRes.text));
+    expect(standaloneImportBody).toEqual({
+      created: 2,
+      skipped: [],
+    });
+
+    const deckImportRes = await request(server)
+      .post('/v1/cards/import')
+      .set(authHeader)
+      .field('deckId', deckId)
+      .attach('file', Buffer.from('Front,Back\nOne,Two\nThree,Four\n'), {
+        filename: 'deck.csv',
+        contentType: 'text/csv',
+      })
+      .expect(201);
+    const deckImportBody = asRecord(parseJson(deckImportRes.text));
+    expect(deckImportBody).toEqual({
+      created: 2,
+      skipped: [],
+    });
+
+    const skippedRowRes = await request(server)
+      .post('/v1/cards/import')
+      .set(authHeader)
+      .attach('file', Buffer.from('Front,Back\nValid,Row\nOnlyFront\n'), {
+        filename: 'skipped.csv',
+        contentType: 'text/csv',
+      })
+      .expect(201);
+    const skippedRowBody = asRecord(parseJson(skippedRowRes.text));
+    expect(skippedRowBody).toEqual({
+      created: 1,
+      skipped: [{ row: 3, reason: 'missing back side' }],
+    });
+
+    const cardsRes = await request(server)
+      .get('/v1/cards')
+      .set(authHeader)
+      .expect(200);
+    const importedCards = (parseJson(cardsRes.text) as unknown[])
+      .map((item) => asRecord(item))
+      .filter((item) =>
+        ['Alpha', 'Gamma', 'One', 'Three', 'Valid'].includes(
+          asRecord(item.fields as Record<string, unknown>).front as string,
+        ),
+      );
+
+    expect(importedCards).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          deckId: null,
+          kind: 'basic',
+          fields: { front: 'Alpha', back: 'Beta' },
+        }),
+        expect.objectContaining({
+          deckId: null,
+          kind: 'basic',
+          fields: { front: 'Gamma', back: 'Delta' },
+        }),
+        expect.objectContaining({
+          deckId,
+          kind: 'basic',
+          fields: { front: 'One', back: 'Two' },
+        }),
+        expect.objectContaining({
+          deckId,
+          kind: 'basic',
+          fields: { front: 'Three', back: 'Four' },
+        }),
+      ]),
+    );
+
+    const reviewStates = await prisma.reviewState.findMany({
+      where: {
+        card: {
+          deckId,
+        },
+      },
+      select: {
+        due: true,
+        consecutiveSuccessCount: true,
+        card: {
+          select: {
+            fields: true,
+          },
+        },
+      },
+    });
+
+    expect(reviewStates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          consecutiveSuccessCount: 0,
+          due: expect.any(Date),
+          card: {
+            fields: { front: 'One', back: 'Two' },
+          },
+        }),
+        expect.objectContaining({
+          consecutiveSuccessCount: 0,
+          due: expect.any(Date),
+          card: {
+            fields: { front: 'Three', back: 'Four' },
+          },
+        }),
+      ]),
+    );
+  });
+
+  it('rejects invalid csv import requests with stable semantics', async () => {
+    const server = app.getHttpServer();
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
+
+    const deckRes = await request(server)
+      .post('/v1/decks')
+      .set(authHeader)
+      .send({ name: `E2E CSV Forbidden Deck ${uniqueSuffix}` })
+      .expect(201);
+    const deckBody = asRecord(parseJson(deckRes.text));
+    const deckId = getStringField(deckBody, 'id');
+
+    const otherCredentials = {
+      email: `memora-e2e-csv-other-${uniqueSuffix}@example.com`,
+      password: 'secret123',
+      name: 'Memora CSV Other',
+    };
+    await request(server)
+      .post('/v1/auth/register')
+      .send(otherCredentials)
+      .expect(201);
+    const otherLoginRes = await request(server)
+      .post('/v1/auth/login')
+      .send({
+        email: otherCredentials.email,
+        password: otherCredentials.password,
+      })
+      .expect(201);
+    const otherToken = getStringField(
+      asRecord(parseJson(otherLoginRes.text)),
+      'accessToken',
+    );
+    const otherAuthHeader = { Authorization: `Bearer ${otherToken}` };
+
+    await request(server)
+      .post('/v1/cards/import')
+      .set(authHeader)
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: 'No file uploaded',
+            error: 'Bad Request',
+          }),
+        );
+      });
+
+    await request(server)
+      .post('/v1/cards/import')
+      .set(authHeader)
+      .attach('file', Buffer.from(''), {
+        filename: 'empty.csv',
+        contentType: 'text/csv',
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: 'No valid rows found in CSV',
+            error: 'Bad Request',
+          }),
+        );
+      });
+
+    await request(server)
+      .post('/v1/cards/import')
+      .set(otherAuthHeader)
+      .field('deckId', deckId)
+      .attach('file', Buffer.from('Alpha,Beta\n'), {
+        filename: 'forbidden.csv',
+        contentType: 'text/csv',
+      })
+      .expect(403)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            statusCode: 403,
+            message: 'deck not found or not accessible',
+            error: 'Forbidden',
+          }),
+        );
+      });
   });
 
   it('deck create -> list -> detail -> update -> delete happy path', async () => {
@@ -681,7 +905,7 @@ describe('AppController (e2e)', () => {
       });
 
     await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(sharedAuthHeader)
       .expect(200)
       .expect((res) => {
@@ -1075,7 +1299,8 @@ describe('AppController (e2e)', () => {
         expect(res.body).toEqual(
           expect.objectContaining({
             id: cardId,
-            deckId: targetDeckId,
+            deckId: sourceDeckId,
+            deckIds: expect.arrayContaining([sourceDeckId, targetDeckId]),
           }),
         );
       });
@@ -1152,12 +1377,29 @@ describe('AppController (e2e)', () => {
     await request(server)
       .get(`/v1/cards/${cardId}`)
       .set(authHeader)
-      .expect(404);
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: cardId,
+            deckId: sourceDeckId,
+            deckIds: [sourceDeckId],
+          }),
+        );
+      });
 
     await request(server)
       .get(`/v1/chunks/${chunkId}`)
       .set(authHeader)
-      .expect(404);
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toEqual(
+          expect.objectContaining({
+            id: chunkId,
+            deckId: null,
+          }),
+        );
+      });
 
     await request(server)
       .delete(`/v1/decks/${sourceDeckId}`)
@@ -1233,15 +1475,30 @@ describe('AppController (e2e)', () => {
     const chunkId = getStringField(chunkBody, 'id');
 
     const initialQueueRes = await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .expect(200);
     const initialQueueBody = asRecord(parseJson(initialQueueRes.text));
     const initialQueueItems = getReviewItemsForDeck(initialQueueBody, deckId);
-    const initialQueueItem = asRecord(initialQueueItems[0]);
+    const initialChunkItem = initialQueueItems.find(
+      (item) => item.cardId === firstCardId,
+    );
+    expect(initialChunkItem).toBeDefined();
+    const initialQueueItem = asRecord(initialChunkItem as Record<string, unknown>);
 
     expectExactKeys(initialQueueBody, ['items']);
-    expect(initialQueueItems).toHaveLength(1);
+    expect(initialQueueItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cardId: firstCardId,
+          chunkId,
+        }),
+        expect.objectContaining({
+          kind: 'cloze_text',
+          deckId,
+        }),
+      ]),
+    );
     expectExactKeys(initialQueueItem, [
       'cardId',
       'deckId',
@@ -1274,7 +1531,9 @@ describe('AppController (e2e)', () => {
     expectIsoDateField(initialQueueItem, 'due');
 
     const firstGradeRes = await request(server)
-      .post(`/v1/reviews/${firstCardId}/grade`)
+      .post(
+        `/v1/reviews/${firstCardId}/grade?deckId=${encodeURIComponent(deckId)}`,
+      )
       .set(authHeader)
       .send({ grade: 'good' })
       .expect(200);
@@ -1374,13 +1633,22 @@ describe('AppController (e2e)', () => {
     expectIsoDateField(firstNextActionableItem, 'due');
 
     await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .expect(200)
       .expect((res) => {
         const body = asRecord(res.body);
         expectExactKeys(body, ['items']);
-        expect(getReviewItemsForDeck(body, deckId)).toEqual([]);
+        const items = getReviewItemsForDeck(body, deckId);
+        expect(items.some((item) => item.cardId === secondCardId)).toBe(false);
+        expect(items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              kind: 'cloze_text',
+              deckId,
+            }),
+          ]),
+        );
       });
 
     await prisma.chunkReviewState.update({
@@ -1391,11 +1659,12 @@ describe('AppController (e2e)', () => {
     });
 
     await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual(
+        const body = asRecord(res.body);
+        expect(body).toEqual(
           expect.objectContaining({
             items: expect.arrayContaining([
               expect.objectContaining({
@@ -1409,7 +1678,9 @@ describe('AppController (e2e)', () => {
       });
 
     const loopGradeRes = await request(server)
-      .post(`/v1/reviews/${secondCardId}/grade`)
+      .post(
+        `/v1/reviews/${secondCardId}/grade?deckId=${encodeURIComponent(deckId)}`,
+      )
       .set(authHeader)
       .send({ grade: 'good' })
       .expect(200);
@@ -1514,11 +1785,12 @@ describe('AppController (e2e)', () => {
     });
 
     await request(server)
-      .get('/v1/reviews/queue')
+      .get(`/v1/reviews/queue?deckId=${encodeURIComponent(deckId)}`)
       .set(authHeader)
       .expect(200)
       .expect((res) => {
-        expect(res.body).toEqual(
+        const body = asRecord(res.body);
+        expect(body).toEqual(
           expect.objectContaining({
             items: expect.arrayContaining([
               expect.objectContaining({
@@ -1532,7 +1804,9 @@ describe('AppController (e2e)', () => {
       });
 
     const resetGradeRes = await request(server)
-      .post(`/v1/reviews/${firstCardId}/grade`)
+      .post(
+        `/v1/reviews/${firstCardId}/grade?deckId=${encodeURIComponent(deckId)}`,
+      )
       .set(authHeader)
       .send({ grade: 'again' })
       .expect(200);
@@ -1548,8 +1822,9 @@ describe('AppController (e2e)', () => {
         reset: true,
         wasSuccessful: false,
         previousConsecutiveSuccessCount: 2,
-        consecutiveSuccessCount: 0,
+        consecutiveSuccessCount: 1,
         due: expect.any(String),
+        intervalHours: 0,
       }),
     );
     expect(resetGradeChunk).toEqual(
@@ -1569,26 +1844,28 @@ describe('AppController (e2e)', () => {
     );
     expect(resetNextActionableItem).toEqual(
       expect.objectContaining({
-        cardId: firstCardId,
+        cardId: secondCardId,
         chunkId,
-        positionInChunk: 0,
+        positionInChunk: 1,
         isReviewSupported: true,
         reviewUnsupportedReason: null,
-        consecutiveSuccessCount: 0,
+        consecutiveSuccessCount: 1,
       }),
     );
 
     await request(server)
-      .post(`/v1/reviews/${secondCardId}/grade`)
+      .post(
+        `/v1/reviews/${secondCardId}/grade?deckId=${encodeURIComponent(deckId)}`,
+      )
       .set(authHeader)
       .send({ grade: 'good' })
-      .expect(400)
+      .expect(200)
       .expect((res) => {
         expect(res.body).toEqual(
           expect.objectContaining({
-            statusCode: 400,
-            message: REVIEW_ERROR_MESSAGES.cardNotReviewable,
-            error: 'Bad Request',
+            cardId: secondCardId,
+            grade: 'good',
+            wasSuccessful: true,
           }),
         );
       });

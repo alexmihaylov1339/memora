@@ -3,6 +3,8 @@ import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
 import type { SupportedCardKind } from '../card-kinds';
 import type {
   CardRecord,
+  UploadCardAssetParams,
+  UploadedCardAsset,
   DeckCardMembershipMutationResult,
   DeckMoveCandidatesParams,
   ImportCardsResponse,
@@ -34,6 +36,7 @@ const api = ManageService(API_URL);
 
 const CARD_ENDPOINTS = {
   BASE: '/v1/cards',
+  ASSETS: '/v1/cards/assets',
   IMPORT: '/v1/cards/import',
   DETAIL: (id: string) => `/v1/cards/${id}`,
   MOVE_CANDIDATES: (deckId: string) => `/v1/decks/${deckId}/move-candidates/cards`,
@@ -110,6 +113,18 @@ export const cardService = {
       .setHeaders(getAuthHeaders())
       .setFormBody(formData)
       .execRequest<ImportCardsResponse>();
+  },
+
+  uploadAsset(params: UploadCardAssetParams) {
+    const formData = new FormData();
+    formData.append('file', params.file);
+    formData.append('assetType', params.assetType);
+
+    return api
+      .prepareRequest(CARD_ENDPOINTS.ASSETS, HTTP_METHODS.POST)
+      .setHeaders(getAuthHeaders())
+      .setFormBody(formData)
+      .execRequest<UploadedCardAsset>();
   },
 
   search(params: SearchRequest) {

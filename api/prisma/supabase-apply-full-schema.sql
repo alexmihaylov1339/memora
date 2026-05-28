@@ -27,6 +27,8 @@ CREATE TABLE "Deck" (
     "ownerId" TEXT,
     "name" TEXT NOT NULL,
     "description" TEXT,
+    "presentationMode" TEXT NOT NULL DEFAULT 'standard',
+    "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "reviewIntervalHours" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

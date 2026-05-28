@@ -29,6 +29,7 @@ function createPrismaMock() {
       findMany: jest.fn(),
     },
     card: {
+      create: jest.fn(),
       findMany: jest.fn(),
       updateMany: jest.fn(),
       deleteMany: jest.fn(),
@@ -49,6 +50,7 @@ function createPrismaMock() {
       upsert: jest.fn(),
     },
     chunkCard: {
+      createMany: jest.fn(),
       deleteMany: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -82,10 +84,14 @@ describe('DecksService', () => {
         {
           id: 'deck-owned',
           name: 'Owned',
+          presentationMode: 'standard',
+          isPublic: false,
         },
         {
           id: 'deck-shared',
           name: 'Shared',
+          presentationMode: 'kids',
+          isPublic: true,
         },
       ]);
     prisma.deckCard.groupBy.mockResolvedValueOnce([
@@ -141,8 +147,22 @@ describe('DecksService', () => {
     ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
-      { id: 'deck-owned', name: 'Owned', count: 4, dueCount: 2 },
-      { id: 'deck-shared', name: 'Shared', count: 2, dueCount: 1 },
+      {
+        id: 'deck-owned',
+        name: 'Owned',
+        count: 4,
+        dueCount: 2,
+        presentationMode: 'standard',
+        isPublic: false,
+      },
+      {
+        id: 'deck-shared',
+        name: 'Shared',
+        count: 2,
+        dueCount: 1,
+        presentationMode: 'kids',
+        isPublic: true,
+      },
     ]);
 
     jest.useRealTimers();
@@ -157,6 +177,8 @@ describe('DecksService', () => {
       id: 'deck-1',
       name: 'Deck 1',
       description: null,
+      presentationMode: 'kids',
+      isPublic: false,
       reviewIntervalHours: [2, 24],
       ownerId: 'user-1',
       createdAt: now,
@@ -164,7 +186,15 @@ describe('DecksService', () => {
     });
 
     await expect(
-      service.create('Deck 1', undefined, ['card-1'], [], 'user-1', [2, 24]),
+      service.create(
+        'Deck 1',
+        undefined,
+        ['card-1'],
+        [],
+        'user-1',
+        'kids',
+        [2, 24],
+      ),
     ).resolves.toEqual(
       expect.objectContaining({
         status: 'created',
@@ -196,6 +226,8 @@ describe('DecksService', () => {
       data: {
         name: 'Deck 1',
         description: undefined,
+        presentationMode: 'kids',
+        isPublic: false,
         reviewIntervalHours: [2, 24],
         ownerId: 'user-1',
       },
@@ -213,9 +245,16 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      presentationMode: 'kids',
+      isPublic: true,
       reviewIntervalHours: [4, 24],
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
+      owner: {
+        id: 'user-owner',
+        email: 'owner@example.com',
+        name: 'Owner',
+      },
       shares: [
         {
           id: 'share-1',
@@ -239,6 +278,8 @@ describe('DecksService', () => {
       id: 'deck-shared',
       name: 'Shared',
       description: 'Visible to me',
+      presentationMode: 'kids',
+      isPublic: true,
       reviewIntervalHours: [4, 24],
       count: 3,
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
@@ -267,9 +308,16 @@ describe('DecksService', () => {
       id: 'deck-1',
       name: 'Deck 1',
       description: null,
+      presentationMode: 'kids',
+      isPublic: false,
       reviewIntervalHours: [1, 24, 168],
       createdAt,
       updatedAt,
+      owner: {
+        id: 'user-1',
+        email: 'user@example.com',
+        name: 'User',
+      },
       shares: [],
     });
     prisma.deckCard.count.mockResolvedValueOnce(0);
@@ -282,6 +330,8 @@ describe('DecksService', () => {
         id: 'deck-1',
         name: 'Deck 1',
         description: undefined,
+        presentationMode: 'kids',
+        isPublic: false,
         reviewIntervalHours: [1, 24, 168],
         count: 0,
         createdAt,
@@ -396,5 +446,142 @@ describe('DecksService', () => {
     await expect(
       service.removeShare('deck-1', 'user-2', 'user-1'),
     ).resolves.toBe(false);
+  });
+
+  it('lists public decks with owner attribution and card counts', async () => {
+    prisma.deck.findMany.mockResolvedValue([
+      {
+        id: 'deck-1',
+        name: 'Cars',
+        description: 'Picture deck',
+        presentationMode: 'kids',
+        isPublic: true,
+        reviewIntervalHours: [1, 24],
+        createdAt: new Date('2026-05-21T10:00:00.000Z'),
+        updatedAt: new Date('2026-05-21T11:00:00.000Z'),
+        owner: {
+          id: 'user-1',
+          email: 'alex@example.com',
+          name: 'Alex',
+        },
+      },
+    ]);
+    prisma.deckCard.groupBy.mockResolvedValue([
+      { deckId: 'deck-1', _count: { cardId: 6 } },
+    ]);
+
+    await expect(service.listPublic()).resolves.toEqual([
+      {
+        id: 'deck-1',
+        name: 'Cars',
+        description: 'Picture deck',
+        count: 6,
+        presentationMode: 'kids',
+        ownerDisplayName: 'Alex',
+        ownerUserId: 'user-1',
+        createdAt: new Date('2026-05-21T10:00:00.000Z'),
+        updatedAt: new Date('2026-05-21T11:00:00.000Z'),
+      },
+    ]);
+  });
+
+  it('copies a public deck into the current users library', async () => {
+    const now = new Date('2026-05-21T12:00:00.000Z');
+    jest.useFakeTimers().setSystemTime(now);
+
+    prisma.deck.findFirst.mockResolvedValue({
+      id: 'public-deck-1',
+      name: 'Cars',
+      description: 'Picture deck',
+      presentationMode: 'kids',
+      isPublic: true,
+      reviewIntervalHours: [1, 24],
+      deckCards: [
+        {
+          cardId: 'card-1',
+          card: {
+            id: 'card-1',
+            kind: 'image_audio',
+            fields: { label: 'Car' },
+          },
+        },
+      ],
+      chunks: [
+        {
+          id: 'chunk-1',
+          title: 'Cars chunk',
+          position: 0,
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              offsetDays: null,
+              card: {
+                id: 'card-1',
+                kind: 'image_audio',
+                fields: { label: 'Car' },
+              },
+            },
+          ],
+        },
+      ],
+    });
+    prisma.deck.create.mockResolvedValue({
+      id: 'copied-deck-1',
+      name: 'Cars',
+      description: 'Picture deck',
+      presentationMode: 'kids',
+      isPublic: false,
+      reviewIntervalHours: [1, 24],
+      createdAt: now,
+      updatedAt: now,
+    });
+    prisma.card.create.mockResolvedValue({
+      id: 'copied-card-1',
+    });
+    prisma.chunk.create.mockResolvedValue({
+      id: 'copied-chunk-1',
+    });
+
+    await expect(
+      service.copyPublicDeck('public-deck-1', 'user-2'),
+    ).resolves.toEqual({
+      status: 'copied',
+      deck: {
+        id: 'copied-deck-1',
+        name: 'Cars',
+        description: 'Picture deck',
+        presentationMode: 'kids',
+        isPublic: false,
+        reviewIntervalHours: [1, 24],
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    expect(prisma.card.create).toHaveBeenCalledWith({
+      data: {
+        ownerId: 'user-2',
+        deckId: 'copied-deck-1',
+        kind: 'image_audio',
+        fields: { label: 'Car' },
+      },
+    });
+    expect(prisma.deckCard.createMany).toHaveBeenCalledWith({
+      data: [{ deckId: 'copied-deck-1', cardId: 'copied-card-1' }],
+      skipDuplicates: true,
+    });
+    expect(prisma.chunkCard.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          chunkId: 'copied-chunk-1',
+          cardId: 'copied-card-1',
+          sequenceIndex: 0,
+          offsetDays: null,
+        },
+      ],
+    });
+
+    jest.useRealTimers();
   });
 });

@@ -569,6 +569,33 @@ Implementation plan:
 
 ---
 
+## Step 21: Kids mode, public shared decks, and mobile readiness
+
+**Objective:** Add a toddler-friendly deck mode with large image/audio cards, establish the first public deck browse/copy flow, and prepare the product for later mobile packaging without committing to native apps yet.
+
+**Why now:**
+Memora now has deck-scoped review/practice, sharing foundations, CSV import, and scalable deck composition. That makes it practical to validate a new child-focused learning loop on the web before investing in Android/iOS apps.
+
+**Deliverables:**
+- deck-level `kids` presentation mode
+- new `image_audio` card kind for large image + uploaded audio cards
+- Supabase Storage-backed media upload flow using the existing `memora-bucket`
+- dedicated kids player/practice route with oversized visuals and simple navigation
+- public deck publish/browse/copy flow
+- mobile-web hardening and native follow-up notes
+
+**Native follow-up note:**
+- Validate the kids web player first.
+- If Memora later ships a mobile wrapper or native client, the first target should be the kids player and public deck import flow, not the full deck/card authoring workspace.
+
+**Exit criteria:**
+- All exit criteria in `docs/plans/step-21-kids-mode-public-shared-decks.md` satisfied.
+
+Implementation plan:
+- `docs/plans/step-21-kids-mode-public-shared-decks.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -592,6 +619,7 @@ Implementation plan:
 19. Step 18
 20. Step 19
 21. Step 20
+22. Step 21
 
 ---
 

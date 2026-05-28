@@ -1,10 +1,12 @@
 import type { SupportedCardKind } from '../card-kinds';
+import type { DeckPresentationMode } from '../constants';
 
 export interface CreateDeckDto {
   name: string;
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
 }
 
@@ -13,12 +15,16 @@ export interface DeckListItem {
   name: string;
   count: number;
   dueCount: number;
+  presentationMode: DeckPresentationMode;
+  isPublic: boolean;
 }
 
 export interface DeckRecord {
   id: string;
   name: string;
   description?: string;
+  presentationMode: DeckPresentationMode;
+  isPublic: boolean;
   reviewIntervalHours: number[];
   createdAt: string;
   updatedAt: string;
@@ -27,6 +33,18 @@ export interface DeckRecord {
 export interface DeckDetail extends DeckRecord {
   count: number;
   sharedUsers: DeckShareRecord[];
+}
+
+export interface PublicDeckRecord {
+  id: string;
+  name: string;
+  description?: string;
+  count: number;
+  presentationMode: DeckPresentationMode;
+  ownerDisplayName: string;
+  ownerUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type DeckSharePermission = 'view' | 'edit';
@@ -47,7 +65,12 @@ export interface UpdateDeckDto {
   description?: string;
   cardIds?: string[];
   chunkIds?: string[];
+  presentationMode?: DeckPresentationMode;
   reviewIntervalHours?: number[];
+}
+
+export interface UpdateDeckPublicationDto {
+  isPublic: boolean;
 }
 
 export interface DeckIdParams {
@@ -97,9 +120,12 @@ export interface RemoveDeckShareParams extends DeckShareParams {
 export type CreateDeckResponse = DeckRecord;
 export type UpdateDeckResponse = DeckDetail;
 export type GetDeckByIdResponse = DeckDetail;
+export type ListPublicDecksResponse = PublicDeckRecord[];
 export type CreateDeckShareResponse = DeckShareRecord;
 export type ListDeckSharesResponse = DeckShareRecord[];
 export type RemoveDeckShareResponse = void;
+export type UpdateDeckPublicationResponse = DeckDetail;
+export type CopyPublicDeckResponse = DeckRecord;
 
 // Backward-compatible alias for the current decks page usage.
 export type Deck = DeckListItem;
@@ -117,4 +143,18 @@ export interface ImportCardsResponse {
 export interface ImportCsvParams {
   file: File;
   deckId?: string;
+}
+
+export type CardAssetType = 'image' | 'audio';
+
+export interface UploadedCardAsset {
+  path: string;
+  mimeType: string;
+  size: number;
+  url: string;
+}
+
+export interface UploadCardAssetParams {
+  file: File;
+  assetType: CardAssetType;
 }
