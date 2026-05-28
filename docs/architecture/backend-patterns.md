@@ -6,6 +6,7 @@
 2. Business rules must live in services or pure helpers, not in controllers.
 3. Prisma access must go through `PrismaService`; do not instantiate ad-hoc Prisma clients.
 4. Prefer feature modules with clear ownership (`auth`, `decks`, `cards`, `chunks`, `reviews`) instead of cross-cutting “god services.”
+4a. Prefer feature-based folder architecture for new backend work. Group files by owning domain/feature first, not by broad technical type first.
 5. Validate request input at the module boundary. DTOs + validation helpers must reject invalid input before service logic runs.
 6. Prefer explicit return shapes from services for non-trivial flows. Do not rely on loose inference for core business methods.
 7. Reuse existing project building blocks before creating new ones: services, validators, helpers, type guards, DTOs, and constants.
@@ -19,6 +20,9 @@
 15. Do not put scheduling, ownership, or persistence rules inside DTO files. DTO files define input shape and validation only.
 16. Use intention-revealing names for service methods and helpers (`getChunkProgress`, `findByDeckWithOptions`, `validateGradeReviewInput`) instead of vague names.
 17. When editing any non-test backend file during a planned task, check whether the touched file is over 150 lines or mixes concerns. If there is a clear, convenient split, refactor it into smaller service/helper/access/mapping files while preserving behavior.
+17a. Colocate backend files that change together inside the owning feature/module when practical: controller, service, DTOs, mappers, access helpers, constants, and tests should live near the feature they serve.
+17b. Favor high cohesion over broad shared folders. Move backend logic into shared/common only when it is truly reused across multiple feature modules.
+17c. Keep coupling low between backend features. Do not reach into another module's deep internals when a small exported helper, explicit service boundary, or shared contract would be cleaner.
 
 ## Additional Rules
 
@@ -26,6 +30,7 @@
 19. Keep pure transformations pure. If logic can be deterministic and side-effect free, move it into helpers and test it there.
 20. Services should orchestrate persistence and domain rules; helpers should handle reusable pure calculations.
 21. Prefer feature-local helpers first. Move logic into shared/common only when it is truly reused across multiple modules.
+21a. When introducing a new backend capability, prefer a small feature-local subfolder over expanding unrelated generic folders.
 22. Avoid leaking Prisma model shapes directly through controllers when a stable API shape matters. Serialize or map when needed.
 23. Prefer explicit `null` / `false` / typed result contracts from services over throwing generic errors for expected not-found paths.
 24. Use framework exceptions intentionally:
@@ -77,6 +82,7 @@
 42. Prefer small private helpers inside a service before extracting a new shared helper file.
 43. If a service starts mixing unrelated responsibilities, split it by domain concern rather than by CRUD verb count.
 44. If a service is growing because it now owns access lookup, queue assembly, persistence side effects, and response shaping, extract those concerns into sibling helper modules before the service becomes unwieldy.
+44a. If a feature module starts accumulating several tightly related responsibilities, split by sub-feature or concern inside that feature instead of creating cross-feature utility sprawl.
 
 ## Prisma And Data Access
 
@@ -107,7 +113,7 @@
 - DTOs in feature `dto/`
 - validation helpers in feature validation files
 - shared helpers only for reusable low-level checks
-
+51a. Keep feature contracts, constants, mappers, and access rules close to the same feature so a maintainer can understand the whole backend flow without jumping through unrelated folders.
 51. Validation should be deterministic and testable.
 52. Prefer rejecting invalid state before hitting the database when the rule is clear at input time.
 53. When database confirmation is still required (for example deck/card ownership or cross-entity membership), validate in the service as a second layer.
@@ -168,6 +174,9 @@ When implementing backend work, apply decisions in this order:
 ## Review Checklist
 
 Before submitting backend code, verify:
+- new work follows feature ownership first and is not scattered across unrelated generic folders
+- colocated backend files remain near the feature they serve unless there is true multi-feature reuse
+- coupling between modules stayed low and no deep cross-feature reach-through was introduced
 - controllers stay thin
 - touched non-test files over 150 lines were checked for a clear, safe split
 - service methods own the business logic

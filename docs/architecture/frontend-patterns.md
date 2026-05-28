@@ -8,6 +8,7 @@
 4. Use query-based hooks (`useQuery` via our shared query pattern) for data fetching.
 5. Use `FormBuilder` every time we have a form in the project.
 6. Prefer small components instead of large page files. Reuse is beneficial, but readability and separation of responsibilities come first even for feature-local single-use components.
+6a. Prefer feature-based folder architecture for new frontend work. Organize by owning feature/page flow first, not by broad technical type first.
 7. Extract a custom hook when page/component logic includes orchestration concerns such as query handling, derived state, submit flows, event coordination, modal state, or other non-trivial UI logic.
 8. Follow SOLID, but do not force abstractions where a simpler solution is clearer. Prefer practical SOLID over theoretical purity.
 9. Prefer clarity over aggressive DRY. Duplicate small, stable code when abstraction would make the flow harder to understand.
@@ -21,6 +22,9 @@
 17. Brand/logo rendering must use the shared brand/logo component and the `Vibur` font, not page-local ad-hoc font styling.
 17a. Always use `web/src/shared/components/Grid/` for any grid or table-style surface — including preview tables, read-only listings, and modal result tables. Never write a raw `<table>` when `Grid` can be used.
 17b. Always use `web/src/shared/components/FormBuilder/` for any form. Never build an ad-hoc form shell when `FormBuilder` fits the task.
+17c. Colocate components, hooks, mappers, feature constants, small feature types, and tests with the feature they primarily serve.
+17d. Favor high cohesion over broad shared folders. Move code to `shared/` only when it is a stable primitive or is truly reused across multiple features.
+17e. Keep coupling low between features. Do not import another feature’s deep internals when a small public API, shared helper, or explicit service boundary would be cleaner.
 
 ## Additional Rules
 
@@ -45,6 +49,7 @@
 29. Do not create inline objects/functions in JSX when it hurts readability or causes unnecessary rerenders in shared/heavy components.
 30. Memoization is not default. Use `useMemo` / `useCallback` only when there is a clear render-stability or expensive-computation reason.
 31. Shared helpers must stay generic. If logic is feature-specific, keep it inside the feature instead of polluting global utils.
+31a. When introducing a new frontend capability, prefer a small feature-local folder over extending unrelated generic folders.
 32. Prefer feature-level types/models close to the feature. Move types to shared locations only when truly reused across multiple features.
 33. Validation rules, default form values, and field configs should be centralized per feature, not scattered across components.
 34. Avoid boolean explosion in component APIs. When a component starts needing many flags, consider composition or splitting the component.
@@ -118,22 +123,28 @@
 58. Single-use extraction is encouraged when it improves readability. Reuse is a bonus, not a requirement.
 
 59. Prefer several small feature-local files over one large “smart” page/component.
+60. Design folders the same way as files: one folder should have one clear feature or sub-feature responsibility.
+61. If a feature starts needing multiple tightly related files, prefer a colocated feature folder over spreading those files across global component/hook/helper directories.
 
 ## Decision Order
 
 When implementing a feature, apply decisions in this order:
 
 1. SOLID and simplicity first.
-2. Use feature hooks + `ManageService` for data flow.
-3. Use `FormBuilder` for forms.
-4. Split into reusable components/hooks where it improves readability.
-5. Prefer existing helpers/utils first; add new shared helpers when checks repeat.
-6. Prefer route/endpoint constants instead of inline path strings.
+2. Prefer feature ownership, colocation, high cohesion, and low coupling.
+3. Use feature hooks + `ManageService` for data flow.
+4. Use `FormBuilder` for forms.
+5. Split into reusable components/hooks where it improves readability.
+6. Prefer existing helpers/utils first; add new shared helpers when checks repeat.
+7. Prefer route/endpoint constants instead of inline path strings.
 
 ## Review Checklist
 
 Before submitting code, verify:
 
+- new work follows feature ownership first and is not scattered across unrelated generic folders
+- components/hooks/mappers/tests are colocated with their owning feature unless they are truly shared
+- no unnecessary deep cross-feature imports were introduced
 - data fetching is done only through feature hooks
 - forms use `FormBuilder`
 - touched non-test files over 150 lines were checked for a clear, safe split
