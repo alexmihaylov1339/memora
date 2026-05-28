@@ -241,7 +241,7 @@ Verification completed:
 ### T3 - Build quiz-eligible card discovery and distractor generation
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a dedicated backend service that:
@@ -263,6 +263,22 @@ Recommended service responsibilities:
 
 Exit criteria:
 - the backend can produce a complete quiz round from deck data without requiring additional authoring steps.
+
+Implementation notes:
+- Added a dedicated `reviews/what-did-you-hear/` slice so the quiz-round generation logic stays separate from generic review queue assembly and deck CRUD.
+- Implemented a focused eligible-card collector that reuses the existing `image_audio` payload contract and skips invalid or non-`image_audio` cards automatically.
+- Added a quiz-round builder that:
+  - selects the first due eligible target card from the existing review queue ordering
+  - builds distractors from other eligible cards in the same deck
+  - prefers distinct labels before falling back to duplicate-label distractors
+  - fills remaining slots with disabled placeholders when the deck has fewer eligible cards than the configured choice count
+  - shuffles the final choices once per generated round
+- Added a new `ReviewsService.getWhatDidYouHearQuizRound(...)` entry point that reuses existing deck-access rules and deck exercise settings before delegating to the pure round builder.
+- Returned explicit backend statuses for `ready`, `no_due_target`, and `not_enough_eligible_cards` so T4/T5 can build a clean HTTP/UI contract without reopening the generation logic.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/reviews/what-did-you-hear/what-did-you-hear-quiz.spec.ts src/reviews/reviews.service.spec.ts`
+- `cd api && npx tsc --noEmit --pretty false`
 
 ---
 

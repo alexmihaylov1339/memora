@@ -9,9 +9,14 @@ function createPrismaMock() {
   const prisma = {
     deck: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
     deckShare: {
       findMany: jest.fn(),
+    },
+    deckCard: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
     },
     chunk: {
       findFirst: jest.fn(),
@@ -58,7 +63,10 @@ describe('ReviewsService', () => {
       { id: 'deck-1' },
       { id: 'deck-2' },
     ]);
+    prisma.deck.findUnique.mockResolvedValue(null);
     prisma.deckShare.findMany.mockResolvedValue([]);
+    prisma.deckCard.findMany.mockResolvedValue([]);
+    prisma.deckCard.findFirst.mockResolvedValue(null);
     prisma.card.findFirst.mockResolvedValue(null);
     prisma.card.findMany.mockResolvedValue([]);
   });
@@ -824,6 +832,186 @@ describe('ReviewsService', () => {
       expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
       expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
       expect(prisma.reviewLog.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getWhatDidYouHearQuizRound', () => {
+    it('returns a ready round from the due review queue and deck image-audio pool', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+
+      prisma.deck.findUnique.mockResolvedValue({
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
+        deckCards: [
+          {
+            card: {
+              id: 'card-1',
+              kind: 'image_audio',
+              fields: {
+                label: 'Car',
+                imageAsset: {
+                  path: 'kids-images/user-1/car.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/car.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-2',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bus',
+                imageAsset: {
+                  path: 'kids-images/user-1/bus.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bus.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+        ],
+      });
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'vehicles',
+          position: 0,
+          deck: { reviewIntervalHours: [1, 24] },
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'image_audio',
+                fields: {
+                  label: 'Car',
+                  imageAsset: {
+                    path: 'kids-images/user-1/car.jpg',
+                    mimeType: 'image/jpeg',
+                    size: 100,
+                  },
+                  audioAsset: {
+                    path: 'kids-audio/user-1/car.mp3',
+                    mimeType: 'audio/mpeg',
+                    size: 100,
+                  },
+                },
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      const result = await service.getWhatDidYouHearQuizRound(
+        'user-1',
+        'deck-1',
+        now,
+        () => 0,
+      );
+
+      expect(result.status).toBe('ready');
+      if (result.status !== 'ready') {
+        throw new Error('Expected a ready What Did You Hear? round');
+      }
+
+      expect(result.round.deckId).toBe('deck-1');
+      expect(result.round.choiceCount).toBe(4);
+      expect(result.round.eligibleCardCount).toBe(2);
+      expect(result.round.targetCard.cardId).toBe('card-1');
+      expect(result.round.targetCard.label).toBe('Car');
+      expect(result.round.targetQueueItem.cardId).toBe('card-1');
+      expect(result.round.targetQueueItem.deckId).toBe('deck-1');
+      expect(result.round.targetQueueItem.chunkId).toBe('chunk-1');
+      expect(result.round.choices).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            cardId: 'card-1',
+            isCorrect: true,
+            isDisabled: false,
+          }),
+          expect.objectContaining({
+            cardId: 'card-2',
+            isCorrect: false,
+            isDisabled: false,
+          }),
+          expect.objectContaining({
+            cardId: null,
+            isDisabled: true,
+          }),
+          expect.objectContaining({
+            cardId: null,
+            isDisabled: true,
+          }),
+        ]),
+      );
+    });
+
+    it('returns not_enough_eligible_cards when the deck cannot fill the minimum quiz pool', async () => {
+      prisma.deck.findUnique.mockResolvedValue({
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
+        deckCards: [
+          {
+            card: {
+              id: 'card-1',
+              kind: 'image_audio',
+              fields: {
+                label: 'Car',
+                imageAsset: {
+                  path: 'kids-images/user-1/car.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/car.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+        ],
+      });
+      prisma.chunk.findMany.mockResolvedValue([]);
+
+      await expect(
+        service.getWhatDidYouHearQuizRound('user-1', 'deck-1'),
+      ).resolves.toEqual({
+        status: 'not_enough_eligible_cards',
+        eligibleCardCount: 1,
+        minimumEligibleCardCount: 2,
+        choiceCount: 4,
+      });
     });
   });
 
