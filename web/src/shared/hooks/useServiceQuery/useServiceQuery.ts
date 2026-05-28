@@ -1,9 +1,13 @@
+import { useEffect } from 'react';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import type {
   QueryServiceFunction,
   UseServiceQueryResult,
   UseServiceQueryOptions,
 } from './types';
+import { UnauthorizedError } from '@/shared/services';
+import { useAuth } from '@/shared/components/AuthProvider';
+import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 // Default configuration values
 const DEFAULT_RETRY_COUNT = 3;
@@ -69,6 +73,8 @@ export function useServiceQuery<TParams = void, TData = unknown>(
   paramsOrOptions?: TParams | UseServiceQueryOptions<TData>,
   options?: UseServiceQueryOptions<TData>
 ): UseServiceQueryResult<TData> {
+  const { setAuthenticated } = useAuth();
+
   // Detect if third argument is params or options
   const hasParams = options !== undefined ||
     (paramsOrOptions !== undefined &&
@@ -79,6 +85,8 @@ export function useServiceQuery<TParams = void, TData = unknown>(
   const params = hasParams ? (paramsOrOptions as TParams) : undefined;
   const finalOptions = hasParams ? options : (paramsOrOptions as UseServiceQueryOptions<TData>);
 
+  const retryCount = finalOptions?.retry ?? DEFAULT_RETRY_COUNT;
+
   const queryOptions: UseQueryOptions<TData, Error> = {
     queryKey: params !== undefined ? [...queryKey, params] : queryKey,
     queryFn: () => params !== undefined
@@ -86,8 +94,9 @@ export function useServiceQuery<TParams = void, TData = unknown>(
       : (service as () => Promise<TData>)(),
     // Default: enabled unless explicitly disabled
     enabled: finalOptions?.enabled ?? true,
-    // Default: retry 3 times on failure
-    retry: finalOptions?.retry ?? DEFAULT_RETRY_COUNT,
+    // Never retry on 401 — the token is invalid and retrying won't help
+    retry: (failureCount, error) =>
+      !(error instanceof UnauthorizedError) && failureCount < retryCount,
     // Default: data fresh for 5 minutes
     staleTime: finalOptions?.staleTime ?? DEFAULT_STALE_TIME,
     // Default: keep in cache for 10 minutes
@@ -99,6 +108,15 @@ export function useServiceQuery<TParams = void, TData = unknown>(
   };
 
   const query = useQuery(queryOptions);
+
+  useEffect(() => {
+    if (query.error instanceof UnauthorizedError) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+      }
+      setAuthenticated(false);
+    }
+  }, [query.error, setAuthenticated]);
 
   return {
     isLoading: query.isLoading,

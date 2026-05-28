@@ -2,6 +2,15 @@ import { HTTP_METHODS, CONTENT_TYPES } from './apiConstants';
 
 type HttpMethod = typeof HTTP_METHODS[keyof typeof HTTP_METHODS];
 
+export class UnauthorizedError extends Error {
+  readonly status = 401;
+
+  constructor() {
+    super('Unauthorized');
+    this.name = 'UnauthorizedError';
+  }
+}
+
 interface RequestConfig {
   endpoint: string;
   method: HttpMethod;
@@ -121,6 +130,9 @@ class RequestBuilder {
 
       // Handle errors
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new UnauthorizedError();
+        }
         const rawError = await response.text();
         const fallback = response.statusText || 'Request failed';
         const errorMessage = extractErrorMessage(rawError, fallback);

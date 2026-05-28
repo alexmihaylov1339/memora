@@ -5,6 +5,9 @@ import type {
   UseServiceResult,
   UseServiceOptions,
 } from './types';
+import { UnauthorizedError } from '@/shared/services';
+import { useAuth } from '@/shared/components/AuthProvider';
+import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 /**
  * Custom hook for calling services with TanStack Query
@@ -28,6 +31,8 @@ export function useService<TParams = void, TData = unknown>(
   service: ServiceFunction<TParams, TData>,
   options?: UseServiceOptions<TData>
 ): UseServiceResult<TData, TParams> {
+  const { setAuthenticated } = useAuth();
+
   const mutationOptions: UseMutationOptions<TData, Error, TParams> = {
     mutationFn: (params: TParams) => service(params),
     retry: options?.retry,
@@ -38,6 +43,13 @@ export function useService<TParams = void, TData = unknown>(
       }
     },
     onError: (error) => {
+      if (error instanceof UnauthorizedError) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+        }
+        setAuthenticated(false);
+        return;
+      }
       if (options?.onError) {
         options.onError(error);
       }
