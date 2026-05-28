@@ -1,12 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
-import { hasTrimmedText, isUndefined } from '../../common/utils';
-import { AUTH_ERROR_MESSAGES } from '../auth-errors';
-import type { DevLoginDto } from './dev-login.dto';
-import type { ForgotPasswordDto } from './forgot-password.dto';
-import type { LoginDto } from './login.dto';
-import type { RegisterDto } from './register.dto';
-import type { ResetPasswordDto } from './reset-password.dto';
-import type { UpdateAccountDto } from './update-account.dto';
+
+import { hasTrimmedText, isUndefined } from '../common/utils';
+
+import { AUTH_ERROR_MESSAGES } from './auth-errors';
+import type { DevLoginDto } from './dto/dev-login.dto';
+import type { ForgotPasswordDto } from './dto/forgot-password.dto';
+import type { LoginDto } from './dto/login.dto';
+import type { RegisterDto } from './dto/register.dto';
+import type { ResetPasswordDto } from './dto/reset-password.dto';
+import type { UpdateAccountDto } from './dto/update-account.dto';
 
 export function validateRegisterInput(body: RegisterDto): RegisterDto {
   if (!body || !hasTrimmedText(body.email)) {

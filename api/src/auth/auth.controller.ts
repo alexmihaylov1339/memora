@@ -15,7 +15,7 @@ import {
   validateRegisterInput,
   validateResetPasswordInput,
   validateUpdateAccountInput,
-} from './dto/auth-validation';
+} from './auth-validation';
 
 @Controller()
 export class AuthController {
