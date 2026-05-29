@@ -1,6 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../../prisma/prisma.service';
+import type { CardAssetsService } from '../../cards/card-assets.service';
+import type { ResolvedCardAsset } from '../../cards/card-asset-types';
 import { resolveDeckExerciseSettings } from '../../decks/deck-exercise-settings';
 import { REVIEW_ERROR_MESSAGES } from '../review-errors';
 import { getEligibleQueueItems } from '../review-queries';
@@ -25,6 +27,7 @@ export interface WhatDidYouHearSubmitResult {
 }
 
 interface SubmitWhatDidYouHearQuizResultInput {
+  cardAssets?: CardAssetsService;
   prisma: PrismaService;
   userId: string;
   deckId: string;
@@ -41,6 +44,7 @@ export function deriveWhatDidYouHearReviewGrade(
 }
 
 export async function getWhatDidYouHearQuizRoundForDeck(input: {
+  cardAssets?: CardAssetsService;
   prisma: PrismaService;
   userId: string;
   deckId: string;
@@ -81,13 +85,19 @@ export async function getWhatDidYouHearQuizRoundForDeck(input: {
   const choiceCount = resolveDeckExerciseSettings(deck.exerciseSettings)
     .whatDidYouHear.choiceCount;
 
-  return buildWhatDidYouHearQuizRound({
+  const result = buildWhatDidYouHearQuizRound({
     choiceCount,
     deckId: input.deckId,
     eligibleCards,
     queueItems,
     random: input.random,
   });
+
+  if (result.status !== 'ready' || !input.cardAssets) {
+    return result;
+  }
+
+  return resolveWhatDidYouHearQuizRoundAssets(result, input.cardAssets);
 }
 
 export async function assertWhatDidYouHearCardEligible(
@@ -122,6 +132,48 @@ export async function assertWhatDidYouHearCardEligible(
   }
 }
 
+async function resolveWhatDidYouHearQuizRoundAssets(
+  result: Extract<WhatDidYouHearQuizRoundResult, { status: 'ready' }>,
+  cardAssets: CardAssetsService,
+): Promise<WhatDidYouHearQuizRoundResult> {
+  const targetAudioAsset = await cardAssets.resolveStoredAsset(
+    result.round.targetCard.audioAsset,
+  );
+  const targetImageAsset = await cardAssets.resolveStoredAsset(
+    result.round.targetCard.imageAsset,
+  );
+  const resolvedImageAssets = new Map<string, ResolvedCardAsset>();
+
+  await Promise.all(
+    result.round.choices.map(async (choice) => {
+      if (!choice.cardId || !choice.imageAsset) {
+        return;
+      }
+
+      resolvedImageAssets.set(
+        choice.id,
+        await cardAssets.resolveStoredAsset(choice.imageAsset),
+      );
+    }),
+  );
+
+  return {
+    status: 'ready',
+    round: {
+      ...result.round,
+      targetCard: {
+        ...result.round.targetCard,
+        audioAsset: targetAudioAsset,
+        imageAsset: targetImageAsset,
+      },
+      choices: result.round.choices.map((choice) => ({
+        ...choice,
+        imageAsset: resolvedImageAssets.get(choice.id) ?? choice.imageAsset,
+      })),
+    },
+  };
+}
+
 export async function submitWhatDidYouHearQuizResultForDeck(
   input: SubmitWhatDidYouHearQuizResultInput,
 ): Promise<WhatDidYouHearSubmitResult> {
@@ -139,6 +191,7 @@ export async function submitWhatDidYouHearQuizResultForDeck(
   }
 
   const nextQuizRound = await getWhatDidYouHearQuizRoundForDeck({
+    cardAssets: input.cardAssets,
     deckId: input.deckId,
     now: input.now,
     prisma: input.prisma,

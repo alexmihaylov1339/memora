@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Grade } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CardAssetsService } from '../cards/card-assets.service';
 import { REVIEW_ERROR_MESSAGES } from './review-errors';
 import {
   getChunkProgress as loadChunkProgress,
@@ -40,7 +41,10 @@ export type {
 export class ReviewsService {
   private readonly logger = new Logger(ReviewsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cardAssets?: CardAssetsService,
+  ) {}
 
   async getChunkProgress(
     chunkId: string,
@@ -89,6 +93,7 @@ export class ReviewsService {
     await this.ensureDeckAccess(userId, deckId);
 
     return getWhatDidYouHearQuizRoundForDeck({
+      cardAssets: this.cardAssets,
       deckId,
       now,
       prisma: this.prisma,
@@ -112,6 +117,7 @@ export class ReviewsService {
           reviewLogMode: WHAT_DID_YOU_HEAR_REVIEW_MODE,
           skipKindSupportCheck: true,
         }),
+      cardAssets: this.cardAssets,
       cardId,
       deckId,
       now,

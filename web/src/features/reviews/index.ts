@@ -32,6 +32,7 @@ export {
   useGradeReviewMutation,
   usePracticeScreen,
   useReviewScreen,
+  useWhatDidYouHearScreen,
 } from './hooks';
 export type {
   ChunkProgressSnapshot,
@@ -44,4 +45,8 @@ export type {
   ReviewQueueResponse,
   ReviewRenderableItem,
   ReviewUnsupportedReason,
+  SubmitWhatDidYouHearResponse,
+  WhatDidYouHearChoice,
+  WhatDidYouHearReadyRound,
+  WhatDidYouHearRoundResponse,
 } from './types';

@@ -1,5 +1,36 @@
-import { parsePracticeResponse, parseReviewQueueResponse } from './reviewService';
+import {
+  parsePracticeResponse,
+  parseReviewQueueResponse,
+  parseWhatDidYouHearRoundResponse,
+} from './reviewService';
 import { REVIEW_UNSUPPORTED_REASONS } from '../types';
+
+function buildReviewQueueItem(overrides: Record<string, unknown> = {}) {
+  return {
+    cardId: 'card-1',
+    deckId: 'deck-1',
+    chunkId: 'chunk-1',
+    chunkTitle: 'vehicles',
+    chunkPosition: 0,
+    positionInChunk: 0,
+    due: '2026-04-26T10:00:00.000Z',
+    kind: 'image_audio',
+    fields: { label: 'Car' },
+    isReviewSupported: false,
+    reviewUnsupportedReason: REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
+    consecutiveSuccessCount: 0,
+    ...overrides,
+  };
+}
+
+function buildWhatDidYouHearAsset(path: string) {
+  return {
+    path,
+    mimeType: path.endsWith('.mp3') ? 'audio/mpeg' : 'image/jpeg',
+    size: 100,
+    url: `https://assets.test/${path}`,
+  };
+}
 
 describe('reviewService.parseReviewQueueResponse', () => {
   it('parses valid queue responses with required metadata fields', () => {
@@ -130,5 +161,121 @@ describe('reviewService.parsePracticeResponse', () => {
         reviewUnsupportedReason: null,
       }),
     ]);
+  });
+});
+
+describe('reviewService.parseWhatDidYouHearRoundResponse', () => {
+  it('parses ready quiz rounds with signed audio and image URLs', () => {
+    const response = parseWhatDidYouHearRoundResponse({
+      status: 'ready',
+      round: {
+        deckId: 'deck-1',
+        choiceCount: 4,
+        eligibleCardCount: 2,
+        targetCard: {
+          cardId: 'card-1',
+          label: 'Car',
+          audioAsset: buildWhatDidYouHearAsset('kids-audio/car.mp3'),
+          quizTags: ['vehicles'],
+        },
+        reviewContext: buildReviewQueueItem(),
+        choices: [
+          {
+            id: 'choice-card-1',
+            cardId: 'card-1',
+            imageAsset: buildWhatDidYouHearAsset('kids-images/car.jpg'),
+            isCorrect: true,
+            isDisabled: false,
+            label: null,
+          },
+          {
+            id: 'placeholder-1',
+            cardId: null,
+            imageAsset: null,
+            isCorrect: false,
+            isDisabled: true,
+            label: 'No image',
+          },
+        ],
+      },
+    });
+
+    expect(response).toEqual({
+      status: 'ready',
+      round: expect.objectContaining({
+        deckId: 'deck-1',
+        targetCard: expect.objectContaining({
+          audioAsset: expect.objectContaining({
+            url: 'https://assets.test/kids-audio/car.mp3',
+          }),
+        }),
+        choices: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'choice-card-1',
+            imageAsset: expect.objectContaining({
+              url: 'https://assets.test/kids-images/car.jpg',
+            }),
+          }),
+          expect.objectContaining({
+            id: 'placeholder-1',
+            isDisabled: true,
+            label: 'No image',
+          }),
+        ]),
+      }),
+    });
+  });
+
+  it('parses non-ready quiz states', () => {
+    expect(
+      parseWhatDidYouHearRoundResponse({
+        status: 'not_enough_eligible_cards',
+        eligibleCardCount: 1,
+        minimumEligibleCardCount: 2,
+        choiceCount: 4,
+      }),
+    ).toEqual({
+      status: 'not_enough_eligible_cards',
+      eligibleCardCount: 1,
+      minimumEligibleCardCount: 2,
+      choiceCount: 4,
+    });
+
+    expect(
+      parseWhatDidYouHearRoundResponse({
+        status: 'no_due_target',
+        eligibleCardCount: 3,
+        choiceCount: 4,
+      }),
+    ).toEqual({
+      status: 'no_due_target',
+      eligibleCardCount: 3,
+      choiceCount: 4,
+    });
+  });
+
+  it('rejects quiz assets without signed URLs', () => {
+    expect(() =>
+      parseWhatDidYouHearRoundResponse({
+        status: 'ready',
+        round: {
+          deckId: 'deck-1',
+          choiceCount: 4,
+          eligibleCardCount: 2,
+          targetCard: {
+            cardId: 'card-1',
+            label: 'Car',
+            audioAsset: {
+              path: 'kids-audio/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+            quizTags: [],
+          },
+          reviewContext: buildReviewQueueItem(),
+          choices: [],
+        },
+      }),
+    ).toThrow('Invalid What Did You Hear? asset contract');
   });
 });

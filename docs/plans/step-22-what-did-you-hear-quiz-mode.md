@@ -383,7 +383,7 @@ Verification completed:
 ### T6 - Build the dedicated What Did You Hear? web player
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add a new deck-scoped player/screen for `What Did You Hear?`.
@@ -417,6 +417,19 @@ Future-extension seam required in this player:
 
 Exit criteria:
 - a learner can complete a full deck-scoped `What Did You Hear?` session on mobile or desktop with clear audio, image selection, and feedback behavior.
+
+Implementation notes:
+- Added the deck-scoped `/what-did-you-hear?deckId=...` web route with a focused screen, prompt, choice grid, and empty-state components collocated under the new mode route.
+- Added frontend review services, parsers, query/mutation hooks, and `useWhatDidYouHearScreen` orchestration for stable wrong-answer rounds, correct-answer submission, post-correct `Next`, and a dedicated reward slot state for the future prize step.
+- Added lightweight Web Audio feedback for correct/wrong outcomes while keeping the UI state and API submission logic separate.
+- Updated the backend quiz path to resolve stored audio/image assets into signed URLs before serializing quiz rounds, including subsequent rounds returned after result submission.
+- Added focused parser, hook, screen, and backend service tests for ready/non-ready quiz states, placeholder rendering, wrong-answer feedback, post-correct next behavior, and signed asset hydration.
+
+Verification completed:
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/reviews/services/reviewService.test.ts src/features/reviews/hooks/useWhatDidYouHearScreen.test.tsx 'src/app/[locale]/what-did-you-hear/components/WhatDidYouHearScreen.test.tsx'`
+- `cd api && npm test -- --runInBand --runTestsByPath src/reviews/what-did-you-hear/what-did-you-hear-quiz.spec.ts src/reviews/reviews.service.spec.ts src/reviews/reviews.controller.spec.ts`
+- `cd web && npx tsc --noEmit --pretty false`
+- `cd api && npx tsc --noEmit --pretty false`
 
 ---
 

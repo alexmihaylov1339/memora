@@ -74,3 +74,66 @@ export interface ReviewCardIdParams {
 export interface GradeReviewDto {
   grade: ReviewGrade;
 }
+
+export interface WhatDidYouHearAsset {
+  path: string;
+  mimeType: string;
+  size: number;
+  url: string;
+}
+
+export interface WhatDidYouHearTargetCard {
+  cardId: string;
+  label: string;
+  audioAsset: WhatDidYouHearAsset;
+  topic?: string;
+  quizTags: string[];
+}
+
+export interface WhatDidYouHearChoice {
+  id: string;
+  cardId: string | null;
+  imageAsset: WhatDidYouHearAsset | null;
+  isCorrect: boolean;
+  isDisabled: boolean;
+  label: string | null;
+}
+
+export interface WhatDidYouHearReadyRound {
+  deckId: string;
+  choiceCount: number;
+  eligibleCardCount: number;
+  targetCard: WhatDidYouHearTargetCard;
+  reviewContext: ReviewQueueItem;
+  choices: WhatDidYouHearChoice[];
+}
+
+export type WhatDidYouHearRoundResponse =
+  | {
+      status: 'not_enough_eligible_cards';
+      eligibleCardCount: number;
+      minimumEligibleCardCount: number;
+      choiceCount: number;
+    }
+  | {
+      status: 'no_due_target';
+      eligibleCardCount: number;
+      choiceCount: number;
+    }
+  | {
+      status: 'ready';
+      round: WhatDidYouHearReadyRound;
+    };
+
+export interface SubmitWhatDidYouHearResultDto {
+  wrongAttemptCount: number;
+}
+
+export interface SubmitWhatDidYouHearResponse {
+  accepted: true;
+  cardId: string;
+  wrongAttemptCount: number;
+  derivedReviewGrade: ReviewGrade;
+  review: GradeReviewResponse;
+  nextQuizRound: WhatDidYouHearRoundResponse;
+}

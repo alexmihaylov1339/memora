@@ -7,6 +7,7 @@ import {
 import type { Prisma } from '@prisma/client';
 
 import type {
+  ResolvedCardAsset,
   ResolvedImageAudioCardFields,
   StoredCardAsset,
 } from './card-asset-types';
@@ -145,6 +146,13 @@ export class CardAssetsService {
     };
 
     return resolvedFields as unknown as Prisma.JsonObject;
+  }
+
+  async resolveStoredAsset(asset: StoredCardAsset): Promise<ResolvedCardAsset> {
+    return {
+      ...asset,
+      url: await this.createSignedReadUrl(asset.path),
+    };
   }
 
   private validateUploadInput(input: UploadCardAssetInput): void {

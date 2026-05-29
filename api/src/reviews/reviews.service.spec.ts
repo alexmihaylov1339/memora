@@ -1,5 +1,6 @@
 import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
+import type { CardAssetsService } from '../cards/card-assets.service';
 import type { GradeChunkReviewResult } from './reviews.service';
 import { REVIEW_KIND_UNSUPPORTED_REASONS } from './review-kind-adapter';
 import * as reviewObservability from './review-observability';
@@ -50,6 +51,19 @@ function createPrismaMock() {
   prisma.$transaction.mockImplementation(runInTransaction as never);
 
   return prisma;
+}
+
+function getResolvedAssetUrl(asset: unknown): string | null {
+  if (
+    asset &&
+    typeof asset === 'object' &&
+    'url' in asset &&
+    typeof asset.url === 'string'
+  ) {
+    return asset.url;
+  }
+
+  return null;
 }
 
 describe('ReviewsService', () => {
@@ -970,6 +984,134 @@ describe('ReviewsService', () => {
             isDisabled: true,
           }),
         ]),
+      );
+    });
+
+    it('resolves quiz audio and image assets when storage signing is available', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+      const cardAssets = {
+        resolveStoredAsset: jest.fn(async (asset) => ({
+          ...asset,
+          url: `signed://${asset.path}`,
+        })),
+      } satisfies Pick<CardAssetsService, 'resolveStoredAsset'>;
+      const serviceWithAssets = new ReviewsService(
+        prisma as unknown as PrismaService,
+        cardAssets as unknown as CardAssetsService,
+      );
+
+      prisma.deck.findUnique.mockResolvedValue({
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 2,
+          },
+        },
+        deckCards: [
+          {
+            card: {
+              id: 'card-1',
+              kind: 'image_audio',
+              fields: {
+                label: 'Car',
+                imageAsset: {
+                  path: 'kids-images/user-1/car.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/car.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-2',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bus',
+                imageAsset: {
+                  path: 'kids-images/user-1/bus.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bus.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+        ],
+      });
+      prisma.chunk.findMany.mockResolvedValue([
+        {
+          id: 'chunk-1',
+          deckId: 'deck-1',
+          title: 'vehicles',
+          position: 0,
+          deck: { reviewIntervalHours: [1, 24] },
+          reviewState: {
+            id: 'state-1',
+            chunkId: 'chunk-1',
+            due: new Date('2026-04-02T08:00:00.000Z'),
+            consecutiveSuccessCount: 0,
+            lastGrade: null,
+            createdAt: now,
+            updatedAt: now,
+          },
+          chunkCards: [
+            {
+              cardId: 'card-1',
+              sequenceIndex: 0,
+              card: {
+                id: 'card-1',
+                kind: 'image_audio',
+                fields: {},
+                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+              },
+            },
+          ],
+        },
+      ]);
+
+      const result = await serviceWithAssets.getWhatDidYouHearQuizRound(
+        'user-1',
+        'deck-1',
+        now,
+        () => 0,
+      );
+
+      expect(result.status).toBe('ready');
+      if (result.status !== 'ready') {
+        throw new Error('Expected a ready What Did You Hear? round');
+      }
+
+      expect(result.round.targetCard.audioAsset).toEqual(
+        expect.objectContaining({
+          url: 'signed://kids-audio/user-1/car.mp3',
+        }),
+      );
+      const carChoice = result.round.choices.find(
+        (choice) => choice.cardId === 'card-1',
+      );
+      const busChoice = result.round.choices.find(
+        (choice) => choice.cardId === 'card-2',
+      );
+
+      expect(getResolvedAssetUrl(carChoice?.imageAsset)).toBe(
+        'signed://kids-images/user-1/car.jpg',
+      );
+      expect(getResolvedAssetUrl(busChoice?.imageAsset)).toBe(
+        'signed://kids-images/user-1/bus.jpg',
+      );
+      expect(cardAssets.resolveStoredAsset).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: 'kids-audio/user-1/car.mp3',
+        }),
       );
     });
 
