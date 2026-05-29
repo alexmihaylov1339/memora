@@ -8,6 +8,8 @@ export interface DeckListItem {
   dueCount: number;
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
 }
 
 export interface DeckRecord {
@@ -18,6 +20,8 @@ export interface DeckRecord {
   isPublic: boolean;
   reviewIntervalHours: number[];
   exerciseSettings: DeckExerciseSettings;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +49,8 @@ export interface PublicDeckListItem {
   count: number;
   presentationMode: DeckPresentationMode;
   exerciseSettings: DeckExerciseSettings;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: Date;

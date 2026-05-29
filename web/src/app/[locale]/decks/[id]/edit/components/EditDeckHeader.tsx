@@ -8,6 +8,8 @@ interface EditDeckHeaderProps {
   deckName?: string;
   isPublic?: boolean;
   presentationMode?: DeckPresentationMode;
+  isWhatDidYouHearEligible?: boolean;
+  whatDidYouHearEligibleCardCount?: number;
 }
 
 export default function EditDeckHeader({
@@ -15,6 +17,8 @@ export default function EditDeckHeader({
   deckName,
   isPublic = false,
   presentationMode = 'standard',
+  isWhatDidYouHearEligible = false,
+  whatDidYouHearEligibleCardCount = 0,
 }: EditDeckHeaderProps) {
   const primaryActionHref =
     presentationMode === 'kids' && deckId
@@ -53,7 +57,17 @@ export default function EditDeckHeader({
             >
               {isPublic ? 'Public deck' : 'Private deck'}
             </span>
+            {isWhatDidYouHearEligible && (
+              <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                What Did You Hear? ready
+              </span>
+            )}
           </div>
+          {!isWhatDidYouHearEligible && (
+            <p className="mt-3 text-center text-sm text-slate-600">
+              What Did You Hear? appears after this deck has at least 2 image-audio cards. Current eligible cards: {whatDidYouHearEligibleCardCount}.
+            </p>
+          )}
 
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             {primaryActionHref && (
@@ -62,6 +76,15 @@ export default function EditDeckHeader({
                 className="rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
               >
                 {primaryActionLabel}
+              </Link>
+            )}
+
+            {isWhatDidYouHearEligible && (
+              <Link
+                href={APP_ROUTES.deckWhatDidYouHear(deckId)}
+                className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+              >
+                What Did You Hear?
               </Link>
             )}
 

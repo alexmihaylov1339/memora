@@ -3,10 +3,12 @@ import DeckActionLink from './DeckActionLink';
 
 interface DeckWorkspaceHeaderProps {
   deckId: string;
+  isWhatDidYouHearEligible?: boolean;
 }
 
 export default function DeckWorkspaceHeader({
   deckId,
+  isWhatDidYouHearEligible = false,
 }: DeckWorkspaceHeaderProps) {
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[linear-gradient(135deg,#fff7ed_0%,#ffffff_65%)] p-5">
@@ -48,6 +50,12 @@ export default function DeckWorkspaceHeader({
           <DeckActionLink href={APP_ROUTES.deckPractice(deckId)}>
             Practice Deck
           </DeckActionLink>
+
+          {isWhatDidYouHearEligible && (
+            <DeckActionLink href={APP_ROUTES.deckWhatDidYouHear(deckId)}>
+              What Did You Hear?
+            </DeckActionLink>
+          )}
         </div>
       </div>
     </div>

@@ -155,6 +155,48 @@ describe('DecksService', () => {
       { deckId: 'deck-owned' },
       { deckId: 'deck-shared' },
     ]);
+    prisma.deckCard.findMany.mockResolvedValueOnce([
+      {
+        deckId: 'deck-owned',
+        card: {
+          id: 'card-audio-1',
+          kind: 'image_audio',
+          fields: {
+            label: 'Car',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+          },
+        },
+      },
+      {
+        deckId: 'deck-owned',
+        card: {
+          id: 'card-audio-2',
+          kind: 'image_audio',
+          fields: {
+            label: 'Bus',
+            imageAsset: {
+              path: 'kids-images/user-1/bus.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/bus.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+          },
+        },
+      },
+    ]);
 
     await expect(service.findAll('user-1')).resolves.toEqual([
       {
@@ -164,6 +206,8 @@ describe('DecksService', () => {
         dueCount: 2,
         presentationMode: 'standard',
         isPublic: false,
+        isWhatDidYouHearEligible: true,
+        whatDidYouHearEligibleCardCount: 2,
       },
       {
         id: 'deck-shared',
@@ -172,6 +216,8 @@ describe('DecksService', () => {
         dueCount: 1,
         presentationMode: 'kids',
         isPublic: true,
+        isWhatDidYouHearEligible: false,
+        whatDidYouHearEligibleCardCount: 0,
       },
     ]);
 
@@ -316,6 +362,8 @@ describe('DecksService', () => {
           choiceCount: 3,
         },
       },
+      isWhatDidYouHearEligible: false,
+      whatDidYouHearEligibleCardCount: 0,
       count: 3,
       createdAt: new Date('2026-04-01T10:00:00.000Z'),
       updatedAt: new Date('2026-04-01T11:00:00.000Z'),
@@ -378,6 +426,8 @@ describe('DecksService', () => {
             choiceCount: 2,
           },
         },
+        isWhatDidYouHearEligible: false,
+        whatDidYouHearEligibleCardCount: 0,
         count: 0,
         createdAt,
         updatedAt,
@@ -519,6 +569,48 @@ describe('DecksService', () => {
     prisma.deckCard.groupBy.mockResolvedValue([
       { deckId: 'deck-1', _count: { cardId: 6 } },
     ]);
+    prisma.deckCard.findMany.mockResolvedValue([
+      {
+        deckId: 'deck-1',
+        card: {
+          id: 'card-audio-1',
+          kind: 'image_audio',
+          fields: {
+            label: 'Car',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+          },
+        },
+      },
+      {
+        deckId: 'deck-1',
+        card: {
+          id: 'card-audio-2',
+          kind: 'image_audio',
+          fields: {
+            label: 'Bus',
+            imageAsset: {
+              path: 'kids-images/user-1/bus.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/bus.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+          },
+        },
+      },
+    ]);
 
     await expect(service.listPublic()).resolves.toEqual([
       {
@@ -532,6 +624,8 @@ describe('DecksService', () => {
             choiceCount: 4,
           },
         },
+        isWhatDidYouHearEligible: true,
+        whatDidYouHearEligibleCardCount: 2,
         ownerDisplayName: 'Alex',
         ownerUserId: 'user-1',
         createdAt: new Date('2026-05-21T10:00:00.000Z'),
@@ -624,6 +718,8 @@ describe('DecksService', () => {
             choiceCount: 4,
           },
         },
+        isWhatDidYouHearEligible: false,
+        whatDidYouHearEligibleCardCount: 0,
         createdAt: now,
         updatedAt: now,
       },

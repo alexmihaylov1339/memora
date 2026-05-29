@@ -11,12 +11,15 @@ export const APP_ROUTES = {
   publicDecks: '/public-decks',
   review: '/review',
   practice: '/practice',
+  whatDidYouHear: '/what-did-you-hear',
   newDeck: '/decks/new',
   newCard: '/cards/new',
   newChunk: '/chunks/new',
   deckEdit: (id: string) => `/decks/${id}/edit`,
   deckPractice: (id: string) => `/practice?deckId=${encodeURIComponent(id)}`,
   deckReview: (id: string) => `/review?deckId=${encodeURIComponent(id)}`,
+  deckWhatDidYouHear: (id: string) =>
+    `/what-did-you-hear?deckId=${encodeURIComponent(id)}`,
   cardEdit: (id: string) => `/cards/${id}/edit`,
   chunkEdit: (id: string) => `/chunks/${id}/edit`,
   resetPasswordWithToken: (token: string) =>

@@ -6,6 +6,10 @@ import {
   type DeckExerciseSettings,
 } from './deck-exercise-settings';
 import type { DeckPresentationMode } from './deck-presentation-mode';
+import {
+  resolveDeckQuizEligibility,
+  type DeckQuizEligibility,
+} from './deck-quiz-eligibility';
 import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { resolveDeckReviewIntervalHours } from './deck-review-intervals';
 
@@ -15,6 +19,8 @@ export interface DeckListItem {
   count: number;
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
 }
 
 export interface DeckRecord {
@@ -25,6 +31,8 @@ export interface DeckRecord {
   isPublic: boolean;
   reviewIntervalHours: number[];
   exerciseSettings: DeckExerciseSettings;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,6 +60,8 @@ export interface PublicDeckListItem {
   count: number;
   presentationMode: DeckPresentationMode;
   exerciseSettings: DeckExerciseSettings;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: Date;
@@ -171,25 +181,32 @@ export function mapDeckShareSummary(
   };
 }
 
-export function mapDeckDetail(deck: DeckWithShares, count: number): DeckDetail {
+export function mapDeckDetail(
+  deck: DeckWithShares,
+  count: number,
+  quizEligibility: DeckQuizEligibility,
+): DeckDetail {
   return {
-    ...resolveDeckRecord(deck),
+    ...resolveDeckRecord(deck, quizEligibility),
     count,
     sharedUsers: deck.shares.map((share) => mapDeckShareSummary(share)),
   };
 }
 
-export function resolveDeckRecord(deck: {
-  id: string;
-  name: string;
-  description: string | null;
-  presentationMode: string;
-  isPublic: boolean;
-  reviewIntervalHours: unknown;
-  exerciseSettings: unknown;
-  createdAt: Date;
-  updatedAt: Date;
-}): DeckRecord {
+export function resolveDeckRecord(
+  deck: {
+    id: string;
+    name: string;
+    description: string | null;
+    presentationMode: string;
+    isPublic: boolean;
+    reviewIntervalHours: unknown;
+    exerciseSettings: unknown;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  quizEligibility = resolveDeckQuizEligibility(0),
+): DeckRecord {
   return {
     id: deck.id,
     name: deck.name,
@@ -200,6 +217,7 @@ export function resolveDeckRecord(deck: {
       deck.reviewIntervalHours,
     ),
     exerciseSettings: resolveDeckExerciseSettings(deck.exerciseSettings),
+    ...quizEligibility,
     createdAt: deck.createdAt,
     updatedAt: deck.updatedAt,
   };
@@ -208,6 +226,7 @@ export function resolveDeckRecord(deck: {
 export function mapPublicDeckListItem(
   deck: PublicDeckWithOwner,
   count: number,
+  quizEligibility: DeckQuizEligibility,
 ): PublicDeckListItem {
   return {
     id: deck.id,
@@ -216,6 +235,7 @@ export function mapPublicDeckListItem(
     count,
     presentationMode: deck.presentationMode as DeckPresentationMode,
     exerciseSettings: resolveDeckExerciseSettings(deck.exerciseSettings),
+    ...quizEligibility,
     ownerDisplayName:
       deck.owner?.name ?? deck.owner?.email ?? 'Unknown deck owner',
     ownerUserId: deck.owner?.id ?? null,

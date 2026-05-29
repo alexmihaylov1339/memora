@@ -38,6 +38,26 @@ export default function usePublicDeckGridColumns({
         searchValueGetter: (deck) => deck.presentationMode,
       },
       {
+        headerName: 'Quiz',
+        valueGetter: (deck) => (
+          <span
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+              deck.isWhatDidYouHearEligible
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            {deck.isWhatDidYouHearEligible
+              ? 'What Did You Hear?'
+              : `${deck.whatDidYouHearEligibleCardCount}/2 image-audio`}
+          </span>
+        ),
+        searchValueGetter: (deck) =>
+          deck.isWhatDidYouHearEligible
+            ? 'what did you hear quiz image audio'
+            : 'not quiz ready',
+      },
+      {
         headerName: 'Actions',
         searchable: false,
         cellRenderer: (deck) => {

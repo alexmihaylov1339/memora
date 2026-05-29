@@ -28,6 +28,8 @@ describe('mapDeckListResponse', () => {
             choiceCount: 4,
           },
         },
+        isWhatDidYouHearEligible: false,
+        whatDidYouHearEligibleCardCount: 0,
       },
     ]);
   });
@@ -55,6 +57,8 @@ describe('mapDeckListResponse', () => {
             choiceCount: 4,
           },
         },
+        isWhatDidYouHearEligible: false,
+        whatDidYouHearEligibleCardCount: 0,
       },
     ]);
   });
@@ -87,6 +91,8 @@ describe('mapDeckListResponse', () => {
             choiceCount: 3,
           },
         },
+        isWhatDidYouHearEligible: true,
+        whatDidYouHearEligibleCardCount: 2,
         sharedUsers: [],
         createdAt: '2026-05-28T10:00:00.000Z',
         updatedAt: '2026-05-28T10:00:00.000Z',
@@ -103,6 +109,8 @@ describe('mapDeckListResponse', () => {
           choiceCount: 3,
         },
       },
+      isWhatDidYouHearEligible: true,
+      whatDidYouHearEligibleCardCount: 2,
       sharedUsers: [],
       createdAt: '2026-05-28T10:00:00.000Z',
       updatedAt: '2026-05-28T10:00:00.000Z',

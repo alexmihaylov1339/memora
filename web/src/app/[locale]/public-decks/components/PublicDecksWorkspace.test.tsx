@@ -68,6 +68,8 @@ describe('PublicDecksWorkspace', () => {
               choiceCount: 4,
             },
           },
+          isWhatDidYouHearEligible: true,
+          whatDidYouHearEligibleCardCount: 2,
           createdAt: '2026-05-21T10:00:00.000Z',
           updatedAt: '2026-05-21T10:00:00.000Z',
         });
@@ -82,6 +84,8 @@ describe('PublicDecksWorkspace', () => {
               choiceCount: 4,
             },
           },
+          isWhatDidYouHearEligible: true,
+          whatDidYouHearEligibleCardCount: 2,
           createdAt: '2026-05-21T10:00:00.000Z',
           updatedAt: '2026-05-21T10:00:00.000Z',
         };
@@ -108,6 +112,8 @@ describe('PublicDecksWorkspace', () => {
                 choiceCount: 4,
               },
             },
+            isWhatDidYouHearEligible: true,
+            whatDidYouHearEligibleCardCount: 2,
             ownerDisplayName: 'Alex',
             ownerUserId: 'user-1',
             createdAt: '2026-05-21T10:00:00.000Z',
@@ -117,8 +123,13 @@ describe('PublicDecksWorkspace', () => {
       />,
     );
 
-    expect(screen.getByText('1 kids decks ready to reuse.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        '1 kids decks and 1 listening quiz decks ready to reuse. Copied decks keep quiz settings and image-audio cards.',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText('Kids')).toBeInTheDocument();
+    expect(screen.getByText('What Did You Hear?')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Add to my decks' }));
 

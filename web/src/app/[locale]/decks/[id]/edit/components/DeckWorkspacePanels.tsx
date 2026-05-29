@@ -8,6 +8,7 @@ interface DeckWorkspacePanelsProps {
   deckId: string;
   cards?: CardRecord[];
   chunks?: ChunkRecord[];
+  isWhatDidYouHearEligible?: boolean;
   cardsLoading: boolean;
   chunksLoading: boolean;
   cardsError?: string;
@@ -21,6 +22,7 @@ export default function DeckWorkspacePanels({
   deckId,
   cards,
   chunks,
+  isWhatDidYouHearEligible = false,
   cardsLoading,
   chunksLoading,
   cardsError,
@@ -31,7 +33,10 @@ export default function DeckWorkspacePanels({
 }: DeckWorkspacePanelsProps) {
   return (
     <section className="space-y-6">
-      <DeckWorkspaceHeader deckId={deckId} />
+      <DeckWorkspaceHeader
+        deckId={deckId}
+        isWhatDidYouHearEligible={isWhatDidYouHearEligible}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
         <DeckCardsPanel

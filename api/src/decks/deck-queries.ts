@@ -1,6 +1,10 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { getAccessibleDeckIds } from './deck-access';
 import type { DeckPresentationMode } from './deck-presentation-mode';
+import {
+  getWhatDidYouHearEligibleCardCounts,
+  resolveDeckQuizEligibility,
+} from './deck-quiz-eligibility';
 import { getDueCardCountsByDeck } from './deck-review-counts';
 import {
   getDeckCardCounts,
@@ -32,6 +36,10 @@ export async function listDecks(
   });
   const cardCounts = await getDeckCardCounts(prisma, deckIds);
   const dueCounts = await getDueCardCountsByDeck(prisma, deckIds);
+  const quizEligibleCounts = await getWhatDidYouHearEligibleCardCounts(
+    prisma,
+    deckIds,
+  );
 
   return decks.map((deck) => ({
     id: deck.id,
@@ -40,6 +48,7 @@ export async function listDecks(
     dueCount: dueCounts.get(deck.id) ?? 0,
     presentationMode: deck.presentationMode as DeckPresentationMode,
     isPublic: deck.isPublic,
+    ...resolveDeckQuizEligibility(quizEligibleCounts.get(deck.id) ?? 0),
   }));
 }
 
@@ -85,8 +94,15 @@ export async function getDeckDetail(
   }
 
   const count = await prisma.deckCard.count({ where: { deckId: id } });
+  const quizEligibleCounts = await getWhatDidYouHearEligibleCardCounts(prisma, [
+    id,
+  ]);
 
-  return mapDeckDetail(deck, count);
+  return mapDeckDetail(
+    deck,
+    count,
+    resolveDeckQuizEligibility(quizEligibleCounts.get(id) ?? 0),
+  );
 }
 
 export async function listPublicDecks(
@@ -108,8 +124,18 @@ export async function listPublicDecks(
 
   const deckIds = decks.map((deck) => deck.id);
   const cardCounts = await getDeckCardCounts(prisma, deckIds);
+  const quizEligibleCounts = await getWhatDidYouHearEligibleCardCounts(
+    prisma,
+    deckIds,
+  );
 
-  return decks.map((deck) => mapPublicDeckListItem(deck, cardCounts.get(deck.id) ?? 0));
+  return decks.map((deck) =>
+    mapPublicDeckListItem(
+      deck,
+      cardCounts.get(deck.id) ?? 0,
+      resolveDeckQuizEligibility(quizEligibleCounts.get(deck.id) ?? 0),
+    ),
+  );
 }
 
 export async function listDeckShares(

@@ -101,6 +101,10 @@ export default function EditDeckPage() {
           deckName={deck?.name}
           isPublic={deck?.isPublic}
           presentationMode={deck?.presentationMode}
+          isWhatDidYouHearEligible={deck?.isWhatDidYouHearEligible}
+          whatDidYouHearEligibleCardCount={
+            deck?.whatDidYouHearEligibleCardCount
+          }
         />
 
         {isLoading && <PageLoader />}

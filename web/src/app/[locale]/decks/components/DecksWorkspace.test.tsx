@@ -37,6 +37,8 @@ describe('DecksWorkspace', () => {
             dueCount: 3,
             presentationMode: 'standard',
             isPublic: false,
+            isWhatDidYouHearEligible: false,
+            whatDidYouHearEligibleCardCount: 1,
           },
           {
             id: 'deck-2',
@@ -45,6 +47,8 @@ describe('DecksWorkspace', () => {
             dueCount: 0,
             presentationMode: 'kids',
             isPublic: true,
+            isWhatDidYouHearEligible: true,
+            whatDidYouHearEligibleCardCount: 2,
           },
         ]}
       />,
@@ -68,6 +72,9 @@ describe('DecksWorkspace', () => {
       'href',
       '/practice?deckId=deck-2',
     );
+    expect(
+      screen.getByRole('link', { name: 'What Did You Hear?' }),
+    ).toHaveAttribute('href', '/what-did-you-hear?deckId=deck-2');
     expect(screen.getByRole('cell', { name: '12' })).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: '3' })).toBeInTheDocument();
     expect(screen.getByText('Public')).toBeInTheDocument();

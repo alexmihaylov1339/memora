@@ -12,6 +12,8 @@ interface DeckResponseShape {
   presentationMode?: DeckPresentationMode | null;
   isPublic?: boolean | null;
   exerciseSettings?: unknown;
+  isWhatDidYouHearEligible?: boolean | null;
+  whatDidYouHearEligibleCardCount?: number | null;
 }
 
 interface DeckListItemResponse extends DeckResponseShape {
@@ -60,12 +62,22 @@ function resolveDeckResponseShape<T extends DeckResponseShape>(
   presentationMode: DeckPresentationMode;
   isPublic: boolean;
   exerciseSettings: DeckExerciseSettings;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
 } {
+  const eligibleCardCount = Math.max(
+    0,
+    deck.whatDidYouHearEligibleCardCount ?? 0,
+  );
+
   return {
     ...deck,
     presentationMode: deck.presentationMode ?? 'standard',
     isPublic: deck.isPublic ?? false,
     exerciseSettings: resolveDeckExerciseSettings(deck.exerciseSettings),
+    isWhatDidYouHearEligible:
+      deck.isWhatDidYouHearEligible ?? eligibleCardCount >= 2,
+    whatDidYouHearEligibleCardCount: eligibleCardCount,
   };
 }
 

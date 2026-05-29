@@ -11,6 +11,8 @@ export interface DeckListItemDto {
   dueCount: number;
   presentationMode: string;
   isPublic: boolean;
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
 }
 
 export interface DeckDetailDto {
@@ -25,6 +27,8 @@ export interface DeckDetailDto {
       choiceCount: number;
     };
   };
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   count: number;
   sharedUsers: DeckShareDto[];
   createdAt: string;
@@ -43,6 +47,8 @@ export interface DeckRecordDto {
       choiceCount: number;
     };
   };
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +64,8 @@ export interface PublicDeckListItemDto {
       choiceCount: number;
     };
   };
+  isWhatDidYouHearEligible: boolean;
+  whatDidYouHearEligibleCardCount: number;
   ownerDisplayName: string;
   ownerUserId: string | null;
   createdAt: string;
@@ -72,6 +80,8 @@ export function serializeDeckListItem(deck: DeckListItem): DeckListItemDto {
     dueCount: deck.dueCount,
     presentationMode: deck.presentationMode,
     isPublic: deck.isPublic,
+    isWhatDidYouHearEligible: deck.isWhatDidYouHearEligible,
+    whatDidYouHearEligibleCardCount: deck.whatDidYouHearEligibleCardCount,
   };
 }
 
@@ -90,6 +100,8 @@ export function serializeDeckDetail(deck: DeckDetail): DeckDetailDto {
     isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
     exerciseSettings: deck.exerciseSettings,
+    isWhatDidYouHearEligible: deck.isWhatDidYouHearEligible,
+    whatDidYouHearEligibleCardCount: deck.whatDidYouHearEligibleCardCount,
     count: deck.count,
     sharedUsers: serializeDeckShareListResponse(deck.sharedUsers),
     createdAt: deck.createdAt.toISOString(),
@@ -106,6 +118,8 @@ export function serializeDeckRecord(deck: DeckRecord): DeckRecordDto {
     isPublic: deck.isPublic,
     reviewIntervalHours: deck.reviewIntervalHours,
     exerciseSettings: deck.exerciseSettings,
+    isWhatDidYouHearEligible: deck.isWhatDidYouHearEligible,
+    whatDidYouHearEligibleCardCount: deck.whatDidYouHearEligibleCardCount,
     createdAt: deck.createdAt.toISOString(),
     updatedAt: deck.updatedAt.toISOString(),
   };
@@ -123,6 +137,8 @@ export function serializePublicDeckListResponse(
         choiceCount: number;
       };
     };
+    isWhatDidYouHearEligible: boolean;
+    whatDidYouHearEligibleCardCount: number;
     ownerDisplayName: string;
     ownerUserId: string | null;
     createdAt: Date;
@@ -136,6 +152,8 @@ export function serializePublicDeckListResponse(
     count: deck.count,
     presentationMode: deck.presentationMode,
     exerciseSettings: deck.exerciseSettings,
+    isWhatDidYouHearEligible: deck.isWhatDidYouHearEligible,
+    whatDidYouHearEligibleCardCount: deck.whatDidYouHearEligibleCardCount,
     ownerDisplayName: deck.ownerDisplayName,
     ownerUserId: deck.ownerUserId,
     createdAt: deck.createdAt.toISOString(),

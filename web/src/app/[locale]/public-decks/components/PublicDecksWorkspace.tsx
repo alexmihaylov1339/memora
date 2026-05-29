@@ -52,6 +52,9 @@ export default function PublicDecksWorkspace({
   const kidsDeckCount = decks.filter(
     (deck) => deck.presentationMode === 'kids',
   ).length;
+  const quizDeckCount = decks.filter(
+    (deck) => deck.isWhatDidYouHearEligible,
+  ).length;
 
   return (
     <section className="mx-auto flex w-full max-w-[1100px] flex-col px-4 pb-10 pt-8 sm:px-6 lg:px-0">
@@ -65,7 +68,7 @@ export default function PublicDecksWorkspace({
             your own library.
           </p>
           <p className="mt-2 text-sm font-semibold text-brand">
-            {kidsDeckCount} kids decks ready to reuse.
+            {kidsDeckCount} kids decks and {quizDeckCount} listening quiz decks ready to reuse. Copied decks keep quiz settings and image-audio cards.
           </p>
         </div>
 

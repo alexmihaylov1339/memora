@@ -28,7 +28,7 @@ jest.mock('@/i18n/navigation', () => ({
 
 describe('DeckWorkspaceHeader', () => {
   it('links review and practice actions to the selected deck', () => {
-    render(<DeckWorkspaceHeader deckId="deck-1" />);
+    render(<DeckWorkspaceHeader deckId="deck-1" isWhatDidYouHearEligible />);
 
     expect(screen.getByRole('link', { name: 'Start Review' })).toHaveAttribute(
       'href',
@@ -38,5 +38,16 @@ describe('DeckWorkspaceHeader', () => {
       'href',
       '/practice?deckId=deck-1',
     );
+    expect(
+      screen.getByRole('link', { name: 'What Did You Hear?' }),
+    ).toHaveAttribute('href', '/what-did-you-hear?deckId=deck-1');
+  });
+
+  it('hides the listening quiz action when the deck is not eligible', () => {
+    render(<DeckWorkspaceHeader deckId="deck-1" />);
+
+    expect(
+      screen.queryByRole('link', { name: 'What Did You Hear?' }),
+    ).not.toBeInTheDocument();
   });
 });

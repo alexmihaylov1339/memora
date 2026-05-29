@@ -342,7 +342,7 @@ Verification completed:
 ### T5 - Add deck-level visibility and action wiring for What Did You Hear?
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - expose `What Did You Hear?` on any deck with at least `2` eligible `image_audio` cards.
@@ -358,6 +358,25 @@ Surface expectations:
 
 Exit criteria:
 - users can discover the new exercise mode without confusing it with Step 21 `Learn` mode or standard `Review`.
+
+Implementation notes:
+- Added a backend deck quiz-eligibility contract that counts valid same-deck `image_audio` cards and exposes:
+  - `isWhatDidYouHearEligible`
+  - `whatDidYouHearEligibleCardCount`
+- Threaded quiz eligibility through private deck lists, deck detail, and public deck browse serialization.
+- Added the frontend `APP_ROUTES.deckWhatDidYouHear(deckId)` route builder for the dedicated player route planned in T6.
+- Added `What Did You Hear?` actions on eligible deck grid rows and edit-deck quick actions while hiding the action for ineligible decks.
+- Added an ineligible deck cue on the edit header explaining that the mode appears after at least `2` image-audio cards.
+- Added public-deck quiz visibility so browse/copy surfaces indicate which public decks preserve listening-quiz behavior after copy.
+- Kept deck-level choice-count settings in the existing create/edit `FormBuilder` flows from T2 and preserved the shared deck copy setting contract.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/decks.service.spec.ts src/decks/deck-public.controller.spec.ts`
+- `cd web && npm test -- --runInBand --runTestsByPath src/app/[locale]/decks/components/DecksWorkspace.test.tsx src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.test.tsx src/app/[locale]/decks/[id]/edit/components/EditDeckHeader.test.tsx src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx src/features/decks/services/deckResponseMapper.test.ts`
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/DeckLibraryPicker.test.tsx`
+- `cd api && npx tsc --noEmit --pretty false`
+- `cd web && npx tsc --noEmit --pretty false`
+- `git diff --check`
 
 ---
 

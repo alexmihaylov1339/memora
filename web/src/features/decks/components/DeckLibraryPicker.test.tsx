@@ -53,6 +53,8 @@ const decks: Deck[] = [
     dueCount: 3,
     presentationMode: 'standard',
     isPublic: false,
+    isWhatDidYouHearEligible: false,
+    whatDidYouHearEligibleCardCount: 0,
   },
   {
     id: 'deck-2',
@@ -61,6 +63,8 @@ const decks: Deck[] = [
     dueCount: 0,
     presentationMode: 'kids',
     isPublic: true,
+    isWhatDidYouHearEligible: true,
+    whatDidYouHearEligibleCardCount: 2,
   },
 ];
 
