@@ -25,6 +25,7 @@ export async function applyGradeToStandaloneCard({
   grade,
   now,
   prisma,
+  reviewLogMode,
   userId,
 }: ApplyGradeToStandaloneCardInput): Promise<GradeChunkReviewResult | null> {
   const card = await findReviewableStandaloneCard(
@@ -63,6 +64,7 @@ export async function applyGradeToStandaloneCard({
       nextConsecutiveSuccessCount: schedule.nextConsecutiveSuccessCount,
       nextDue: schedule.nextDue,
       now,
+      reviewLogMode,
       state,
       wasSuccessful: schedule.wasSuccessful,
     });

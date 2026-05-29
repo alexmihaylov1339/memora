@@ -87,7 +87,7 @@ export async function persistStandaloneGradeSideEffects(
       newInterval: input.intervalHours,
       oldEase: input.state.ease,
       newEase: input.state.ease,
-      mode: input.card.kind,
+      mode: input.reviewLogMode ?? input.card.kind,
       wasCorrect: input.wasSuccessful,
     },
   });

@@ -4,6 +4,7 @@ import {
   collectWhatDidYouHearEligibleCards,
   WHAT_DID_YOU_HEAR_CONSTANTS,
 } from './what-did-you-hear-quiz';
+import { deriveWhatDidYouHearReviewGrade } from './what-did-you-hear-review';
 
 function buildQueueItem(cardId: string): ReviewQueueItem {
   return {
@@ -24,6 +25,12 @@ function buildQueueItem(cardId: string): ReviewQueueItem {
 }
 
 describe('what-did-you-hear quiz builder', () => {
+  it('derives review grades from wrong-attempt count on the backend', () => {
+    expect(deriveWhatDidYouHearReviewGrade(0)).toBe('good');
+    expect(deriveWhatDidYouHearReviewGrade(1)).toBe('hard');
+    expect(deriveWhatDidYouHearReviewGrade(3)).toBe('hard');
+  });
+
   it('collects valid image_audio cards and skips invalid payloads', () => {
     expect(
       collectWhatDidYouHearEligibleCards([

@@ -32,6 +32,8 @@ interface ApplyGradeToReviewCardInput {
   logger: Logger;
   now: Date;
   prisma: PrismaService;
+  reviewLogMode?: string;
+  skipKindSupportCheck?: boolean;
   userId: string;
 }
 
@@ -42,6 +44,8 @@ export async function applyGradeToReviewCard({
   logger,
   now,
   prisma,
+  reviewLogMode,
+  skipKindSupportCheck = false,
   userId,
 }: ApplyGradeToReviewCardInput): Promise<GradeChunkReviewResult | null> {
   const startedAtMs = Date.now();
@@ -60,6 +64,7 @@ export async function applyGradeToReviewCard({
       grade,
       now,
       prisma,
+      reviewLogMode,
       userId,
     });
   }
@@ -75,7 +80,7 @@ export async function applyGradeToReviewCard({
     currentCard.fields,
   );
 
-  if (!reviewKindSupport.isReviewSupported) {
+  if (!skipKindSupportCheck && !reviewKindSupport.isReviewSupported) {
     emitReviewUnsupportedObservability({
       logger,
       userId,
@@ -120,7 +125,7 @@ export async function applyGradeToReviewCard({
       intervalHours: schedule.intervalHours,
       wasSuccessful: schedule.wasSuccessful,
       existingCardState,
-      mode: currentCard.kind,
+      mode: reviewLogMode ?? currentCard.kind,
     });
   });
 

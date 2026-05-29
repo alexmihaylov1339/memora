@@ -6,6 +6,7 @@ export interface ApplyGradeToStandaloneCardInput {
   grade: Grade;
   now: Date;
   prisma: PrismaServiceLike;
+  reviewLogMode?: string;
   userId: string;
 }
 
@@ -38,6 +39,7 @@ export interface StandaloneGradePersistenceInput {
   nextConsecutiveSuccessCount: number;
   nextDue: Date;
   now: Date;
+  reviewLogMode?: string;
   state: StandaloneReviewState;
   wasSuccessful: boolean;
 }

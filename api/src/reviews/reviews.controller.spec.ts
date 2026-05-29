@@ -7,14 +7,21 @@ import type {
   GradeChunkReviewResult,
   PracticeItem,
   ReviewQueueItem,
+  WhatDidYouHearQuizRoundResult,
+  WhatDidYouHearSubmitResult,
 } from './reviews.service';
 
 interface ReviewsServiceMock {
   getEligibleQueueItems: jest.Mock<Promise<ReviewQueueItem[]>>;
   getPracticeItems: jest.Mock<Promise<PracticeItem[]>>;
+  getWhatDidYouHearQuizRound: jest.Mock<Promise<WhatDidYouHearQuizRoundResult>>;
   gradeReview: jest.Mock<
     Promise<GradeChunkReviewResult>,
     [string, Grade, string, Date, string]
+  >;
+  submitWhatDidYouHearQuizResult: jest.Mock<
+    Promise<WhatDidYouHearSubmitResult>,
+    [string, string, string, number, Date]
   >;
 }
 
@@ -22,9 +29,17 @@ function createReviewsServiceMock(): ReviewsServiceMock {
   return {
     getEligibleQueueItems: jest.fn<Promise<ReviewQueueItem[]>, []>(),
     getPracticeItems: jest.fn<Promise<PracticeItem[]>, []>(),
+    getWhatDidYouHearQuizRound: jest.fn<
+      Promise<WhatDidYouHearQuizRoundResult>,
+      []
+    >(),
     gradeReview: jest.fn<
       Promise<GradeChunkReviewResult>,
       [string, Grade, string, Date, string]
+    >(),
+    submitWhatDidYouHearQuizResult: jest.fn<
+      Promise<WhatDidYouHearSubmitResult>,
+      [string, string, string, number, Date]
     >(),
   };
 }
@@ -180,6 +195,193 @@ describe('ReviewsController', () => {
       'user-1',
       'deck-1',
     );
+  });
+
+  it('returns a serialized What Did You Hear? quiz round', async () => {
+    reviewsService.getWhatDidYouHearQuizRound.mockResolvedValue({
+      status: 'ready',
+      round: {
+        deckId: 'deck-1',
+        choiceCount: 4,
+        eligibleCardCount: 2,
+        targetCard: {
+          cardId: 'card-1',
+          label: 'Car',
+          normalizedLabel: 'car',
+          imageAsset: {
+            path: 'kids-images/user-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+          quizTags: [],
+        },
+        targetQueueItem: {
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'standalone:card-1',
+          chunkTitle: 'Standalone Card',
+          chunkPosition: 0,
+          positionInChunk: 0,
+          due: new Date('2026-05-28T10:00:00.000Z'),
+          kind: 'image_audio',
+          fields: {},
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'kind_not_review_enabled',
+          cardCreatedAt: new Date('2026-05-28T09:00:00.000Z'),
+          consecutiveSuccessCount: 0,
+        },
+        choices: [
+          {
+            id: 'card-1',
+            cardId: 'card-1',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            isCorrect: true,
+            isDisabled: false,
+          },
+          {
+            id: 'placeholder-1',
+            cardId: null,
+            imageAsset: null,
+            isCorrect: false,
+            isDisabled: true,
+          },
+        ],
+      },
+    });
+
+    await expect(
+      controller.whatDidYouHear(mockUser, { deckId: 'deck-1' }),
+    ).resolves.toEqual({
+      status: 'ready',
+      round: expect.objectContaining({
+        deckId: 'deck-1',
+        targetCard: {
+          cardId: 'card-1',
+          label: 'Car',
+          audioAsset: {
+            path: 'kids-audio/user-1/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+          quizTags: [],
+        },
+        choices: [
+          expect.objectContaining({
+            cardId: 'card-1',
+            isCorrect: true,
+            label: null,
+          }),
+          expect.objectContaining({
+            cardId: null,
+            isDisabled: true,
+            label: 'No image',
+          }),
+        ],
+      }),
+    });
+    expect(reviewsService.getWhatDidYouHearQuizRound).toHaveBeenCalledWith(
+      'user-1',
+      'deck-1',
+      expect.any(Date),
+    );
+  });
+
+  it('submits What Did You Hear? attempts through the dedicated result contract', async () => {
+    reviewsService.submitWhatDidYouHearQuizResult.mockResolvedValue({
+      accepted: true,
+      cardId: 'card-1',
+      wrongAttemptCount: 1,
+      derivedReviewGrade: 'hard',
+      review: {
+        cardId: 'card-1',
+        grade: 'hard',
+        wasSuccessful: true,
+        advanced: true,
+        reset: false,
+        previousConsecutiveSuccessCount: 0,
+        consecutiveSuccessCount: 1,
+        due: new Date('2026-04-03T18:00:00.000Z'),
+        intervalHours: 8,
+        chunk: {
+          chunkId: 'standalone:card-1',
+          deckId: 'deck-1',
+          title: 'Standalone Card',
+          position: 0,
+          due: new Date('2026-04-03T18:00:00.000Z'),
+          isDue: false,
+          consecutiveSuccessCount: 0,
+          requiredConsecutiveSuccesses: 1,
+          hasMastery: false,
+          totalCards: 1,
+          currentCard: {
+            cardId: 'card-1',
+            sequenceIndex: 0,
+          },
+          lastGrade: null,
+        },
+        nextActionableItem: null,
+      },
+      nextQuizRound: {
+        status: 'no_due_target',
+        eligibleCardCount: 2,
+        choiceCount: 4,
+      },
+    });
+
+    await expect(
+      controller.submitWhatDidYouHearResult(
+        mockUser,
+        { cardId: ' card-1 ' },
+        { deckId: 'deck-1' },
+        { wrongAttemptCount: 1 },
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        accepted: true,
+        cardId: 'card-1',
+        wrongAttemptCount: 1,
+        derivedReviewGrade: 'hard',
+        review: expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'hard',
+          due: '2026-04-03T18:00:00.000Z',
+        }),
+        nextQuizRound: {
+          status: 'no_due_target',
+          eligibleCardCount: 2,
+          choiceCount: 4,
+        },
+      }),
+    );
+    expect(reviewsService.submitWhatDidYouHearQuizResult).toHaveBeenCalledWith(
+      'user-1',
+      'deck-1',
+      'card-1',
+      1,
+      expect.any(Date),
+    );
+  });
+
+  it('rejects invalid What Did You Hear? wrong attempt counts before calling the service', async () => {
+    await expect(
+      controller.submitWhatDidYouHearResult(
+        mockUser,
+        { cardId: 'card-1' },
+        { deckId: 'deck-1' },
+        { wrongAttemptCount: -1 },
+      ),
+    ).rejects.toThrow(REVIEW_ERROR_MESSAGES.invalidWrongAttemptCount);
+
+    expect(reviewsService.submitWhatDidYouHearQuizResult).not.toHaveBeenCalled();
   });
 
   it('passes a validated enum grade to the review service', async () => {

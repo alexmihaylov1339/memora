@@ -1015,6 +1015,168 @@ describe('ReviewsService', () => {
     });
   });
 
+  describe('submitWhatDidYouHearQuizResult', () => {
+    it('derives the review grade, applies scheduling, and returns the next quiz state', async () => {
+      const now = new Date('2026-04-02T09:00:00.000Z');
+      const existingDue = new Date('2026-04-02T08:00:00.000Z');
+
+      prisma.deckCard.findFirst
+        .mockResolvedValueOnce({
+          card: {
+            id: 'card-1',
+            fields: {
+              label: 'Car',
+              imageAsset: {
+                path: 'kids-images/user-1/car.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/car.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          deckId: 'deck-1',
+          deck: { reviewIntervalHours: [1, 8] },
+          card: {
+            id: 'card-1',
+            kind: 'image_audio',
+            fields: {
+              label: 'Car',
+              imageAsset: {
+                path: 'kids-images/user-1/car.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/car.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+            },
+            createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            state: {
+              due: existingDue,
+              ease: 2.5,
+              interval: 1,
+              reps: 0,
+              lapses: 0,
+              consecutiveSuccessCount: 0,
+              lastGrade: null,
+            },
+          },
+        });
+      prisma.deck.findUnique.mockResolvedValue({
+        exerciseSettings: {
+          whatDidYouHear: {
+            choiceCount: 4,
+          },
+        },
+        deckCards: [
+          {
+            card: {
+              id: 'card-1',
+              kind: 'image_audio',
+              fields: {
+                label: 'Car',
+                imageAsset: {
+                  path: 'kids-images/user-1/car.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/car.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-2',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bus',
+                imageAsset: {
+                  path: 'kids-images/user-1/bus.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bus.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+        ],
+      });
+      prisma.chunk.findMany.mockResolvedValue([]);
+      prisma.deckCard.findMany.mockResolvedValue([]);
+      prisma.reviewState.update.mockResolvedValue(undefined);
+      prisma.reviewLog.create.mockResolvedValue(undefined);
+
+      const result = await service.submitWhatDidYouHearQuizResult(
+        'user-1',
+        'deck-1',
+        'card-1',
+        1,
+        now,
+      );
+
+      expect(result.accepted).toBe(true);
+      expect(result.cardId).toBe('card-1');
+      expect(result.wrongAttemptCount).toBe(1);
+      expect(result.derivedReviewGrade).toBe('hard');
+      expect(result.review).toEqual(
+        expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'hard',
+          wasSuccessful: false,
+          intervalHours: 4,
+        }),
+      );
+      expect(result.nextQuizRound).toEqual({
+        status: 'no_due_target',
+        eligibleCardCount: 2,
+        choiceCount: 4,
+      });
+      expect(prisma.reviewLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          cardId: 'card-1',
+          grade: 'hard',
+          mode: 'what_did_you_hear',
+          wasCorrect: false,
+        }),
+      });
+    });
+
+    it('rejects cards that are not eligible image-audio quiz targets', async () => {
+      prisma.deckCard.findFirst.mockResolvedValueOnce({
+        card: {
+          id: 'card-1',
+          fields: { front: 'Hello', back: 'Hallo' },
+        },
+      });
+
+      await expect(
+        service.submitWhatDidYouHearQuizResult(
+          'user-1',
+          'deck-1',
+          'card-1',
+          0,
+        ),
+      ).rejects.toThrow('Card is not eligible for What Did You Hear?');
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe('applyGradeToCard', () => {
     it('advances chunk progress and logs a successful review', async () => {
       const now = new Date('2026-04-02T09:00:00.000Z');

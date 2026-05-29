@@ -25,6 +25,14 @@ import {
   validateReviewCardId,
   validateReviewDeckId,
 } from './dto/review-validation';
+import {
+  serializeSubmitWhatDidYouHearResponse,
+  serializeWhatDidYouHearRoundResponse,
+} from './what-did-you-hear/what-did-you-hear-response.dto';
+import {
+  validateWhatDidYouHearSubmitInput,
+  type SubmitWhatDidYouHearResultDto,
+} from './what-did-you-hear/what-did-you-hear-validation';
 
 @Controller('reviews')
 @UseGuards(AuthGuard)
@@ -55,6 +63,43 @@ export class ReviewsController {
     const items = await this.reviews.getPracticeItems(user.id, deckId);
 
     return serializePracticeResponse(items);
+  }
+
+  @Get('what-did-you-hear')
+  async whatDidYouHear(
+    @CurrentUser() user: AuthUser,
+    @Query() query: ReviewDeckQueryDto,
+  ) {
+    const deckId = validateReviewDeckId(query.deckId);
+    const result = await this.reviews.getWhatDidYouHearQuizRound(
+      user.id,
+      deckId,
+      new Date(),
+    );
+
+    return serializeWhatDidYouHearRoundResponse(result);
+  }
+
+  @Post('what-did-you-hear/:cardId/result')
+  @HttpCode(HttpStatus.OK)
+  async submitWhatDidYouHearResult(
+    @CurrentUser() user: AuthUser,
+    @Param() params: ReviewCardIdParamDto,
+    @Query() query: ReviewDeckQueryDto,
+    @Body() body: SubmitWhatDidYouHearResultDto,
+  ) {
+    const cardId = validateReviewCardId(params.cardId);
+    const deckId = validateReviewDeckId(query.deckId);
+    const wrongAttemptCount = validateWhatDidYouHearSubmitInput(body);
+    const result = await this.reviews.submitWhatDidYouHearQuizResult(
+      user.id,
+      deckId,
+      cardId,
+      wrongAttemptCount,
+      new Date(),
+    );
+
+    return serializeSubmitWhatDidYouHearResponse(result);
   }
 
   @Post(':cardId/grade')

@@ -285,7 +285,7 @@ Verification completed:
 ### T4 - Add a dedicated quiz review contract that reuses the shared scheduling engine
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add dedicated query/submit contracts for `What Did You Hear?` rather than overloading the normal review DTOs directly.
@@ -318,6 +318,24 @@ Important architecture rule:
 
 Exit criteria:
 - `What Did You Hear?` can mutate review state safely without polluting standard review contracts with quiz-only rendering data.
+
+Implementation notes:
+- Added dedicated authenticated `What Did You Hear?` review endpoints:
+  - `GET /reviews/what-did-you-hear?deckId=...`
+  - `POST /reviews/what-did-you-hear/:cardId/result?deckId=...`
+- Added feature-local quiz response serialization so the query contract returns a ready round with replayable audio asset data, correct-answer label, image-only choices, disabled `No image` placeholders, and review context without overloading the standard review queue DTO.
+- Added a dedicated quiz submit validator that accepts `wrongAttemptCount` only as a non-negative integer.
+- Kept grade authority on the backend by deriving:
+  - `wrongAttemptCount = 0` -> `good`
+  - `wrongAttemptCount > 0` -> `hard`
+- Reused the shared review grade pipeline for schedule mutation, review-state updates, logs, due dates, and next-actionable state while scoping the quiz log mode to `what_did_you_hear`.
+- Added an explicit quiz eligibility guard so only valid same-deck `image_audio` cards can be submitted through the quiz result path.
+- Kept quiz orchestration colocated in `api/src/reviews/what-did-you-hear/` and left `ReviewsService` as the feature facade.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/reviews/what-did-you-hear/what-did-you-hear-quiz.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts`
+- `cd api && npx prisma generate`
+- `cd api && npx tsc --noEmit --pretty false`
 
 ---
 
