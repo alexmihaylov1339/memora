@@ -29,6 +29,16 @@ export function resolveDeckQuizEligibility(
   };
 }
 
+export function countWhatDidYouHearEligibleCards(
+  cards: Array<{ kind: string; fields: unknown }>,
+): number {
+  return cards.filter(
+    (card) =>
+      card.kind === 'image_audio' &&
+      parseStoredImageAudioCardFields(card.fields),
+  ).length;
+}
+
 export async function getWhatDidYouHearEligibleCardCounts(
   prisma: DeckQuizEligibilityClient,
   deckIds: string[],
@@ -57,10 +67,7 @@ export async function getWhatDidYouHearEligibleCardCounts(
   })) ?? []) as DeckQuizMembership[];
 
   return memberships.reduce((counts, membership) => {
-    if (
-      membership.card.kind === 'image_audio' &&
-      parseStoredImageAudioCardFields(membership.card.fields)
-    ) {
+    if (countWhatDidYouHearEligibleCards([membership.card]) === 1) {
       counts.set(membership.deckId, (counts.get(membership.deckId) ?? 0) + 1);
     }
 

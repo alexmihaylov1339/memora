@@ -2,6 +2,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { resetChunkReviewProgress } from '../chunks/chunks.helpers';
 import { initStandaloneCardReviewState } from '../reviews/standalone-card-review';
 import { findOwnedDeck, resolveDeckRecord } from './decks.helpers';
+import {
+  countWhatDidYouHearEligibleCards,
+  resolveDeckQuizEligibility,
+} from './deck-quiz-eligibility';
 import type {
   CopyPublicDeckResult,
   UpdateDeckPublicationResult,
@@ -160,6 +164,9 @@ export async function copyPublicDeck(
     });
 
     const sourceCards = collectSourceCards(sourceDeck);
+    const quizEligibility = resolveDeckQuizEligibility(
+      countWhatDidYouHearEligibleCards(sourceCards),
+    );
     const cardIdMap = new Map<string, string>();
     const copiedCardIds: string[] = [];
 
@@ -223,7 +230,7 @@ export async function copyPublicDeck(
 
     return {
       status: 'copied',
-      deck: resolveDeckRecord(copiedDeck),
+      deck: resolveDeckRecord(copiedDeck, quizEligibility),
     } satisfies CopyPublicDeckResult;
   });
 }

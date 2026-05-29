@@ -656,7 +656,51 @@ describe('DecksService', () => {
           card: {
             id: 'card-1',
             kind: 'image_audio',
-            fields: { label: 'Car' },
+            fields: {
+              label: 'Car',
+              imageAsset: {
+                path: 'kids-images/user-1/car.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/car.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+              topic: 'Vehicles',
+              quizTags: ['transport', 'road'],
+            },
+          },
+        },
+        {
+          cardId: 'card-2',
+          card: {
+            id: 'card-2',
+            kind: 'image_audio',
+            fields: {
+              label: 'Bus',
+              imageAsset: {
+                path: 'kids-images/user-1/bus.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/bus.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+              topic: 'Vehicles',
+              quizTags: ['transport'],
+            },
+          },
+        },
+        {
+          cardId: 'card-3',
+          card: {
+            id: 'card-3',
+            kind: 'basic',
+            fields: { front: 'Hallo', back: 'Hello' },
           },
         },
       ],
@@ -673,7 +717,31 @@ describe('DecksService', () => {
               card: {
                 id: 'card-1',
                 kind: 'image_audio',
-                fields: { label: 'Car' },
+                fields: {
+                  label: 'Car',
+                  imageAsset: {
+                    path: 'kids-images/user-1/car.jpg',
+                    mimeType: 'image/jpeg',
+                    size: 100,
+                  },
+                  audioAsset: {
+                    path: 'kids-audio/user-1/car.mp3',
+                    mimeType: 'audio/mpeg',
+                    size: 100,
+                  },
+                  topic: 'Vehicles',
+                  quizTags: ['transport', 'road'],
+                },
+              },
+            },
+            {
+              cardId: 'card-3',
+              sequenceIndex: 1,
+              offsetDays: 1,
+              card: {
+                id: 'card-3',
+                kind: 'basic',
+                fields: { front: 'Hallo', back: 'Hello' },
               },
             },
           ],
@@ -695,9 +763,16 @@ describe('DecksService', () => {
       createdAt: now,
       updatedAt: now,
     });
-    prisma.card.create.mockResolvedValue({
-      id: 'copied-card-1',
-    });
+    prisma.card.create
+      .mockResolvedValueOnce({
+        id: 'copied-card-1',
+      })
+      .mockResolvedValueOnce({
+        id: 'copied-card-2',
+      })
+      .mockResolvedValueOnce({
+        id: 'copied-card-3',
+      });
     prisma.chunk.create.mockResolvedValue({
       id: 'copied-chunk-1',
     });
@@ -718,8 +793,8 @@ describe('DecksService', () => {
             choiceCount: 4,
           },
         },
-        isWhatDidYouHearEligible: false,
-        whatDidYouHearEligibleCardCount: 0,
+        isWhatDidYouHearEligible: true,
+        whatDidYouHearEligibleCardCount: 2,
         createdAt: now,
         updatedAt: now,
       },
@@ -730,11 +805,59 @@ describe('DecksService', () => {
         ownerId: 'user-2',
         deckId: 'copied-deck-1',
         kind: 'image_audio',
-        fields: { label: 'Car' },
+        fields: {
+          label: 'Car',
+          imageAsset: {
+            path: 'kids-images/user-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+          topic: 'Vehicles',
+          quizTags: ['transport', 'road'],
+        },
+      },
+    });
+    expect(prisma.card.create).toHaveBeenCalledWith({
+      data: {
+        ownerId: 'user-2',
+        deckId: 'copied-deck-1',
+        kind: 'image_audio',
+        fields: {
+          label: 'Bus',
+          imageAsset: {
+            path: 'kids-images/user-1/bus.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/bus.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+          topic: 'Vehicles',
+          quizTags: ['transport'],
+        },
+      },
+    });
+    expect(prisma.card.create).toHaveBeenCalledWith({
+      data: {
+        ownerId: 'user-2',
+        deckId: 'copied-deck-1',
+        kind: 'basic',
+        fields: { front: 'Hallo', back: 'Hello' },
       },
     });
     expect(prisma.deckCard.createMany).toHaveBeenCalledWith({
-      data: [{ deckId: 'copied-deck-1', cardId: 'copied-card-1' }],
+      data: [
+        { deckId: 'copied-deck-1', cardId: 'copied-card-1' },
+        { deckId: 'copied-deck-1', cardId: 'copied-card-2' },
+        { deckId: 'copied-deck-1', cardId: 'copied-card-3' },
+      ],
       skipDuplicates: true,
     });
     expect(prisma.chunkCard.createMany).toHaveBeenCalledWith({
@@ -744,6 +867,12 @@ describe('DecksService', () => {
           cardId: 'copied-card-1',
           sequenceIndex: 0,
           offsetDays: null,
+        },
+        {
+          chunkId: 'copied-chunk-1',
+          cardId: 'copied-card-3',
+          sequenceIndex: 1,
+          offsetDays: 1,
         },
       ],
     });
