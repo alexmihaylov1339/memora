@@ -26,7 +26,7 @@ Memora is a language-learning app centered on chunked review.
 - Account settings must include logout.
 - All enabled buttons should use pointer cursor affordance; disabled buttons should not.
 
-The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](docs/plans/chunked-learning-roadmap.md). The latest planned feature step is [docs/plans/step-22-what-did-you-hear-quiz-mode.md](docs/plans/step-22-what-did-you-hear-quiz-mode.md). The latest user-testing bugfix plan is [docs/plans/step-17-user-testing-bugs-and-small-improvements.md](docs/plans/step-17-user-testing-bugs-and-small-improvements.md).
+The detailed implementation roadmap lives in [docs/plans/chunked-learning-roadmap.md](docs/plans/chunked-learning-roadmap.md). The latest completed feature step is [docs/plans/step-22-what-did-you-hear-quiz-mode.md](docs/plans/step-22-what-did-you-hear-quiz-mode.md). The latest user-testing bugfix plan is [docs/plans/step-17-user-testing-bugs-and-small-improvements.md](docs/plans/step-17-user-testing-bugs-and-small-improvements.md).
 
 ## Render deployment
 

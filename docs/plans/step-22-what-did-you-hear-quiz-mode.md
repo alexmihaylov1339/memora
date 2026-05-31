@@ -1,6 +1,6 @@
 # Memora: Step 22 — What Did You Hear? Quiz Mode
 
-**Status:** Proposed
+**Status:** Done
 **Date:** 2026-05-28  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 22  
 **Priority:** High — expand kids/audio learning with a reusable quiz exercise while keeping review architecture authoritative and future reward hooks easy to add
@@ -436,7 +436,7 @@ Verification completed:
 ### T7 - Preserve public/shared/copy compatibility and mixed-mode deck behavior
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - ensure public deck browse/copy keeps deck-level quiz settings and optional card quiz metadata.
@@ -455,12 +455,24 @@ Important behavior rules:
 Exit criteria:
 - public/shared behavior does not regress and copied decks keep quiz functionality without extra repair steps.
 
+Implementation notes:
+- Added a cohesive deck quiz-eligibility helper so public-copy logic can reuse the same valid `image_audio` counting rules as deck list/detail serialization.
+- Updated public deck copy to return the copied deck with immediate `What Did You Hear?` eligibility derived from the copied source cards, while still preserving deck-level exercise settings.
+- Strengthened the public-copy service test with a mixed deck fixture that preserves `image_audio` asset references, `topic`, `quizTags`, and standard card behavior in the copied deck/chunk memberships.
+- Re-ran public deck workspace and deck-response mapper coverage to verify browse/copy UI compatibility remains intact.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/decks.service.spec.ts`
+- `cd api && npx tsc --noEmit --pretty false`
+- `cd web && npm test -- --runInBand --runTestsByPath 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx' src/features/decks/services/deckResponseMapper.test.ts`
+- `cd web && npx tsc --noEmit --pretty false`
+
 ---
 
 ### T8 - Regression coverage, verification, and documentation updates
 
 Status:
-- Proposed
+- Done
 
 What to do:
 - add focused backend tests for:
@@ -488,6 +500,16 @@ Exit criteria:
 - quiz scheduling writes the expected `good` / `hard` result
 - decks with fewer eligible cards than the configured count still render disabled placeholders correctly
 - copied public decks keep their quiz behavior intact
+
+Implementation notes:
+- Completed a Step 22 regression pass across backend validators, card metadata serialization, quiz round generation, review scheduling integration, public deck copy behavior, deck action visibility, and the dedicated web player.
+- Confirmed backend coverage for deck exercise settings validation, optional `topic` / `quizTags`, quiz-eligible card filtering, distractor generation, placeholder generation, duplicate-label handling, grade derivation, signed asset hydration, and public deck copy preservation.
+- Confirmed frontend coverage for deck choice-count forms, image-audio quiz metadata form mapping, eligible/ineligible `What Did You Hear?` actions, quiz renderer states, wrong-answer feedback, post-correct `Next`, placeholder rendering, and public deck compatibility.
+- Updated repo plan references so Step 22 is recorded as the latest completed product feature step rather than a planned/in-progress step.
+
+Verification completed:
+- `cd api && npm test -- --runInBand --runTestsByPath src/decks/dto/deck-validation.spec.ts src/cards/dto/card-validation.spec.ts src/cards/card-kind-registry.spec.ts src/reviews/what-did-you-hear/what-did-you-hear-quiz.spec.ts src/reviews/reviews.controller.spec.ts src/reviews/reviews.service.spec.ts src/decks/decks.service.spec.ts src/decks/deck-public.controller.spec.ts`
+- `cd web && npm test -- --runInBand --runTestsByPath src/features/decks/components/CreateDeckForm.test.tsx 'src/app/[locale]/decks/[id]/edit/components/DeckEditForm.test.tsx' src/features/decks/card-kinds/registry.test.ts src/features/decks/services/deckResponseMapper.test.ts 'src/app/[locale]/decks/components/DecksWorkspace.test.tsx' 'src/app/[locale]/decks/[id]/edit/components/DeckWorkspaceHeader.test.tsx' 'src/app/[locale]/decks/[id]/edit/components/EditDeckHeader.test.tsx' 'src/app/[locale]/public-decks/components/PublicDecksWorkspace.test.tsx' src/features/reviews/services/reviewService.test.ts src/features/reviews/hooks/useWhatDidYouHearScreen.test.tsx 'src/app/[locale]/what-did-you-hear/components/WhatDidYouHearScreen.test.tsx'`
 
 ---
 
