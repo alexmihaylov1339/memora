@@ -18,7 +18,6 @@ export default function WhatDidYouHearScreen({
     handleNextRound,
     isCorrectSubmitted,
     isLoading,
-    isSubmittingResult,
     postCorrectState,
     readyRound,
     status,
@@ -38,15 +37,6 @@ export default function WhatDidYouHearScreen({
       <WhatDidYouHearEmptyState
         title="Not enough picture cards"
         description="Add at least 2 image-audio cards to this deck before starting."
-      />
-    );
-  }
-
-  if (status === 'no_due_target') {
-    return (
-      <WhatDidYouHearEmptyState
-        title="Nothing due right now"
-        description="This deck has listening cards, but none are due for review yet."
       />
     );
   }
@@ -78,7 +68,7 @@ export default function WhatDidYouHearScreen({
       <WhatDidYouHearChoiceGrid
         choices={readyRound.choices}
         correctChoiceId={correctChoiceId}
-        disabled={isCorrectSubmitted || isSubmittingResult}
+        disabled={isCorrectSubmitted}
         wrongChoiceId={wrongChoiceId}
         onChoiceSelect={handleChoiceSelect}
       />
@@ -89,8 +79,7 @@ export default function WhatDidYouHearScreen({
           <div data-reward-slot-state={postCorrectState.rewardSlotState} />
           <Button
             className="mt-4 min-h-12 rounded-full bg-emerald-600 px-8 py-3 text-base font-black text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={!canAdvance || isSubmittingResult}
-            isLoading={isSubmittingResult}
+            disabled={!canAdvance}
             onClick={handleNextRound}
             type="button"
           >

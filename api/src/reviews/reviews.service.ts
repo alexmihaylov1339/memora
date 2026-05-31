@@ -23,7 +23,6 @@ import { emitReviewQueueObservability } from './review-service-observability';
 import {
   getWhatDidYouHearQuizRoundForDeck,
   submitWhatDidYouHearQuizResultForDeck,
-  WHAT_DID_YOU_HEAR_REVIEW_MODE,
   type WhatDidYouHearQuizRoundResult,
   type WhatDidYouHearSubmitResult,
 } from './what-did-you-hear/what-did-you-hear-review';
@@ -87,7 +86,6 @@ export class ReviewsService {
   async getWhatDidYouHearQuizRound(
     userId: string,
     deckId: string,
-    now = new Date(),
     random?: () => number,
   ): Promise<WhatDidYouHearQuizRoundResult> {
     await this.ensureDeckAccess(userId, deckId);
@@ -95,10 +93,8 @@ export class ReviewsService {
     return getWhatDidYouHearQuizRoundForDeck({
       cardAssets: this.cardAssets,
       deckId,
-      now,
       prisma: this.prisma,
       random,
-      userId,
     });
   }
 
@@ -107,22 +103,14 @@ export class ReviewsService {
     deckId: string,
     cardId: string,
     wrongAttemptCount: number,
-    now = new Date(),
   ): Promise<WhatDidYouHearSubmitResult> {
     await this.ensureDeckAccess(userId, deckId);
 
     return submitWhatDidYouHearQuizResultForDeck({
-      applyGrade: (grade) =>
-        this.applyGradeToCard(cardId, grade, userId, now, deckId, {
-          reviewLogMode: WHAT_DID_YOU_HEAR_REVIEW_MODE,
-          skipKindSupportCheck: true,
-        }),
       cardAssets: this.cardAssets,
       cardId,
       deckId,
-      now,
       prisma: this.prisma,
-      userId,
       wrongAttemptCount,
     });
   }

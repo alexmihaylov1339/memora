@@ -1,12 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { Grade } from '@prisma/client';
 import type { PrismaService } from '../../../prisma/prisma.service';
 import type { CardAssetsService } from '../../cards/card-assets.service';
-import type { ResolvedCardAsset } from '../../cards/card-asset-types';
 import { resolveDeckExerciseSettings } from '../../decks/deck-exercise-settings';
 import { REVIEW_ERROR_MESSAGES } from '../review-errors';
-import { getEligibleQueueItems } from '../review-queries';
-import type { GradeChunkReviewResult } from '../review-grade';
 import {
   buildWhatDidYouHearQuizRound,
   collectWhatDidYouHearEligibleCards,
@@ -15,63 +11,46 @@ import {
 
 export type { WhatDidYouHearQuizRoundResult };
 
-export const WHAT_DID_YOU_HEAR_REVIEW_MODE = 'what_did_you_hear';
-
 export interface WhatDidYouHearSubmitResult {
   accepted: true;
   cardId: string;
   wrongAttemptCount: number;
-  derivedReviewGrade: Grade;
-  review: GradeChunkReviewResult;
   nextQuizRound: WhatDidYouHearQuizRoundResult;
 }
 
 interface SubmitWhatDidYouHearQuizResultInput {
   cardAssets?: CardAssetsService;
   prisma: PrismaService;
-  userId: string;
   deckId: string;
   cardId: string;
   wrongAttemptCount: number;
-  now: Date;
-  applyGrade: (grade: Grade) => Promise<GradeChunkReviewResult | null>;
-}
-
-export function deriveWhatDidYouHearReviewGrade(
-  wrongAttemptCount: number,
-): Grade {
-  return wrongAttemptCount === 0 ? 'good' : 'hard';
 }
 
 export async function getWhatDidYouHearQuizRoundForDeck(input: {
   cardAssets?: CardAssetsService;
   prisma: PrismaService;
-  userId: string;
   deckId: string;
-  now: Date;
   random?: () => number;
+  targetCardId?: string;
 }): Promise<WhatDidYouHearQuizRoundResult> {
-  const [deck, queueItems] = await Promise.all([
-    input.prisma.deck.findUnique({
-      where: { id: input.deckId },
-      select: {
-        exerciseSettings: true,
-        deckCards: {
-          orderBy: [{ createdAt: 'asc' }, { cardId: 'asc' }],
-          select: {
-            card: {
-              select: {
-                id: true,
-                kind: true,
-                fields: true,
-              },
+  const deck = await input.prisma.deck.findUnique({
+    where: { id: input.deckId },
+    select: {
+      exerciseSettings: true,
+      deckCards: {
+        orderBy: [{ createdAt: 'asc' }, { cardId: 'asc' }],
+        select: {
+          card: {
+            select: {
+              id: true,
+              kind: true,
+              fields: true,
             },
           },
         },
       },
-    }),
-    getEligibleQueueItems(input.prisma, input.userId, input.now, input.deckId),
-  ]);
+    },
+  });
 
   if (!deck) {
     throw new NotFoundException(REVIEW_ERROR_MESSAGES.deckNotFound);
@@ -89,8 +68,8 @@ export async function getWhatDidYouHearQuizRoundForDeck(input: {
     choiceCount,
     deckId: input.deckId,
     eligibleCards,
-    queueItems,
     random: input.random,
+    targetCardId: input.targetCardId,
   });
 
   if (result.status !== 'ready' || !input.cardAssets) {
@@ -136,39 +115,31 @@ async function resolveWhatDidYouHearQuizRoundAssets(
   result: Extract<WhatDidYouHearQuizRoundResult, { status: 'ready' }>,
   cardAssets: CardAssetsService,
 ): Promise<WhatDidYouHearQuizRoundResult> {
-  const targetAudioAsset = await cardAssets.resolveStoredAsset(
-    result.round.targetCard.audioAsset,
+  const resolvedCards = await Promise.all(
+    result.round.sessionCards.map(async (card) => ({
+      ...card,
+      imageAsset: await cardAssets.resolveStoredAsset(card.imageAsset),
+      audioAsset: await cardAssets.resolveStoredAsset(card.audioAsset),
+    })),
   );
-  const targetImageAsset = await cardAssets.resolveStoredAsset(
-    result.round.targetCard.imageAsset,
-  );
-  const resolvedImageAssets = new Map<string, ResolvedCardAsset>();
-
-  await Promise.all(
-    result.round.choices.map(async (choice) => {
-      if (!choice.cardId || !choice.imageAsset) {
-        return;
-      }
-
-      resolvedImageAssets.set(
-        choice.id,
-        await cardAssets.resolveStoredAsset(choice.imageAsset),
-      );
-    }),
+  const resolvedCardsById = new Map(
+    resolvedCards.map((card) => [card.cardId, card]),
   );
 
   return {
     status: 'ready',
     round: {
       ...result.round,
-      targetCard: {
-        ...result.round.targetCard,
-        audioAsset: targetAudioAsset,
-        imageAsset: targetImageAsset,
-      },
+      sessionCards: resolvedCards,
+      targetCard:
+        resolvedCardsById.get(result.round.targetCard.cardId) ??
+        result.round.targetCard,
       choices: result.round.choices.map((choice) => ({
         ...choice,
-        imageAsset: resolvedImageAssets.get(choice.id) ?? choice.imageAsset,
+        imageAsset: choice.cardId
+          ? resolvedCardsById.get(choice.cardId)?.imageAsset ??
+            choice.imageAsset
+          : null,
       })),
     },
   };
@@ -183,27 +154,17 @@ export async function submitWhatDidYouHearQuizResultForDeck(
     input.cardId,
   );
 
-  const grade = deriveWhatDidYouHearReviewGrade(input.wrongAttemptCount);
-  const review = await input.applyGrade(grade);
-
-  if (!review) {
-    throw new BadRequestException(REVIEW_ERROR_MESSAGES.cardNotReviewable);
-  }
-
   const nextQuizRound = await getWhatDidYouHearQuizRoundForDeck({
     cardAssets: input.cardAssets,
     deckId: input.deckId,
-    now: input.now,
     prisma: input.prisma,
-    userId: input.userId,
+    targetCardId: input.cardId,
   });
 
   return {
     accepted: true,
     cardId: input.cardId,
     wrongAttemptCount: input.wrongAttemptCount,
-    derivedReviewGrade: grade,
-    review,
     nextQuizRound,
   };
 }

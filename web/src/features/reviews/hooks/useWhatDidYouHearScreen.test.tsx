@@ -1,28 +1,14 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import type {
-  SubmitWhatDidYouHearResponse,
-  WhatDidYouHearReadyRound,
-  WhatDidYouHearRoundResponse,
-} from '../types';
+import type { WhatDidYouHearReadyRound } from '../types';
 import { useWhatDidYouHearScreen } from './useWhatDidYouHearScreen';
 
 const mockUseWhatDidYouHearRoundQuery = jest.fn();
-const mockUseSubmitWhatDidYouHearResultMutation = jest.fn();
 const mockPlayWhatDidYouHearFeedback = jest.fn();
-
-interface SubmitCallbacks {
-  onSuccess?: (data: SubmitWhatDidYouHearResponse) => void;
-}
 
 jest.mock('./useReviewQueries', () => ({
   useWhatDidYouHearRoundQuery: (...args: unknown[]) =>
     mockUseWhatDidYouHearRoundQuery(...args),
-}));
-
-jest.mock('./useReviewMutations', () => ({
-  useSubmitWhatDidYouHearResultMutation: (...args: unknown[]) =>
-    mockUseSubmitWhatDidYouHearResultMutation(...args),
 }));
 
 jest.mock('./useWhatDidYouHearFeedback', () => ({
@@ -44,25 +30,27 @@ function buildReadyRound(): WhatDidYouHearReadyRound {
     deckId: 'deck-1',
     choiceCount: 4,
     eligibleCardCount: 2,
+    sessionCards: [
+      {
+        cardId: 'card-1',
+        label: 'Car',
+        imageAsset: buildAsset('kids-images/car.jpg'),
+        audioAsset: buildAsset('kids-audio/car.mp3'),
+        quizTags: [],
+      },
+      {
+        cardId: 'card-2',
+        label: 'Bus',
+        imageAsset: buildAsset('kids-images/bus.jpg'),
+        audioAsset: buildAsset('kids-audio/bus.mp3'),
+        quizTags: [],
+      },
+    ],
     targetCard: {
       cardId: 'card-1',
       label: 'Car',
       audioAsset: buildAsset('kids-audio/car.mp3'),
       quizTags: [],
-    },
-    reviewContext: {
-      cardId: 'card-1',
-      deckId: 'deck-1',
-      chunkId: 'chunk-1',
-      chunkTitle: 'vehicles',
-      chunkPosition: 0,
-      positionInChunk: 0,
-      due: '2026-04-26T10:00:00.000Z',
-      kind: 'image_audio',
-      fields: { label: 'Car' },
-      isReviewSupported: false,
-      reviewUnsupportedReason: 'kind_not_review_enabled',
-      consecutiveSuccessCount: 0,
     },
     choices: [
       {
@@ -85,60 +73,13 @@ function buildReadyRound(): WhatDidYouHearReadyRound {
   };
 }
 
-function buildSubmitResponse(
-  nextQuizRound: WhatDidYouHearRoundResponse,
-): SubmitWhatDidYouHearResponse {
-  return {
-    accepted: true,
-    cardId: 'card-1',
-    wrongAttemptCount: 1,
-    derivedReviewGrade: 'hard',
-    nextQuizRound,
-    review: {
-      cardId: 'card-1',
-      grade: 'hard',
-      wasSuccessful: false,
-      advanced: false,
-      reset: true,
-      previousConsecutiveSuccessCount: 0,
-      consecutiveSuccessCount: 0,
-      due: '2026-04-26T14:00:00.000Z',
-      intervalHours: 8,
-      nextActionableItem: null,
-      chunk: {
-        chunkId: 'chunk-1',
-        deckId: 'deck-1',
-        title: 'vehicles',
-        position: 0,
-        due: '2026-04-26T14:00:00.000Z',
-        isDue: false,
-        consecutiveSuccessCount: 0,
-        requiredConsecutiveSuccesses: 20,
-        hasMastery: false,
-        totalCards: 1,
-        currentCard: null,
-        lastGrade: 'hard',
-      },
-    },
-  };
-}
-
 describe('useWhatDidYouHearScreen', () => {
-  const submit = jest.fn();
-  const reset = jest.fn();
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWhatDidYouHearRoundQuery.mockReturnValue({
       result: { status: 'ready', round: buildReadyRound() },
       isLoading: false,
       error: undefined,
-    });
-    mockUseSubmitWhatDidYouHearResultMutation.mockReturnValue({
-      error: undefined,
-      isLoading: false,
-      reset,
-      submit,
     });
   });
 
@@ -157,21 +98,9 @@ describe('useWhatDidYouHearScreen', () => {
     expect(result.current.wrongAttemptCount).toBe(1);
     expect(result.current.wrongChoiceId).toBe('choice-card-2');
     expect(mockPlayWhatDidYouHearFeedback).toHaveBeenCalledWith('wrong');
-    expect(submit).not.toHaveBeenCalled();
   });
 
-  it('submits a correct answer with accumulated wrong attempts and exposes the reward slot state', async () => {
-    const nextQuizRound: WhatDidYouHearRoundResponse = {
-      status: 'no_due_target',
-      eligibleCardCount: 2,
-      choiceCount: 4,
-    };
-    submit.mockImplementation(
-      (_input: unknown, callbacks?: SubmitCallbacks) => {
-        callbacks?.onSuccess?.(buildSubmitResponse(nextQuizRound));
-      },
-    );
-
+  it('builds the next round locally after a correct answer and exposes the reward slot state', async () => {
     const { result } = renderHook(() => useWhatDidYouHearScreen('deck-1'));
 
     await waitFor(() => {
@@ -190,22 +119,40 @@ describe('useWhatDidYouHearScreen', () => {
       result.current.handleChoiceSelect(result.current.readyRound!.choices[0]);
     });
 
-    expect(submit).toHaveBeenCalledWith(
-      {
-        cardId: 'card-1',
-        deckId: 'deck-1',
-        wrongAttemptCount: 1,
-      },
+    expect(result.current.correctChoiceId).toBe('choice-card-1');
+    expect(result.current.postCorrectState).toEqual(
       expect.objectContaining({
-        onSuccess: expect.any(Function),
+        cardId: 'card-1',
+        rewardSlotState: 'available',
       }),
     );
-    expect(result.current.correctChoiceId).toBe('choice-card-1');
-    expect(result.current.postCorrectState).toEqual({
-      cardId: 'card-1',
-      nextRound: nextQuizRound,
-      rewardSlotState: 'available',
-    });
+    expect(result.current.postCorrectState?.nextRound).toEqual(
+      expect.objectContaining({
+        status: 'ready',
+        round: expect.objectContaining({
+          targetCard: expect.objectContaining({ cardId: 'card-2' }),
+        }),
+      }),
+    );
     expect(mockPlayWhatDidYouHearFeedback).toHaveBeenCalledWith('correct');
+  });
+
+  it('advances to the prebuilt local round without waiting on network state', async () => {
+    const { result } = renderHook(() => useWhatDidYouHearScreen('deck-1'));
+
+    await waitFor(() => {
+      expect(result.current.readyRound?.targetCard.cardId).toBe('card-1');
+    });
+
+    act(() => {
+      result.current.handleChoiceSelect(result.current.readyRound!.choices[0]);
+    });
+
+    act(() => {
+      result.current.handleNextRound();
+    });
+
+    expect(result.current.readyRound?.targetCard.cardId).toBe('card-2');
+    expect(result.current.postCorrectState).toBeNull();
   });
 });

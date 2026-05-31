@@ -15,6 +15,7 @@ import type {
   WhatDidYouHearAsset,
   WhatDidYouHearChoice,
   WhatDidYouHearRoundResponse,
+  WhatDidYouHearSessionCard,
   WhatDidYouHearTargetCard,
 } from '../types';
 
@@ -183,6 +184,21 @@ function parseWhatDidYouHearTargetCard(
   };
 }
 
+function parseWhatDidYouHearSessionCard(
+  value: unknown,
+): WhatDidYouHearSessionCard {
+  const targetCard = parseWhatDidYouHearTargetCard(value);
+
+  if (!isObjectRecord(value)) {
+    throw new Error('Invalid What Did You Hear? session card contract');
+  }
+
+  return {
+    ...targetCard,
+    imageAsset: parseWhatDidYouHearAsset(value.imageAsset),
+  };
+}
+
 function parseWhatDidYouHearChoice(value: unknown): WhatDidYouHearChoice {
   if (!isObjectRecord(value)) {
     throw new Error('Invalid What Did You Hear? choice contract');
@@ -234,18 +250,6 @@ export function parseWhatDidYouHearRoundResponse(
     };
   }
 
-  if (value.status === 'no_due_target') {
-    if (!isNumber(value.eligibleCardCount) || !isNumber(value.choiceCount)) {
-      throw new Error('Invalid What Did You Hear? response');
-    }
-
-    return {
-      status: value.status,
-      eligibleCardCount: value.eligibleCardCount,
-      choiceCount: value.choiceCount,
-    };
-  }
-
   if (value.status !== 'ready' || !isObjectRecord(value.round)) {
     throw new Error('Invalid What Did You Hear? response');
   }
@@ -254,8 +258,8 @@ export function parseWhatDidYouHearRoundResponse(
     deckId,
     choiceCount,
     eligibleCardCount,
+    sessionCards,
     targetCard,
-    reviewContext,
     choices,
   } = value.round;
   if (
@@ -263,6 +267,7 @@ export function parseWhatDidYouHearRoundResponse(
     !deckId.trim() ||
     !isNumber(choiceCount) ||
     !isNumber(eligibleCardCount) ||
+    !Array.isArray(sessionCards) ||
     !Array.isArray(choices)
   ) {
     throw new Error('Invalid What Did You Hear? response');
@@ -274,8 +279,8 @@ export function parseWhatDidYouHearRoundResponse(
       deckId: deckId.trim(),
       choiceCount,
       eligibleCardCount,
+      sessionCards: sessionCards.map(parseWhatDidYouHearSessionCard),
       targetCard: parseWhatDidYouHearTargetCard(targetCard),
-      reviewContext: parseReviewQueueItem(reviewContext),
       choices: choices.map(parseWhatDidYouHearChoice),
     },
   };

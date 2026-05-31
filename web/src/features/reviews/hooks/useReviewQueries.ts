@@ -45,6 +45,10 @@ export function useWhatDidYouHearRoundQuery(
       ? REVIEW_QUERY_KEYS.whatDidYouHear(deckId)
       : ['reviews', 'what-did-you-hear', 'missing'],
     () => reviewService.getWhatDidYouHearRound(deckId ?? ''),
-    { ...options, enabled: Boolean(deckId) && options?.enabled !== false },
+    {
+      retry: 0,
+      ...options,
+      enabled: Boolean(deckId) && options?.enabled !== false,
+    },
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { WhatDidYouHearReadyRound } from '@features/reviews';
 import { Button } from '@shared/components';
@@ -18,18 +18,54 @@ export default function WhatDidYouHearPrompt({
   round,
 }: WhatDidYouHearPromptProps) {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const autoPlayedSourceUrlRef = useRef<string | null>(null);
   const [audioError, setAudioError] = useState<AudioErrorState | null>(null);
   const audioSourceUrl = round.targetCard.audioAsset.url;
   const audioErrorMessage =
     audioError?.sourceUrl === audioSourceUrl ? audioError.message : null;
 
-  async function handleReplayAudio() {
+  useEffect(() => {
+    const audioElement = audioElementRef.current;
+    if (!audioElement || autoPlayedSourceUrlRef.current === audioSourceUrl) {
+      return;
+    }
+
+    autoPlayedSourceUrlRef.current = audioSourceUrl;
+    let isCancelled = false;
+
+    const playOnce = () => {
+      if (isCancelled) {
+        return;
+      }
+
+      audioElement.currentTime = 0;
+      void audioElement.play().catch(() => {
+        // Some browsers block first-load unmuted autoplay; manual replay remains available.
+      });
+    };
+
+    if (audioElement.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      window.setTimeout(playOnce, 0);
+    } else {
+      audioElement.addEventListener('canplay', playOnce, { once: true });
+      audioElement.load();
+    }
+
+    return () => {
+      isCancelled = true;
+      audioElement.removeEventListener('canplay', playOnce);
+    };
+  }, [audioSourceUrl]);
+
+  async function playCurrentAudio(options: { showError: boolean }) {
     const audioElement = audioElementRef.current;
     if (!audioElement) {
-      setAudioError({
-        message: 'Audio is not ready yet. Try again.',
-        sourceUrl: audioSourceUrl,
-      });
+      if (options.showError) {
+        setAudioError({
+          message: 'Audio is not ready yet. Try again.',
+          sourceUrl: audioSourceUrl,
+        });
+      }
       return;
     }
 
@@ -39,18 +75,24 @@ export default function WhatDidYouHearPrompt({
       audioElement.currentTime = 0;
       await audioElement.play();
     } catch {
-      setAudioError({
-        message: 'Audio could not play. Tap the button to try again.',
-        sourceUrl: audioSourceUrl,
-      });
+      if (options.showError) {
+        setAudioError({
+          message: 'Audio could not play. Tap the button to try again.',
+          sourceUrl: audioSourceUrl,
+        });
+      }
     }
+  }
+
+  function handleReplayAudio() {
+    void playCurrentAudio({ showError: true });
   }
 
   return (
     <section className="rounded-[24px] border border-sky-100 bg-white p-5 text-center shadow-sm sm:p-7">
       <Button
         className="min-h-16 w-full max-w-xs rounded-full bg-[var(--primary)] px-6 py-4 text-lg font-black text-white shadow-md transition hover:opacity-90"
-        onClick={() => void handleReplayAudio()}
+        onClick={handleReplayAudio}
         type="button"
       >
         Play Sound
@@ -67,9 +109,10 @@ export default function WhatDidYouHearPrompt({
       )}
 
       <audio
+        autoPlay
         ref={audioElementRef}
         playsInline
-        preload="metadata"
+        preload="auto"
         src={audioSourceUrl}
       />
     </section>

@@ -74,7 +74,6 @@ export class ReviewsController {
     const result = await this.reviews.getWhatDidYouHearQuizRound(
       user.id,
       deckId,
-      new Date(),
     );
 
     return serializeWhatDidYouHearRoundResponse(result);
@@ -96,7 +95,6 @@ export class ReviewsController {
       deckId,
       cardId,
       wrongAttemptCount,
-      new Date(),
     );
 
     return serializeSubmitWhatDidYouHearResponse(result);

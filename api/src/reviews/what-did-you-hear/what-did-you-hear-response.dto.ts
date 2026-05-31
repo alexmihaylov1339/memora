@@ -1,10 +1,4 @@
 import type { StoredCardAsset } from '../../cards/card-asset-types';
-import { serializeGradeReviewResponse } from '../dto/grade-review-response.dto';
-import {
-  serializeReviewQueueItem,
-  type ReviewQueueItemDto,
-} from '../dto/review-queue-response.dto';
-import type { GradeChunkReviewResult } from '../review-grade';
 import type {
   WhatDidYouHearEligibleCard,
   WhatDidYouHearQuizChoice,
@@ -22,6 +16,10 @@ export interface WhatDidYouHearTargetCardDto {
   quizTags: string[];
 }
 
+export interface WhatDidYouHearSessionCardDto extends WhatDidYouHearTargetCardDto {
+  imageAsset: StoredCardAsset;
+}
+
 export interface WhatDidYouHearChoiceDto {
   id: string;
   cardId: string | null;
@@ -35,8 +33,8 @@ export interface WhatDidYouHearReadyRoundDto {
   deckId: string;
   choiceCount: number;
   eligibleCardCount: number;
+  sessionCards: WhatDidYouHearSessionCardDto[];
   targetCard: WhatDidYouHearTargetCardDto;
-  reviewContext: ReviewQueueItemDto;
   choices: WhatDidYouHearChoiceDto[];
 }
 
@@ -48,11 +46,6 @@ export type WhatDidYouHearRoundResponseDto =
       choiceCount: number;
     }
   | {
-      status: 'no_due_target';
-      eligibleCardCount: number;
-      choiceCount: number;
-    }
-  | {
       status: 'ready';
       round: WhatDidYouHearReadyRoundDto;
     };
@@ -61,8 +54,6 @@ export interface SubmitWhatDidYouHearResponseDto {
   accepted: true;
   cardId: string;
   wrongAttemptCount: number;
-  derivedReviewGrade: GradeChunkReviewResult['grade'];
-  review: ReturnType<typeof serializeGradeReviewResponse>;
   nextQuizRound: WhatDidYouHearRoundResponseDto;
 }
 
@@ -75,6 +66,15 @@ function serializeTargetCard(
     audioAsset: card.audioAsset,
     ...(card.topic ? { topic: card.topic } : {}),
     quizTags: card.quizTags,
+  };
+}
+
+function serializeSessionCard(
+  card: WhatDidYouHearEligibleCard,
+): WhatDidYouHearSessionCardDto {
+  return {
+    ...serializeTargetCard(card),
+    imageAsset: card.imageAsset,
   };
 }
 
@@ -100,8 +100,8 @@ function serializeReadyRound(
     deckId: round.deckId,
     choiceCount: round.choiceCount,
     eligibleCardCount: round.eligibleCardCount,
+    sessionCards: round.sessionCards.map(serializeSessionCard),
     targetCard: serializeTargetCard(round.targetCard),
-    reviewContext: serializeReviewQueueItem(round.targetQueueItem),
     choices: round.choices.map(serializeChoice),
   };
 }
@@ -126,8 +126,6 @@ export function serializeSubmitWhatDidYouHearResponse(
     accepted: result.accepted,
     cardId: result.cardId,
     wrongAttemptCount: result.wrongAttemptCount,
-    derivedReviewGrade: result.derivedReviewGrade,
-    review: serializeGradeReviewResponse(result.review),
     nextQuizRound: serializeWhatDidYouHearRoundResponse(result.nextQuizRound),
   };
 }

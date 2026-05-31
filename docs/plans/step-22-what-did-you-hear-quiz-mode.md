@@ -3,7 +3,13 @@
 **Status:** Done
 **Date:** 2026-05-28  
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` → Step 22  
-**Priority:** High — expand kids/audio learning with a reusable quiz exercise while keeping review architecture authoritative and future reward hooks easy to add
+**Priority:** High — expand kids/audio learning with a reusable quiz exercise while keeping review scheduling separate and future reward hooks easy to add
+
+> Product correction after completion, 2026-05-31:
+> `What Did You Hear?` is an always-startable deck exercise over eligible
+> `image_audio` cards. It must not be gated by due review cards and must not
+> write review logs, due dates, intervals, streaks, lapses, or mastery progress.
+> Standard Review remains the only flow that mutates review scheduling.
 
 ---
 
@@ -15,7 +21,7 @@ Ship a new deck-scoped exercise mode called `What Did You Hear?` that reuses exi
 - see the correct word/label under the prompt audio
 - choose the matching image from a generated choice grid
 - receive gentle success/error feedback
-- progress through the deck while still writing to the real review schedule
+- progress through the deck without mutating the real review schedule
 
 Step 22 outcome:
 
@@ -23,7 +29,7 @@ Step 22 outcome:
 - existing `image_audio` cards become quiz-eligible automatically
 - distractors are generated from other eligible cards in the same deck
 - any deck with enough eligible `image_audio` cards can expose `What Did You Hear?`
-- the exercise writes back into review scheduling through a dedicated quiz-result path
+- the exercise uses a dedicated quiz-result path only to advance the quiz round; it does not write review scheduling state
 - the flow is ready for a future reward/prize step without implementing rewards yet
 
 ---
@@ -47,9 +53,10 @@ Confirmed decisions:
 - Distractors come from other eligible `image_audio` cards in the same deck only.
 - Mixed decks are allowed, but non-`image_audio` cards are skipped completely in this mode.
 - A deck needs at least `2` eligible `image_audio` cards to start `What Did You Hear?`.
-- The deck owns the default quiz choice-count setting; there is no per-card override in this step.
-- Default choice count is `4`, but the layout must adapt if the deck setting is `2` or `3`.
-- If there are fewer eligible cards than the configured choice count, missing slots render as visible disabled `No image` placeholders.
+- `What Did You Hear?` is always available for eligible decks, even when no cards are due for Review.
+- The quiz session uses up to four real image choices whenever the deck has enough eligible `image_audio` cards.
+- The deck owns the default quiz choice-count setting for deck metadata, but the active player must not stay at `2` when the session has `4+` eligible image cards.
+- If there are fewer than four eligible cards, the grid uses the available eligible cards.
 - Option order is randomized per round and stays fixed for that round.
 - The same uploaded prompt audio already attached to the source `image_audio` card is reused for the quiz.
 - The prompt area shows the replay audio button and the correct answer label under it.
@@ -62,9 +69,7 @@ Confirmed decisions:
   - play gentle error sound
   - briefly highlight the wrong choice
   - keep the same options visible and selectable for the rest of the round
-- Review scheduling mapping:
-  - first-try correct → `good`
-  - correct after one or more wrong attempts → `hard`
+- Quiz result submission advances the exercise only; it must not derive review grades or update review state.
 - Leaving the session without answering does nothing to review state.
 - Public/shared decks must support the mode fully, including copy/import behavior.
 
@@ -73,7 +78,7 @@ Additional architecture decisions:
 - Step 22 should preserve SOC/SRP by keeping:
   - card content ownership in the card model
   - quiz-option generation in a dedicated review/exercise service
-  - review-grade mapping authoritative on the backend
+  - review scheduling ownership in the standard Review flow only
   - success-feedback and future reward behavior behind a dedicated extension seam
 - Optional quiz metadata can be added to `image_audio` fields now for future-quality distractor selection:
   - `topic?: string`
@@ -89,7 +94,7 @@ Additional architecture decisions:
 - Add deck-level exercise settings with a default quiz choice count.
 - Add optional quiz metadata to `image_audio` cards for future targeting and distractor quality.
 - Add backend logic to find quiz-eligible cards, generate distractors, and materialize placeholders.
-- Add a dedicated quiz query/submit contract that still writes into the shared review engine.
+- Add a dedicated quiz query/submit contract that advances quiz rounds without writing into the shared review engine.
 - Add a dedicated web player for `What Did You Hear?`.
 - Show the new action on any eligible deck, not only kids-mode decks.
 - Preserve full public browse/copy compatibility.
@@ -124,7 +129,7 @@ Additional architecture decisions:
 1. Every `image_audio` card is eligible automatically.
 2. Non-`image_audio` cards are ignored in this mode.
 3. The deck must contain at least `2` eligible `image_audio` cards to show the action.
-4. If the deck has fewer eligible cards than the configured choice count, the session still starts and fills the remaining slots with disabled `No image` placeholders.
+4. If the deck has fewer than four eligible cards, the session still starts with the available eligible choices.
 
 ### Quiz experience
 
@@ -144,11 +149,12 @@ Additional architecture decisions:
 
 ### Review behavior
 
-1. This is not passive practice; it writes to the review schedule.
-2. First-try success maps to `good`.
-3. Eventual success after one or more wrong attempts maps to `hard`.
-4. Standard review behavior for non-quiz cards remains unchanged.
+1. This is an active exercise, but it does not write to the review schedule.
+2. First-try success does not map to `good`.
+3. Eventual success after one or more wrong attempts does not map to `hard`.
+4. Standard review behavior for all cards remains unchanged.
 5. Leaving the screen before answering does not submit anything.
+6. Due dates, intervals, review logs, streaks, lapses, and mastery progress are untouched by this mode.
 
 ### Public decks
 
@@ -247,7 +253,7 @@ What to do:
 - add a dedicated backend service that:
   - finds eligible `image_audio` cards in the selected deck
   - skips all other card kinds
-  - chooses the current due target card
+- chooses the current target card from eligible deck cards, independent of due status
   - generates distractors from other eligible cards in the same deck
   - avoids duplicate labels when possible
   - materializes disabled `No image` placeholders when there are not enough distractors
@@ -268,13 +274,13 @@ Implementation notes:
 - Added a dedicated `reviews/what-did-you-hear/` slice so the quiz-round generation logic stays separate from generic review queue assembly and deck CRUD.
 - Implemented a focused eligible-card collector that reuses the existing `image_audio` payload contract and skips invalid or non-`image_audio` cards automatically.
 - Added a quiz-round builder that:
-  - selects the first due eligible target card from the existing review queue ordering
+  - randomizes the initial target card and can advance to the next eligible card after a submitted target
   - builds distractors from other eligible cards in the same deck
   - prefers distinct labels before falling back to duplicate-label distractors
-  - fills remaining slots with disabled placeholders when the deck has fewer eligible cards than the configured choice count
+  - uses up to four real eligible image choices for each generated round
   - shuffles the final choices once per generated round
 - Added a new `ReviewsService.getWhatDidYouHearQuizRound(...)` entry point that reuses existing deck-access rules and deck exercise settings before delegating to the pure round builder.
-- Returned explicit backend statuses for `ready`, `no_due_target`, and `not_enough_eligible_cards` so T4/T5 can build a clean HTTP/UI contract without reopening the generation logic.
+- Returned explicit backend statuses for `ready` and `not_enough_eligible_cards` so T4/T5 can build a clean HTTP/UI contract without reopening the generation logic.
 
 Verification completed:
 - `cd api && npm test -- --runInBand --runTestsByPath src/reviews/what-did-you-hear/what-did-you-hear-quiz.spec.ts src/reviews/reviews.service.spec.ts`
@@ -282,15 +288,15 @@ Verification completed:
 
 ---
 
-### T4 - Add a dedicated quiz review contract that reuses the shared scheduling engine
+### T4 - Add a dedicated quiz contract that stays separate from review scheduling
 
 Status:
 - Done
 
 What to do:
 - add dedicated query/submit contracts for `What Did You Hear?` rather than overloading the normal review DTOs directly.
-- keep grade mapping authoritative on the backend.
-- submit quiz result data that allows the server to derive the real review grade from exercise behavior.
+- keep this exercise separate from review scheduling and grading.
+- submit quiz result data only so the server can validate the target and return the next quiz round.
 
 Recommended behavior:
 
@@ -303,32 +309,30 @@ Recommended behavior:
   - review context needed for progression
 - submit returns:
   - accepted result
-  - derived review grade (`good` or `hard`)
-  - next actionable quiz/review item state
+  - next actionable quiz round state
 
 Recommended submission semantics:
 
-- first correct answer with `wrongAttemptCount = 0` → `good`
-- correct answer after `wrongAttemptCount > 0` → `hard`
+- first correct answer with `wrongAttemptCount = 0` → accepted quiz result only
+- correct answer after `wrongAttemptCount > 0` → accepted quiz result only
+- no review grade is derived
+- no review schedule, due date, review log, streak, lapse, or mastery state is mutated
 
 Important architecture rule:
 
 - do not let the web app own the grade-authority rule permanently
-- the review engine remains the source of truth for schedule mutations, logs, and due dates
+- the review engine remains the source of truth for schedule mutations, logs, and due dates, and `What Did You Hear?` must not call it
 
 Exit criteria:
-- `What Did You Hear?` can mutate review state safely without polluting standard review contracts with quiz-only rendering data.
+- `What Did You Hear?` can advance quiz rounds without polluting or mutating standard review contracts.
 
 Implementation notes:
-- Added dedicated authenticated `What Did You Hear?` review endpoints:
-  - `GET /reviews/what-did-you-hear?deckId=...`
-  - `POST /reviews/what-did-you-hear/:cardId/result?deckId=...`
-- Added feature-local quiz response serialization so the query contract returns a ready round with replayable audio asset data, correct-answer label, image-only choices, disabled `No image` placeholders, and review context without overloading the standard review queue DTO.
+- Added dedicated authenticated `What Did You Hear?` exercise endpoints:
+  - `GET /reviews/what-did-you-hear?deckId=...` for the web player startup/session payload.
+  - `POST /reviews/what-did-you-hear/:cardId/result?deckId=...` kept backend-side for compatibility, but not required by the web player between cards.
+- Added feature-local quiz response serialization so the query contract returns a ready round with replayable audio asset data, signed session cards for local advancement, correct-answer label, image-only choices, and disabled `No image` placeholders without overloading the standard review queue DTO.
 - Added a dedicated quiz submit validator that accepts `wrongAttemptCount` only as a non-negative integer.
-- Kept grade authority on the backend by deriving:
-  - `wrongAttemptCount = 0` -> `good`
-  - `wrongAttemptCount > 0` -> `hard`
-- Reused the shared review grade pipeline for schedule mutation, review-state updates, logs, due dates, and next-actionable state while scoping the quiz log mode to `what_did_you_hear`.
+- Kept the quiz result path separate from the shared review grade pipeline so it validates eligible targets and returns the next quiz round without review-state updates, logs, due dates, intervals, streaks, lapses, or mastery progress.
 - Added an explicit quiz eligibility guard so only valid same-deck `image_audio` cards can be submitted through the quiz result path.
 - Kept quiz orchestration colocated in `api/src/reviews/what-did-you-hear/` and left `ReviewsService` as the feature facade.
 
@@ -420,9 +424,9 @@ Exit criteria:
 
 Implementation notes:
 - Added the deck-scoped `/what-did-you-hear?deckId=...` web route with a focused screen, prompt, choice grid, and empty-state components collocated under the new mode route.
-- Added frontend review services, parsers, query/mutation hooks, and `useWhatDidYouHearScreen` orchestration for stable wrong-answer rounds, correct-answer submission, post-correct `Next`, and a dedicated reward slot state for the future prize step.
+- Added frontend review services, parsers, query hooks, local round-building, and `useWhatDidYouHearScreen` orchestration for stable wrong-answer rounds, instant post-correct `Next`, and a dedicated reward slot state for the future prize step.
 - Added lightweight Web Audio feedback for correct/wrong outcomes while keeping the UI state and API submission logic separate.
-- Updated the backend quiz path to resolve stored audio/image assets into signed URLs before serializing quiz rounds, including subsequent rounds returned after result submission.
+- Updated the backend quiz path to resolve stored audio/image assets into signed URLs before serializing quiz rounds, including the session card pool needed to advance locally without loading between cards.
 - Added focused parser, hook, screen, and backend service tests for ready/non-ready quiz states, placeholder rendering, wrong-answer feedback, post-correct next behavior, and signed asset hydration.
 
 Verification completed:
@@ -482,7 +486,7 @@ What to do:
   - distractor generation
   - placeholder generation
   - duplicate-label avoidance when possible
-  - review grade derivation from wrong-attempt count
+  - quiz result submission does not mutate review state
   - public deck copy preserving quiz settings/metadata
 - add focused frontend tests for:
   - deck-level choice-count form behavior
@@ -497,13 +501,13 @@ What to do:
 Exit criteria:
 - standard review remains unchanged
 - Step 21 kids learn mode remains unchanged
-- quiz scheduling writes the expected `good` / `hard` result
+- quiz result submission advances the exercise without review scheduling writes
 - decks with fewer eligible cards than the configured count still render disabled placeholders correctly
 - copied public decks keep their quiz behavior intact
 
 Implementation notes:
-- Completed a Step 22 regression pass across backend validators, card metadata serialization, quiz round generation, review scheduling integration, public deck copy behavior, deck action visibility, and the dedicated web player.
-- Confirmed backend coverage for deck exercise settings validation, optional `topic` / `quizTags`, quiz-eligible card filtering, distractor generation, placeholder generation, duplicate-label handling, grade derivation, signed asset hydration, and public deck copy preservation.
+- Completed a Step 22 regression pass across backend validators, card metadata serialization, quiz round generation, no-schedule quiz submission, public deck copy behavior, deck action visibility, and the dedicated web player.
+- Confirmed backend coverage for deck exercise settings validation, optional `topic` / `quizTags`, quiz-eligible card filtering, distractor generation, placeholder generation, duplicate-label handling, no-schedule quiz submission, signed asset hydration, and public deck copy preservation.
 - Confirmed frontend coverage for deck choice-count forms, image-audio quiz metadata form mapping, eligible/ineligible `What Did You Hear?` actions, quiz renderer states, wrong-answer feedback, post-correct `Next`, placeholder rendering, and public deck compatibility.
 - Updated repo plan references so Step 22 is recorded as the latest completed product feature step rather than a planned/in-progress step.
 
@@ -590,9 +594,9 @@ Core user scenarios:
 3. Open `What Did You Hear?` and confirm the round uses one correct image plus same-deck distractors.
 4. Confirm replay audio always works.
 5. Confirm wrong answer behavior keeps the same round visible.
-6. Confirm first-try success writes the equivalent of `good`.
-7. Confirm success after wrong attempts writes the equivalent of `hard`.
-8. Confirm fewer eligible cards than the configured choice count produce visible disabled placeholders.
+6. Confirm first-try success advances the quiz without mutating review state.
+7. Confirm success after wrong attempts advances the quiz without mutating review state.
+8. Confirm decks with `4+` eligible image cards show four real image choices even if saved metadata has a lower choice count.
 9. Confirm a mixed deck still skips non-`image_audio` cards in quiz mode.
 10. Confirm public deck copy preserves the quiz mode and still works after copy.
 

@@ -5,24 +5,6 @@ import {
 } from './reviewService';
 import { REVIEW_UNSUPPORTED_REASONS } from '../types';
 
-function buildReviewQueueItem(overrides: Record<string, unknown> = {}) {
-  return {
-    cardId: 'card-1',
-    deckId: 'deck-1',
-    chunkId: 'chunk-1',
-    chunkTitle: 'vehicles',
-    chunkPosition: 0,
-    positionInChunk: 0,
-    due: '2026-04-26T10:00:00.000Z',
-    kind: 'image_audio',
-    fields: { label: 'Car' },
-    isReviewSupported: false,
-    reviewUnsupportedReason: REVIEW_UNSUPPORTED_REASONS.kindNotReviewEnabled,
-    consecutiveSuccessCount: 0,
-    ...overrides,
-  };
-}
-
 function buildWhatDidYouHearAsset(path: string) {
   return {
     path,
@@ -172,13 +154,28 @@ describe('reviewService.parseWhatDidYouHearRoundResponse', () => {
         deckId: 'deck-1',
         choiceCount: 4,
         eligibleCardCount: 2,
+        sessionCards: [
+          {
+            cardId: 'card-1',
+            label: 'Car',
+            imageAsset: buildWhatDidYouHearAsset('kids-images/car.jpg'),
+            audioAsset: buildWhatDidYouHearAsset('kids-audio/car.mp3'),
+            quizTags: ['vehicles'],
+          },
+          {
+            cardId: 'card-2',
+            label: 'Bus',
+            imageAsset: buildWhatDidYouHearAsset('kids-images/bus.jpg'),
+            audioAsset: buildWhatDidYouHearAsset('kids-audio/bus.mp3'),
+            quizTags: ['vehicles'],
+          },
+        ],
         targetCard: {
           cardId: 'card-1',
           label: 'Car',
           audioAsset: buildWhatDidYouHearAsset('kids-audio/car.mp3'),
           quizTags: ['vehicles'],
         },
-        reviewContext: buildReviewQueueItem(),
         choices: [
           {
             id: 'choice-card-1',
@@ -209,6 +206,17 @@ describe('reviewService.parseWhatDidYouHearRoundResponse', () => {
             url: 'https://assets.test/kids-audio/car.mp3',
           }),
         }),
+        sessionCards: expect.arrayContaining([
+          expect.objectContaining({
+            cardId: 'card-2',
+            imageAsset: expect.objectContaining({
+              url: 'https://assets.test/kids-images/bus.jpg',
+            }),
+            audioAsset: expect.objectContaining({
+              url: 'https://assets.test/kids-audio/bus.mp3',
+            }),
+          }),
+        ]),
         choices: expect.arrayContaining([
           expect.objectContaining({
             id: 'choice-card-1',
@@ -241,17 +249,6 @@ describe('reviewService.parseWhatDidYouHearRoundResponse', () => {
       choiceCount: 4,
     });
 
-    expect(
-      parseWhatDidYouHearRoundResponse({
-        status: 'no_due_target',
-        eligibleCardCount: 3,
-        choiceCount: 4,
-      }),
-    ).toEqual({
-      status: 'no_due_target',
-      eligibleCardCount: 3,
-      choiceCount: 4,
-    });
   });
 
   it('rejects quiz assets without signed URLs', () => {
@@ -272,7 +269,7 @@ describe('reviewService.parseWhatDidYouHearRoundResponse', () => {
             },
             quizTags: [],
           },
-          reviewContext: buildReviewQueueItem(),
+          sessionCards: [],
           choices: [],
         },
       }),

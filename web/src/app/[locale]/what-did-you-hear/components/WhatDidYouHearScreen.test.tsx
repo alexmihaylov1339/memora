@@ -51,25 +51,27 @@ function buildReadyRound(): WhatDidYouHearReadyRound {
     deckId: 'deck-1',
     choiceCount: 4,
     eligibleCardCount: 2,
+    sessionCards: [
+      {
+        cardId: 'card-1',
+        label: 'Car',
+        imageAsset: buildAsset('kids-images/car.jpg'),
+        audioAsset: buildAsset('kids-audio/car.mp3'),
+        quizTags: [],
+      },
+      {
+        cardId: 'card-2',
+        label: 'Bus',
+        imageAsset: buildAsset('kids-images/bus.jpg'),
+        audioAsset: buildAsset('kids-audio/bus.mp3'),
+        quizTags: [],
+      },
+    ],
     targetCard: {
       cardId: 'card-1',
       label: 'Car',
       audioAsset: buildAsset('kids-audio/car.mp3'),
       quizTags: [],
-    },
-    reviewContext: {
-      cardId: 'card-1',
-      deckId: 'deck-1',
-      chunkId: 'chunk-1',
-      chunkTitle: 'vehicles',
-      chunkPosition: 0,
-      positionInChunk: 0,
-      due: '2026-04-26T10:00:00.000Z',
-      kind: 'image_audio',
-      fields: { label: 'Car' },
-      isReviewSupported: false,
-      reviewUnsupportedReason: 'kind_not_review_enabled',
-      consecutiveSuccessCount: 0,
     },
     choices: [
       {
@@ -128,6 +130,14 @@ function renderReadyScreen(overrides: Record<string, unknown> = {}) {
 describe('WhatDidYouHearScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(HTMLMediaElement.prototype, 'play', {
+      configurable: true,
+      value: jest.fn().mockResolvedValue(undefined),
+    });
+    Object.defineProperty(HTMLMediaElement.prototype, 'load', {
+      configurable: true,
+      value: jest.fn(),
+    });
   });
 
   it('renders the audio prompt, correct label, image choices, and disabled placeholders', () => {
@@ -169,8 +179,9 @@ describe('WhatDidYouHearScreen', () => {
       postCorrectState: {
         cardId: 'card-1',
         nextRound: {
-          status: 'no_due_target',
-          eligibleCardCount: 2,
+          status: 'not_enough_eligible_cards',
+          eligibleCardCount: 1,
+          minimumEligibleCardCount: 2,
           choiceCount: 4,
         },
         rewardSlotState: 'available',

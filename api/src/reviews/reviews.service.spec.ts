@@ -850,9 +850,7 @@ describe('ReviewsService', () => {
   });
 
   describe('getWhatDidYouHearQuizRound', () => {
-    it('returns a ready round from the due review queue and deck image-audio pool', async () => {
-      const now = new Date('2026-04-02T09:00:00.000Z');
-
+    it('returns a ready round from the deck image-audio pool without requiring due review cards', async () => {
       prisma.deck.findUnique.mockResolvedValue({
         exerciseSettings: {
           whatDidYouHear: {
@@ -898,55 +896,88 @@ describe('ReviewsService', () => {
               },
             },
           },
-        ],
-      });
-      prisma.chunk.findMany.mockResolvedValue([
-        {
-          id: 'chunk-1',
-          deckId: 'deck-1',
-          title: 'vehicles',
-          position: 0,
-          deck: { reviewIntervalHours: [1, 24] },
-          reviewState: {
-            id: 'state-1',
-            chunkId: 'chunk-1',
-            due: new Date('2026-04-02T08:00:00.000Z'),
-            consecutiveSuccessCount: 0,
-            lastGrade: null,
-            createdAt: now,
-            updatedAt: now,
-          },
-          chunkCards: [
-            {
-              cardId: 'card-1',
-              sequenceIndex: 0,
-              card: {
-                id: 'card-1',
-                kind: 'image_audio',
-                fields: {
-                  label: 'Car',
-                  imageAsset: {
-                    path: 'kids-images/user-1/car.jpg',
-                    mimeType: 'image/jpeg',
-                    size: 100,
-                  },
-                  audioAsset: {
-                    path: 'kids-audio/user-1/car.mp3',
-                    mimeType: 'audio/mpeg',
-                    size: 100,
-                  },
+          {
+            card: {
+              id: 'card-3',
+              kind: 'image_audio',
+              fields: {
+                label: 'Train',
+                imageAsset: {
+                  path: 'kids-images/user-1/train.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
                 },
-                createdAt: new Date('2026-04-01T10:00:00.000Z'),
+                audioAsset: {
+                  path: 'kids-audio/user-1/train.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
               },
             },
-          ],
-        },
-      ]);
+          },
+          {
+            card: {
+              id: 'card-4',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bike',
+                imageAsset: {
+                  path: 'kids-images/user-1/bike.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bike.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-3',
+              kind: 'image_audio',
+              fields: {
+                label: 'Train',
+                imageAsset: {
+                  path: 'kids-images/user-1/train.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/train.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-4',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bike',
+                imageAsset: {
+                  path: 'kids-images/user-1/bike.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bike.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+        ],
+      });
 
       const result = await service.getWhatDidYouHearQuizRound(
         'user-1',
         'deck-1',
-        now,
         () => 0,
       );
 
@@ -957,12 +988,10 @@ describe('ReviewsService', () => {
 
       expect(result.round.deckId).toBe('deck-1');
       expect(result.round.choiceCount).toBe(4);
-      expect(result.round.eligibleCardCount).toBe(2);
+      expect(result.round.eligibleCardCount).toBe(4);
       expect(result.round.targetCard.cardId).toBe('card-1');
       expect(result.round.targetCard.label).toBe('Car');
-      expect(result.round.targetQueueItem.cardId).toBe('card-1');
-      expect(result.round.targetQueueItem.deckId).toBe('deck-1');
-      expect(result.round.targetQueueItem.chunkId).toBe('chunk-1');
+      expect(prisma.chunk.findMany).not.toHaveBeenCalled();
       expect(result.round.choices).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -976,15 +1005,18 @@ describe('ReviewsService', () => {
             isDisabled: false,
           }),
           expect.objectContaining({
-            cardId: null,
-            isDisabled: true,
+            cardId: 'card-3',
+            isCorrect: false,
+            isDisabled: false,
           }),
           expect.objectContaining({
-            cardId: null,
-            isDisabled: true,
+            cardId: 'card-4',
+            isCorrect: false,
+            isDisabled: false,
           }),
         ]),
       );
+      expect(result.round.choices).toHaveLength(4);
     });
 
     it('resolves quiz audio and image assets when storage signing is available', async () => {
@@ -1045,6 +1077,44 @@ describe('ReviewsService', () => {
               },
             },
           },
+          {
+            card: {
+              id: 'card-3',
+              kind: 'image_audio',
+              fields: {
+                label: 'Train',
+                imageAsset: {
+                  path: 'kids-images/user-1/train.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/train.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
+          {
+            card: {
+              id: 'card-4',
+              kind: 'image_audio',
+              fields: {
+                label: 'Bike',
+                imageAsset: {
+                  path: 'kids-images/user-1/bike.jpg',
+                  mimeType: 'image/jpeg',
+                  size: 100,
+                },
+                audioAsset: {
+                  path: 'kids-audio/user-1/bike.mp3',
+                  mimeType: 'audio/mpeg',
+                  size: 100,
+                },
+              },
+            },
+          },
         ],
       });
       prisma.chunk.findMany.mockResolvedValue([
@@ -1081,7 +1151,6 @@ describe('ReviewsService', () => {
       const result = await serviceWithAssets.getWhatDidYouHearQuizRound(
         'user-1',
         'deck-1',
-        now,
         () => 0,
       );
 
@@ -1090,6 +1159,8 @@ describe('ReviewsService', () => {
         throw new Error('Expected a ready What Did You Hear? round');
       }
 
+      expect(result.round.choiceCount).toBe(4);
+      expect(result.round.choices).toHaveLength(4);
       expect(result.round.targetCard.audioAsset).toEqual(
         expect.objectContaining({
           url: 'signed://kids-audio/user-1/car.mp3',
@@ -1158,60 +1229,25 @@ describe('ReviewsService', () => {
   });
 
   describe('submitWhatDidYouHearQuizResult', () => {
-    it('derives the review grade, applies scheduling, and returns the next quiz state', async () => {
-      const now = new Date('2026-04-02T09:00:00.000Z');
-      const existingDue = new Date('2026-04-02T08:00:00.000Z');
-
-      prisma.deckCard.findFirst
-        .mockResolvedValueOnce({
-          card: {
-            id: 'card-1',
-            fields: {
-              label: 'Car',
-              imageAsset: {
-                path: 'kids-images/user-1/car.jpg',
-                mimeType: 'image/jpeg',
-                size: 100,
-              },
-              audioAsset: {
-                path: 'kids-audio/user-1/car.mp3',
-                mimeType: 'audio/mpeg',
-                size: 100,
-              },
+    it('validates the quiz target, skips scheduling, and returns the next quiz state', async () => {
+      prisma.deckCard.findFirst.mockResolvedValueOnce({
+        card: {
+          id: 'card-1',
+          fields: {
+            label: 'Car',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
             },
           },
-        })
-        .mockResolvedValueOnce({
-          deckId: 'deck-1',
-          deck: { reviewIntervalHours: [1, 8] },
-          card: {
-            id: 'card-1',
-            kind: 'image_audio',
-            fields: {
-              label: 'Car',
-              imageAsset: {
-                path: 'kids-images/user-1/car.jpg',
-                mimeType: 'image/jpeg',
-                size: 100,
-              },
-              audioAsset: {
-                path: 'kids-audio/user-1/car.mp3',
-                mimeType: 'audio/mpeg',
-                size: 100,
-              },
-            },
-            createdAt: new Date('2026-04-01T10:00:00.000Z'),
-            state: {
-              due: existingDue,
-              ease: 2.5,
-              interval: 1,
-              reps: 0,
-              lapses: 0,
-              consecutiveSuccessCount: 0,
-              lastGrade: null,
-            },
-          },
-        });
+        },
+      });
       prisma.deck.findUnique.mockResolvedValue({
         exerciseSettings: {
           whatDidYouHear: {
@@ -1259,44 +1295,31 @@ describe('ReviewsService', () => {
           },
         ],
       });
-      prisma.chunk.findMany.mockResolvedValue([]);
-      prisma.deckCard.findMany.mockResolvedValue([]);
-      prisma.reviewState.update.mockResolvedValue(undefined);
-      prisma.reviewLog.create.mockResolvedValue(undefined);
-
       const result = await service.submitWhatDidYouHearQuizResult(
         'user-1',
         'deck-1',
         'card-1',
         1,
-        now,
       );
 
       expect(result.accepted).toBe(true);
       expect(result.cardId).toBe('card-1');
       expect(result.wrongAttemptCount).toBe(1);
-      expect(result.derivedReviewGrade).toBe('hard');
-      expect(result.review).toEqual(
+      expect(result.nextQuizRound).toEqual(
         expect.objectContaining({
-          cardId: 'card-1',
-          grade: 'hard',
-          wasSuccessful: false,
-          intervalHours: 4,
+          status: 'ready',
+          round: expect.objectContaining({
+            targetCard: expect.objectContaining({
+              cardId: 'card-2',
+            }),
+          }),
         }),
       );
-      expect(result.nextQuizRound).toEqual({
-        status: 'no_due_target',
-        eligibleCardCount: 2,
-        choiceCount: 4,
-      });
-      expect(prisma.reviewLog.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          cardId: 'card-1',
-          grade: 'hard',
-          mode: 'what_did_you_hear',
-          wasCorrect: false,
-        }),
-      });
+      expect(prisma.reviewState.update).not.toHaveBeenCalled();
+      expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
+      expect(prisma.chunkReviewState.update).not.toHaveBeenCalled();
+      expect(prisma.chunkReviewState.upsert).not.toHaveBeenCalled();
     });
 
     it('rejects cards that are not eligible image-audio quiz targets', async () => {

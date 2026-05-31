@@ -5,7 +5,6 @@ import type {
   GradeReviewDto,
   GradeReviewResponse,
   ReviewCardIdParams,
-  SubmitWhatDidYouHearResponse,
 } from '../types';
 
 type GradeReviewMutationInput = ReviewCardIdParams & GradeReviewDto;
@@ -34,38 +33,5 @@ export function useGradeReviewMutation() {
     },
     isLoading: mutation.isPending,
     reset: mutation.reset,
-  };
-}
-
-interface SubmitWhatDidYouHearInput {
-  cardId: string;
-  deckId: string;
-  wrongAttemptCount: number;
-}
-
-interface SubmitWhatDidYouHearCallbacks {
-  onError?: (error: Error) => void;
-  onSuccess?: (data: SubmitWhatDidYouHearResponse) => void;
-}
-
-export function useSubmitWhatDidYouHearResultMutation() {
-  const mutation = useMutation<
-    SubmitWhatDidYouHearResponse,
-    Error,
-    SubmitWhatDidYouHearInput
-  >({
-    mutationFn: reviewService.submitWhatDidYouHearResult,
-  });
-
-  return {
-    error: mutation.error,
-    isLoading: mutation.isPending,
-    reset: mutation.reset,
-    submit: (
-      input: SubmitWhatDidYouHearInput,
-      callbacks?: SubmitWhatDidYouHearCallbacks,
-    ) => {
-      mutation.mutate(input, callbacks);
-    },
   };
 }

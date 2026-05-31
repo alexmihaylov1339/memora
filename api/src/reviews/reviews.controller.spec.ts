@@ -21,7 +21,7 @@ interface ReviewsServiceMock {
   >;
   submitWhatDidYouHearQuizResult: jest.Mock<
     Promise<WhatDidYouHearSubmitResult>,
-    [string, string, string, number, Date]
+    [string, string, string, number]
   >;
 }
 
@@ -39,7 +39,7 @@ function createReviewsServiceMock(): ReviewsServiceMock {
     >(),
     submitWhatDidYouHearQuizResult: jest.fn<
       Promise<WhatDidYouHearSubmitResult>,
-      [string, string, string, number, Date]
+      [string, string, string, number]
     >(),
   };
 }
@@ -204,6 +204,24 @@ describe('ReviewsController', () => {
         deckId: 'deck-1',
         choiceCount: 4,
         eligibleCardCount: 2,
+        sessionCards: [
+          {
+            cardId: 'card-1',
+            label: 'Car',
+            normalizedLabel: 'car',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+            audioAsset: {
+              path: 'kids-audio/user-1/car.mp3',
+              mimeType: 'audio/mpeg',
+              size: 100,
+            },
+            quizTags: [],
+          },
+        ],
         targetCard: {
           cardId: 'card-1',
           label: 'Car',
@@ -219,21 +237,6 @@ describe('ReviewsController', () => {
             size: 100,
           },
           quizTags: [],
-        },
-        targetQueueItem: {
-          cardId: 'card-1',
-          deckId: 'deck-1',
-          chunkId: 'standalone:card-1',
-          chunkTitle: 'Standalone Card',
-          chunkPosition: 0,
-          positionInChunk: 0,
-          due: new Date('2026-05-28T10:00:00.000Z'),
-          kind: 'image_audio',
-          fields: {},
-          isReviewSupported: false,
-          reviewUnsupportedReason: 'kind_not_review_enabled',
-          cardCreatedAt: new Date('2026-05-28T09:00:00.000Z'),
-          consecutiveSuccessCount: 0,
         },
         choices: [
           {
@@ -264,6 +267,16 @@ describe('ReviewsController', () => {
       status: 'ready',
       round: expect.objectContaining({
         deckId: 'deck-1',
+        sessionCards: [
+          expect.objectContaining({
+            cardId: 'card-1',
+            imageAsset: {
+              path: 'kids-images/user-1/car.jpg',
+              mimeType: 'image/jpeg',
+              size: 100,
+            },
+          }),
+        ],
         targetCard: {
           cardId: 'card-1',
           label: 'Car',
@@ -291,7 +304,6 @@ describe('ReviewsController', () => {
     expect(reviewsService.getWhatDidYouHearQuizRound).toHaveBeenCalledWith(
       'user-1',
       'deck-1',
-      expect.any(Date),
     );
   });
 
@@ -300,39 +312,10 @@ describe('ReviewsController', () => {
       accepted: true,
       cardId: 'card-1',
       wrongAttemptCount: 1,
-      derivedReviewGrade: 'hard',
-      review: {
-        cardId: 'card-1',
-        grade: 'hard',
-        wasSuccessful: true,
-        advanced: true,
-        reset: false,
-        previousConsecutiveSuccessCount: 0,
-        consecutiveSuccessCount: 1,
-        due: new Date('2026-04-03T18:00:00.000Z'),
-        intervalHours: 8,
-        chunk: {
-          chunkId: 'standalone:card-1',
-          deckId: 'deck-1',
-          title: 'Standalone Card',
-          position: 0,
-          due: new Date('2026-04-03T18:00:00.000Z'),
-          isDue: false,
-          consecutiveSuccessCount: 0,
-          requiredConsecutiveSuccesses: 1,
-          hasMastery: false,
-          totalCards: 1,
-          currentCard: {
-            cardId: 'card-1',
-            sequenceIndex: 0,
-          },
-          lastGrade: null,
-        },
-        nextActionableItem: null,
-      },
       nextQuizRound: {
-        status: 'no_due_target',
-        eligibleCardCount: 2,
+        status: 'not_enough_eligible_cards',
+        eligibleCardCount: 1,
+        minimumEligibleCardCount: 2,
         choiceCount: 4,
       },
     });
@@ -349,15 +332,10 @@ describe('ReviewsController', () => {
         accepted: true,
         cardId: 'card-1',
         wrongAttemptCount: 1,
-        derivedReviewGrade: 'hard',
-        review: expect.objectContaining({
-          cardId: 'card-1',
-          grade: 'hard',
-          due: '2026-04-03T18:00:00.000Z',
-        }),
         nextQuizRound: {
-          status: 'no_due_target',
-          eligibleCardCount: 2,
+          status: 'not_enough_eligible_cards',
+          eligibleCardCount: 1,
+          minimumEligibleCardCount: 2,
           choiceCount: 4,
         },
       }),
@@ -367,7 +345,6 @@ describe('ReviewsController', () => {
       'deck-1',
       'card-1',
       1,
-      expect.any(Date),
     );
   });
 

@@ -1,8 +1,7 @@
 import type { StoredCardAsset } from '../../cards/card-asset-types';
 import { parseStoredImageAudioCardFields } from '../../cards/image-audio-card-kind';
-import type { ReviewQueueItem } from '../review-queue';
-
 const MINIMUM_ELIGIBLE_CARD_COUNT = 2;
+const MAXIMUM_CHOICE_COUNT = 4;
 const PLACEHOLDER_LABEL = 'No image';
 
 export interface WhatDidYouHearEligibleCard {
@@ -27,8 +26,8 @@ export interface WhatDidYouHearQuizRound {
   deckId: string;
   choiceCount: number;
   eligibleCardCount: number;
+  sessionCards: WhatDidYouHearEligibleCard[];
   targetCard: WhatDidYouHearEligibleCard;
-  targetQueueItem: ReviewQueueItem;
   choices: WhatDidYouHearQuizChoice[];
 }
 
@@ -37,11 +36,6 @@ export type WhatDidYouHearQuizRoundResult =
       status: 'not_enough_eligible_cards';
       eligibleCardCount: number;
       minimumEligibleCardCount: typeof MINIMUM_ELIGIBLE_CARD_COUNT;
-      choiceCount: number;
-    }
-  | {
-      status: 'no_due_target';
-      eligibleCardCount: number;
       choiceCount: number;
     }
   | {
@@ -155,10 +149,14 @@ export function buildWhatDidYouHearQuizRound(input: {
   choiceCount: number;
   deckId: string;
   eligibleCards: WhatDidYouHearEligibleCard[];
-  queueItems: ReviewQueueItem[];
   random?: () => number;
+  targetCardId?: string;
 }): WhatDidYouHearQuizRoundResult {
   const random = input.random ?? Math.random;
+  const effectiveChoiceCount = Math.min(
+    MAXIMUM_CHOICE_COUNT,
+    input.eligibleCards.length,
+  );
   if (input.eligibleCards.length < MINIMUM_ELIGIBLE_CARD_COUNT) {
     return {
       status: 'not_enough_eligible_cards',
@@ -168,22 +166,12 @@ export function buildWhatDidYouHearQuizRound(input: {
     };
   }
 
-  const eligibleCardsById = new Map(
-    input.eligibleCards.map((card) => [card.cardId, card] as const),
+  const targetCard = selectTargetCard(
+    input.eligibleCards,
+    random,
+    input.targetCardId,
   );
-  const targetQueueItem =
-    input.queueItems.find((item) => eligibleCardsById.has(item.cardId)) ?? null;
-
-  if (!targetQueueItem) {
-    return {
-      status: 'no_due_target',
-      eligibleCardCount: input.eligibleCards.length,
-      choiceCount: input.choiceCount,
-    };
-  }
-
-  const targetCard = eligibleCardsById.get(targetQueueItem.cardId)!;
-  const distractorCount = Math.max(input.choiceCount - 1, 0);
+  const distractorCount = Math.max(effectiveChoiceCount - 1, 0);
   const distractors = pickDistractors(
     input.eligibleCards,
     targetCard,
@@ -207,7 +195,7 @@ export function buildWhatDidYouHearQuizRound(input: {
     })),
   ];
 
-  const placeholderCount = Math.max(input.choiceCount - cardChoices.length, 0);
+  const placeholderCount = Math.max(effectiveChoiceCount - cardChoices.length, 0);
   const choices = shuffleInPlace(
     [
       ...cardChoices,
@@ -222,16 +210,37 @@ export function buildWhatDidYouHearQuizRound(input: {
     status: 'ready',
     round: {
       deckId: input.deckId,
-      choiceCount: input.choiceCount,
+      choiceCount: effectiveChoiceCount,
       eligibleCardCount: input.eligibleCards.length,
+      sessionCards: input.eligibleCards,
       targetCard,
-      targetQueueItem,
       choices,
     },
   };
 }
 
+function selectTargetCard(
+  eligibleCards: WhatDidYouHearEligibleCard[],
+  random: () => number,
+  targetCardId?: string,
+): WhatDidYouHearEligibleCard {
+  if (!targetCardId) {
+    return eligibleCards[Math.floor(random() * eligibleCards.length)]!;
+  }
+
+  const currentIndex = eligibleCards.findIndex(
+    (card) => card.cardId === targetCardId,
+  );
+
+  if (currentIndex < 0) {
+    return eligibleCards[0]!;
+  }
+
+  return eligibleCards[(currentIndex + 1) % eligibleCards.length]!;
+}
+
 export const WHAT_DID_YOU_HEAR_CONSTANTS = {
   minimumEligibleCardCount: MINIMUM_ELIGIBLE_CARD_COUNT,
+  maximumChoiceCount: MAXIMUM_CHOICE_COUNT,
   placeholderLabel: PLACEHOLDER_LABEL,
 } as const;

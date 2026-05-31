@@ -90,6 +90,10 @@ export interface WhatDidYouHearTargetCard {
   quizTags: string[];
 }
 
+export interface WhatDidYouHearSessionCard extends WhatDidYouHearTargetCard {
+  imageAsset: WhatDidYouHearAsset;
+}
+
 export interface WhatDidYouHearChoice {
   id: string;
   cardId: string | null;
@@ -103,8 +107,8 @@ export interface WhatDidYouHearReadyRound {
   deckId: string;
   choiceCount: number;
   eligibleCardCount: number;
+  sessionCards: WhatDidYouHearSessionCard[];
   targetCard: WhatDidYouHearTargetCard;
-  reviewContext: ReviewQueueItem;
   choices: WhatDidYouHearChoice[];
 }
 
@@ -113,11 +117,6 @@ export type WhatDidYouHearRoundResponse =
       status: 'not_enough_eligible_cards';
       eligibleCardCount: number;
       minimumEligibleCardCount: number;
-      choiceCount: number;
-    }
-  | {
-      status: 'no_due_target';
-      eligibleCardCount: number;
       choiceCount: number;
     }
   | {
@@ -133,7 +132,5 @@ export interface SubmitWhatDidYouHearResponse {
   accepted: true;
   cardId: string;
   wrongAttemptCount: number;
-  derivedReviewGrade: ReviewGrade;
-  review: GradeReviewResponse;
   nextQuizRound: WhatDidYouHearRoundResponse;
 }

@@ -1,36 +1,10 @@
-import type { ReviewQueueItem } from '../review-queue';
 import {
   buildWhatDidYouHearQuizRound,
   collectWhatDidYouHearEligibleCards,
   WHAT_DID_YOU_HEAR_CONSTANTS,
 } from './what-did-you-hear-quiz';
-import { deriveWhatDidYouHearReviewGrade } from './what-did-you-hear-review';
-
-function buildQueueItem(cardId: string): ReviewQueueItem {
-  return {
-    cardId,
-    deckId: 'deck-1',
-    chunkId: `standalone:${cardId}`,
-    chunkTitle: 'Standalone Card',
-    chunkPosition: 0,
-    positionInChunk: 0,
-    due: new Date('2026-05-28T10:00:00.000Z'),
-    kind: 'image_audio',
-    fields: {},
-    isReviewSupported: false,
-    reviewUnsupportedReason: 'kind_not_review_enabled',
-    cardCreatedAt: new Date('2026-05-28T09:00:00.000Z'),
-    consecutiveSuccessCount: 0,
-  };
-}
 
 describe('what-did-you-hear quiz builder', () => {
-  it('derives review grades from wrong-attempt count on the backend', () => {
-    expect(deriveWhatDidYouHearReviewGrade(0)).toBe('good');
-    expect(deriveWhatDidYouHearReviewGrade(1)).toBe('hard');
-    expect(deriveWhatDidYouHearReviewGrade(3)).toBe('hard');
-  });
-
   it('collects valid image_audio cards and skips invalid payloads', () => {
     expect(
       collectWhatDidYouHearEligibleCards([
@@ -105,7 +79,6 @@ describe('what-did-you-hear quiz builder', () => {
         choiceCount: 4,
         deckId: 'deck-1',
         eligibleCards,
-        queueItems: [buildQueueItem('card-1')],
         random: () => 0,
       }),
     ).toEqual({
@@ -117,7 +90,7 @@ describe('what-did-you-hear quiz builder', () => {
     });
   });
 
-  it('returns no_due_target when no due image-audio queue item matches the eligible pool', () => {
+  it('builds a round from deck-eligible cards even when no review item is due', () => {
     const eligibleCards = collectWhatDidYouHearEligibleCards([
       {
         id: 'card-1',
@@ -158,14 +131,101 @@ describe('what-did-you-hear quiz builder', () => {
         choiceCount: 4,
         deckId: 'deck-1',
         eligibleCards,
-        queueItems: [buildQueueItem('card-3')],
         random: () => 0,
       }),
-    ).toEqual({
-      status: 'no_due_target',
-      eligibleCardCount: 2,
-      choiceCount: 4,
+    ).toEqual(
+      expect.objectContaining({
+        status: 'ready',
+        round: expect.objectContaining({
+          targetCard: eligibleCards[0],
+        }),
+      }),
+    );
+  });
+
+  it('randomizes the initial target instead of always starting from the first card', () => {
+    const eligibleCards = collectWhatDidYouHearEligibleCards([
+      {
+        id: 'card-1',
+        fields: {
+          label: 'Car',
+          imageAsset: {
+            path: 'kids-images/user-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+      {
+        id: 'card-2',
+        fields: {
+          label: 'Bus',
+          imageAsset: {
+            path: 'kids-images/user-1/bus.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/bus.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+      {
+        id: 'card-3',
+        fields: {
+          label: 'Train',
+          imageAsset: {
+            path: 'kids-images/user-1/train.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/train.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+      {
+        id: 'card-4',
+        fields: {
+          label: 'Bike',
+          imageAsset: {
+            path: 'kids-images/user-1/bike.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/bike.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+    ]);
+
+    const result = buildWhatDidYouHearQuizRound({
+      choiceCount: 2,
+      deckId: 'deck-1',
+      eligibleCards,
+      random: () => 0.75,
     });
+
+    expect(result.status).toBe('ready');
+    if (result.status !== 'ready') {
+      throw new Error('Expected a ready What Did You Hear? round');
+    }
+
+    expect(result.round.targetCard.cardId).toBe('card-4');
+    expect(result.round.choiceCount).toBe(4);
+    expect(result.round.choices).toHaveLength(4);
   });
 
   it('builds a randomized round, preferring distinct labels before fallback duplicates', () => {
@@ -224,7 +284,6 @@ describe('what-did-you-hear quiz builder', () => {
       choiceCount: 4,
       deckId: 'deck-1',
       eligibleCards,
-      queueItems: [buildQueueItem('card-1')],
       random: () => 0,
     });
 
@@ -234,10 +293,9 @@ describe('what-did-you-hear quiz builder', () => {
     }
 
     expect(result.round.deckId).toBe('deck-1');
-    expect(result.round.choiceCount).toBe(4);
+    expect(result.round.choiceCount).toBe(3);
     expect(result.round.eligibleCardCount).toBe(3);
     expect(result.round.targetCard).toEqual(eligibleCards[0]);
-    expect(result.round.targetQueueItem).toEqual(buildQueueItem('card-1'));
     expect(result.round.choices).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -255,11 +313,60 @@ describe('what-did-you-hear quiz builder', () => {
           isCorrect: false,
           isDisabled: false,
         }),
-        expect.objectContaining({
-          cardId: null,
-          isDisabled: true,
-        }),
       ]),
     );
+    expect(result.round.choices).toHaveLength(3);
+  });
+
+  it('advances to the next eligible deck card after the submitted target', () => {
+    const eligibleCards = collectWhatDidYouHearEligibleCards([
+      {
+        id: 'card-1',
+        fields: {
+          label: 'Car',
+          imageAsset: {
+            path: 'kids-images/user-1/car.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/car.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+      {
+        id: 'card-2',
+        fields: {
+          label: 'Bus',
+          imageAsset: {
+            path: 'kids-images/user-1/bus.jpg',
+            mimeType: 'image/jpeg',
+            size: 100,
+          },
+          audioAsset: {
+            path: 'kids-audio/user-1/bus.mp3',
+            mimeType: 'audio/mpeg',
+            size: 100,
+          },
+        },
+      },
+    ]);
+
+    const result = buildWhatDidYouHearQuizRound({
+      choiceCount: 2,
+      deckId: 'deck-1',
+      eligibleCards,
+      random: () => 0,
+      targetCardId: 'card-1',
+    });
+
+    expect(result.status).toBe('ready');
+    if (result.status !== 'ready') {
+      throw new Error('Expected a ready What Did You Hear? round');
+    }
+
+    expect(result.round.targetCard.cardId).toBe('card-2');
   });
 });
