@@ -148,6 +148,16 @@ describe('AppController (e2e)', () => {
     accessToken = getStringField(loginBody, 'accessToken');
   });
 
+  it('serves public deck browsing before deck id routes', async () => {
+    await request(app.getHttpServer())
+      .get('/v1/decks/public')
+      .set({ Authorization: `Bearer ${accessToken}` })
+      .expect(200)
+      .expect((res) => {
+        expect(parseJson(res.text)).toEqual(expect.any(Array));
+      });
+  });
+
   it('auth and chunk endpoints return stable validation semantics', async () => {
     const server = app.getHttpServer();
 

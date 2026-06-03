@@ -18,9 +18,10 @@ import { SearchService } from './search/search.service';
   imports: [PrismaModule, AuthModule, CardsModule, ChunksModule, ReviewsModule],
   controllers: [
     AppController,
+    // Keep static deck routes before DecksController's /decks/:id catch-all.
+    DeckPublicController,
     DecksController,
     DeckMembershipController,
-    DeckPublicController,
     DeckSharingController,
     SearchController,
   ],
