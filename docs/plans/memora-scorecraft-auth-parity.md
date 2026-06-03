@@ -3,6 +3,11 @@
 **Status:** Implemented (see repo at time of this document).  
 **Source:** Cursor plan export; todos below reflect completion snapshot.
 
+> Product correction after completion: Memora no longer uses a protected
+> “Welcome to Memora” placeholder as the home surface. The localized root
+> route redirects to the Decks workspace, and `APP_ROUTES.home` points to
+> `/decks` so logo links and post-auth redirects land on Decks.
+
 ---
 
 ## Scope (confirmed)
@@ -45,7 +50,7 @@ flowchart LR
 5. **Forms**: dedicated `auth-form` (`AuthFormBuilder`) separate from i18n `FormBuilder`.
 6. **Design tokens**: CSS variables in [`web/src/app/globals.css`](../../web/src/app/globals.css) for `--primary`, `--destructive`, etc.
 7. **Navigation**: [`Navigation`](../../web/src/shared/components/Navigation/Navigation.tsx) with i18n links.
-8. **Home**: protected “Welcome to Memora” on [`[locale]/page.tsx`](../../web/src/app/[locale]/page.tsx).
+8. **Home**: [`[locale]/page.tsx`](../../web/src/app/[locale]/page.tsx) redirects to the locale-aware Decks workspace; `APP_ROUTES.home` is `/decks`.
 9. **Decks**: `ProtectedRoute` on decks page; `getAuthHeaders()` + `authToken` for deck API calls via `ManageService`.
 10. **useLogout**: i18n router, redirect to `/login`.
 
@@ -55,7 +60,7 @@ flowchart LR
 
 ## Verification
 
-- Manual: register → login → home → account → logout; forgot/reset password; `/decks` unauthenticated → login.
+- Manual: register → login → Decks home → account → logout; forgot/reset password; `/decks` unauthenticated → login.
 - `npm test` / `npm run lint` in `web`.
 
 ## Risk notes
@@ -72,7 +77,7 @@ flowchart LR
 | api-prisma-user | User model + migration; jwt/bcrypt/nodemailer |
 | api-auth-module | AuthModule (Prisma, guard, controller, email) |
 | web-services-auth | config + auth.service; token key `authToken` |
-| web-auth-ui | AuthProvider, `[locale]` routes, i18n router, nav, home |
+| web-auth-ui | AuthProvider, `[locale]` routes, i18n router, nav, Decks-as-home redirect |
 | web-forms-tokens | Auth form builder; globals.css tokens |
 | decks-protect | ProtectedRoute; JWT on deck requests |
 | cleanup-rebrand | Remove duplicate routes; Memora naming |

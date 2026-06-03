@@ -1,5 +1,5 @@
 export const APP_ROUTES = {
-  home: '/',
+  home: '/decks',
   login: '/login',
   register: '/register',
   account: '/account',

@@ -66,7 +66,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/** Restricts routes to guests only. Redirects to / when logged in. */
+/** Restricts routes to guests only. Redirects authenticated users home. */
 export function GuestOnlyRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isReady } = useAuth();
   const router = useRouter();
