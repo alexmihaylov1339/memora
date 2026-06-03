@@ -80,7 +80,7 @@ export class ReviewsService {
   ): Promise<PracticeItem[]> {
     await this.ensureDeckAccess(userId, deckId);
 
-    return loadPracticeItems(this.prisma, userId, deckId);
+    return loadPracticeItems(this.prisma, userId, deckId, this.cardAssets);
   }
 
   async getWhatDidYouHearQuizRound(

@@ -847,6 +847,126 @@ describe('ReviewsService', () => {
       expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
       expect(prisma.reviewLog.create).not.toHaveBeenCalled();
     });
+
+    it('returns standalone image-audio deck cards for kids practice', async () => {
+      const cardAssets = {
+        resolveCardFields: jest.fn(async (_kind, fields) => ({
+          ...(fields as Record<string, unknown>),
+          imageAsset: {
+            ...((fields as { imageAsset: Record<string, unknown> })
+              .imageAsset),
+            url: `signed://${(fields as { imageAsset: { path: string } }).imageAsset.path}`,
+          },
+          audioAsset: {
+            ...((fields as { audioAsset: Record<string, unknown> })
+              .audioAsset),
+            url: `signed://${(fields as { audioAsset: { path: string } }).audioAsset.path}`,
+          },
+        })),
+      } satisfies Pick<CardAssetsService, 'resolveCardFields'>;
+      const serviceWithAssets = new ReviewsService(
+        prisma as unknown as PrismaService,
+        cardAssets as unknown as CardAssetsService,
+      );
+
+      prisma.chunk.findMany.mockResolvedValue([]);
+      prisma.deckCard.findMany.mockResolvedValue([
+        {
+          deckId: 'deck-1',
+          createdAt: new Date('2026-04-01T09:00:00.000Z'),
+          card: {
+            id: 'card-1',
+            kind: 'image_audio',
+            fields: {
+              label: 'Car',
+              imageAsset: {
+                path: 'kids-images/user-1/car.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/car.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+            },
+            createdAt: new Date('2026-04-01T10:00:00.000Z'),
+          },
+        },
+        {
+          deckId: 'deck-1',
+          createdAt: new Date('2026-04-01T09:05:00.000Z'),
+          card: {
+            id: 'card-2',
+            kind: 'image_audio',
+            fields: {
+              label: 'Bus',
+              imageAsset: {
+                path: 'kids-images/user-1/bus.jpg',
+                mimeType: 'image/jpeg',
+                size: 100,
+              },
+              audioAsset: {
+                path: 'kids-audio/user-1/bus.mp3',
+                mimeType: 'audio/mpeg',
+                size: 100,
+              },
+            },
+            createdAt: new Date('2026-04-01T11:00:00.000Z'),
+          },
+        },
+      ]);
+
+      await expect(
+        serviceWithAssets.getPracticeItems('user-1', 'deck-1'),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          cardId: 'card-1',
+          deckId: 'deck-1',
+          chunkId: 'standalone:card-1',
+          kind: 'image_audio',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'kind_not_review_enabled',
+          fields: expect.objectContaining({
+            imageAsset: expect.objectContaining({
+              url: 'signed://kids-images/user-1/car.jpg',
+            }),
+            audioAsset: expect.objectContaining({
+              url: 'signed://kids-audio/user-1/car.mp3',
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          cardId: 'card-2',
+          deckId: 'deck-1',
+          chunkId: 'standalone:card-2',
+          kind: 'image_audio',
+          isReviewSupported: false,
+          reviewUnsupportedReason: 'kind_not_review_enabled',
+          fields: expect.objectContaining({
+            imageAsset: expect.objectContaining({
+              url: 'signed://kids-images/user-1/bus.jpg',
+            }),
+            audioAsset: expect.objectContaining({
+              url: 'signed://kids-audio/user-1/bus.mp3',
+            }),
+          }),
+        }),
+      ]);
+      expect(cardAssets.resolveCardFields).toHaveBeenCalledWith(
+        'image_audio',
+        expect.objectContaining({
+          label: 'Car',
+        }),
+      );
+      expect(prisma.deckCard.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { deckId: 'deck-1' },
+        }),
+      );
+      expect(prisma.reviewState.upsert).not.toHaveBeenCalled();
+      expect(prisma.reviewLog.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('getWhatDidYouHearQuizRound', () => {

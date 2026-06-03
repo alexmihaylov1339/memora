@@ -1,4 +1,5 @@
 import { PrismaService } from '../../prisma/prisma.service';
+import type { CardAssetsService } from '../cards/card-assets.service';
 import {
   deriveChunkReviewState,
   type ChunkProgressSnapshot,
@@ -8,7 +9,10 @@ import {
   findChunkWithCards,
   findChunksWithReviewState,
 } from './review-access';
-import { buildPracticeItems } from './review-practice';
+import {
+  buildPracticeItems,
+  type StandalonePracticeCard,
+} from './review-practice';
 import {
   buildEligibleQueueItems,
   buildFullQueueItems,
@@ -122,8 +126,59 @@ export async function getPracticeItems(
   prisma: PrismaService,
   userId: string,
   deckId: string,
+  cardAssets?: CardAssetsService,
 ): Promise<PracticeItem[]> {
-  const chunks = await findChunksWithReviewState(prisma, userId, deckId);
+  const [chunks, standaloneCards] = await Promise.all([
+    findChunksWithReviewState(prisma, userId, deckId),
+    getStandalonePracticeCards(prisma, userId, deckId),
+  ]);
 
-  return buildPracticeItems(chunks);
+  const items = buildPracticeItems(chunks, standaloneCards);
+  if (!cardAssets) {
+    return items;
+  }
+
+  return Promise.all(
+    items.map(async (item) => ({
+      ...item,
+      fields: await cardAssets.resolveCardFields(item.kind, item.fields),
+    })),
+  );
+}
+
+async function getStandalonePracticeCards(
+  prisma: PrismaService,
+  userId: string,
+  deckId: string,
+): Promise<StandalonePracticeCard[]> {
+  const deckIds = await findAccessibleDeckIds(prisma, userId);
+  if (!deckIds.includes(deckId)) {
+    return [];
+  }
+
+  const memberships = await prisma.deckCard.findMany({
+    where: { deckId },
+    orderBy: [{ createdAt: 'asc' }, { cardId: 'asc' }],
+    select: {
+      deckId: true,
+      createdAt: true,
+      card: {
+        select: {
+          id: true,
+          kind: true,
+          fields: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  return memberships.map((membership) => ({
+    id: membership.card.id,
+    deckId: membership.deckId,
+    kind: membership.card.kind,
+    fields: membership.card.fields,
+    createdAt: membership.card.createdAt,
+    deckCardCreatedAt: membership.createdAt,
+  })) as StandalonePracticeCard[];
 }
