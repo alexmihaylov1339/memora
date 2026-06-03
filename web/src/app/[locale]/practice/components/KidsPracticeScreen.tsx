@@ -46,29 +46,33 @@ export default function KidsPracticeScreen({
   }
 
   return (
-    <div className="space-y-5 pb-6 sm:space-y-6 sm:pb-8">
+    <div className="space-y-3 pb-4 sm:space-y-4 sm:pb-5">
       <KidsPracticeHeader positionLabel={positionLabel} />
 
-      {!practiceRenderer || practiceRenderer.renderer === 'unsupported' ? (
-        <PracticeUnsupportedCard
-          item={currentItem}
-          reason={practiceRenderer?.reason ?? currentItem.reviewUnsupportedReason}
-        />
-      ) : practiceRenderer.renderer === 'image_audio' ? (
-        <KidsPracticeCard cardFields={practiceRenderer.imageAudioCardFields} />
-      ) : (
-        <PracticeUnsupportedCard
-          item={currentItem}
-          reason={currentItem.reviewUnsupportedReason}
-        />
-      )}
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+        {!practiceRenderer || practiceRenderer.renderer === 'unsupported' ? (
+          <PracticeUnsupportedCard
+            item={currentItem}
+            reason={
+              practiceRenderer?.reason ?? currentItem.reviewUnsupportedReason
+            }
+          />
+        ) : practiceRenderer.renderer === 'image_audio' ? (
+          <KidsPracticeCard cardFields={practiceRenderer.imageAudioCardFields} />
+        ) : (
+          <PracticeUnsupportedCard
+            item={currentItem}
+            reason={currentItem.reviewUnsupportedReason}
+          />
+        )}
 
-      <KidsPracticeNavigation
-        hasNextItem={hasNextItem}
-        hasPreviousItem={hasPreviousItem}
-        onNext={handleNextItem}
-        onPrevious={handlePreviousItem}
-      />
+        <KidsPracticeNavigation
+          hasNextItem={hasNextItem}
+          hasPreviousItem={hasPreviousItem}
+          onNext={handleNextItem}
+          onPrevious={handlePreviousItem}
+        />
+      </div>
     </div>
   );
 }

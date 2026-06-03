@@ -57,7 +57,7 @@ describe('KidsPracticeCard', () => {
     );
     expect(screen.getByRole('button', { name: 'Play Sound' })).toHaveClass(
       'w-full',
-      'max-w-sm',
+      'max-w-xs',
     );
 
     const audioElement = container.querySelector('audio');

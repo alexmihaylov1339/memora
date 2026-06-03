@@ -14,7 +14,7 @@ function getChoiceClassName(input: {
   wrongChoiceId: string | null;
 }): string {
   const baseClassName =
-    'aspect-square min-h-[9rem] overflow-hidden rounded-[18px] border-4 bg-white shadow-sm transition sm:min-h-[12rem]';
+    'aspect-[4/3] h-full min-h-[7.5rem] max-h-[14rem] overflow-hidden rounded-[14px] border-4 bg-white shadow-sm transition sm:min-h-[9rem] lg:max-h-[16rem]';
 
   if (input.choice.isDisabled) {
     return `${baseClassName} cursor-not-allowed border-dashed border-slate-200 bg-slate-50 text-slate-500`;
@@ -39,7 +39,7 @@ export default function WhatDidYouHearChoiceGrid({
   onChoiceSelect,
 }: WhatDidYouHearChoiceGridProps) {
   return (
-    <section className="grid grid-cols-2 gap-3 sm:gap-4">
+    <section className="grid grid-cols-2 gap-2 sm:gap-3">
       {choices.map((choice) => (
         <button
           key={choice.id}

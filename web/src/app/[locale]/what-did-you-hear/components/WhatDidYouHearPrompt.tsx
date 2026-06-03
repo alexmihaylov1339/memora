@@ -89,16 +89,16 @@ export default function WhatDidYouHearPrompt({
   }
 
   return (
-    <section className="rounded-[24px] border border-sky-100 bg-white p-5 text-center shadow-sm sm:p-7">
+    <section className="rounded-[18px] border border-sky-100 bg-white p-3 text-center shadow-sm sm:p-4">
       <Button
-        className="min-h-16 w-full max-w-xs rounded-full bg-[var(--primary)] px-6 py-4 text-lg font-black text-white shadow-md transition hover:opacity-90"
+        className="min-h-12 w-full max-w-xs rounded-full bg-[var(--primary)] px-5 py-3 text-base font-black text-white shadow-md transition hover:opacity-90 sm:min-h-14 sm:text-lg"
         onClick={handleReplayAudio}
         type="button"
       >
         Play Sound
       </Button>
 
-      <p className="mt-4 text-3xl font-black text-slate-950 sm:text-5xl">
+      <p className="mt-2 text-2xl font-black text-slate-950 sm:text-4xl">
         {round.targetCard.label}
       </p>
 
