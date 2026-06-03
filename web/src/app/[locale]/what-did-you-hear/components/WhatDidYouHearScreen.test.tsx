@@ -143,9 +143,7 @@ describe('WhatDidYouHearScreen', () => {
   it('renders the audio prompt, correct label, image choices, and disabled placeholders', () => {
     const { handleChoiceSelect, readyRound } = renderReadyScreen();
 
-    expect(
-      screen.getByRole('heading', { name: 'Listen, then pick the picture' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('What Did You Hear?')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Play Sound' }),
     ).toBeInTheDocument();
