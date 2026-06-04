@@ -72,6 +72,11 @@ describe('DecksWorkspace', () => {
       'href',
       '/practice?deckId=deck-2',
     );
+    const reviewLinks = screen
+      .queryAllByRole('link', { name: 'Review' })
+      .map((link) => link.getAttribute('href'));
+    expect(reviewLinks).toContain('/review?deckId=deck-1');
+    expect(reviewLinks).not.toContain('/review?deckId=deck-2');
     expect(
       screen.getByRole('link', { name: 'What Did You Hear?' }),
     ).toHaveAttribute('href', '/what-did-you-hear?deckId=deck-2');

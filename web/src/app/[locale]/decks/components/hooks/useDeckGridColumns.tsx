@@ -65,19 +65,17 @@ export default function useDeckGridColumns(): GridColumnDef<Deck>[] {
             >
               {deck.presentationMode === 'kids' ? 'Kids Mode' : 'Review'}
             </Link>
-            <Link
-              href={
-                deck.presentationMode === 'kids'
-                  ? APP_ROUTES.deckReview(deck.id)
-                  : APP_ROUTES.deckPractice(deck.id)
-              }
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-              className="inline-flex h-[36px] w-[96px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-white text-sm font-bold text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition hover:bg-slate-50"
-            >
-              {deck.presentationMode === 'kids' ? 'Review' : 'Practice'}
-            </Link>
+            {deck.presentationMode !== 'kids' && (
+              <Link
+                href={APP_ROUTES.deckPractice(deck.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+                className="inline-flex h-[36px] w-[96px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-white text-sm font-bold text-slate-700 shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition hover:bg-slate-50"
+              >
+                Practice
+              </Link>
+            )}
             {deck.isWhatDidYouHearEligible && (
               <Link
                 href={APP_ROUTES.deckWhatDidYouHear(deck.id)}
