@@ -31,7 +31,7 @@ interface UseQueuedGradePersistenceInput {
   setQueueItemsOverride: Dispatch<
     SetStateAction<ReviewQueueItem[] | undefined>
   >;
-  setRevealedCardId: (cardId: string | null) => void;
+  setRevealedCardId: Dispatch<SetStateAction<string | null>>;
 }
 
 interface PersistQueuedGradeInput {
@@ -106,7 +106,9 @@ export function useQueuedGradePersistence({
               serverNextActionableItem: result.nextActionableItem,
             });
           });
-          setRevealedCardId(null);
+          setRevealedCardId((cardId) =>
+            cardId === currentItem.cardId ? null : cardId,
+          );
         })
         .catch((error: unknown) => {
           reportFailedGrade(currentItem.cardId, grade, error);

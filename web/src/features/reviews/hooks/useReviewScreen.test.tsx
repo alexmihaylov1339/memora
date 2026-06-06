@@ -416,6 +416,47 @@ describe('useReviewScreen observability', () => {
     });
   });
 
+  it('keeps the next card answer revealed when the previous grade finishes', async () => {
+    const deferredGrade = createDeferred<GradeReviewResponse>();
+    const gradeMock = createGradeMutationMock([() => deferredGrade.promise]);
+
+    mockUseGradeReviewMutation.mockReturnValue({
+      grade: gradeMock,
+      isLoading: true,
+      error: undefined,
+    });
+    mockUseReviewQueueQuery.mockReturnValue({
+      result: {
+        items: [buildQueueItem('card-1'), buildQueueItem('card-2')],
+      },
+      isLoading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    });
+
+    const { result } = renderHook(() => useReviewScreen('deck-1'));
+
+    act(() => {
+      result.current.handleGrade('hard');
+    });
+
+    expect(result.current.currentItem?.cardId).toBe('card-2');
+
+    act(() => {
+      result.current.handleRevealAnswer();
+    });
+
+    expect(result.current.isAnswerRevealed).toBe(true);
+
+    deferredGrade.resolve(buildGradeResponse({ grade: 'hard' }));
+    await act(async () => {
+      await deferredGrade.promise;
+    });
+
+    expect(result.current.currentItem?.cardId).toBe('card-2');
+    expect(result.current.isAnswerRevealed).toBe(true);
+  });
+
   it('keeps the current card visible while waiting when no local next item exists', async () => {
     const deferredGrade = createDeferred<GradeReviewResponse>();
     const gradeMock = createGradeMutationMock([() => deferredGrade.promise]);
