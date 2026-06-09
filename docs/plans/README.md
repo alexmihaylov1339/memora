@@ -7,8 +7,8 @@ This folder holds **implementation and architecture plans** for Memora (decision
 - When product rules change after a step is marked `Done`, update the completed step with a brief “Product correction after completion” note and put implementation work in the next future task. Do not reopen completed tasks just to carry future work.
 - Latest completed product feature step: `docs/plans/step-22-what-did-you-hear-quiz-mode.md`.
 - Latest completed fix step: `docs/plans/step-18-review-model-fix.md`.
-- Current planned/in-progress step: none recorded.
-- Next planned step: to be defined in the next planning cycle.
+- Current planned step: `docs/plans/step-23-auth-feature-boundaries-and-ui-foundations.md`.
+- Next planned step after Step 23: to be defined in the next planning cycle.
 
 Why keep plans in the repo:
 

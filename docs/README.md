@@ -35,6 +35,7 @@ Key entry points by role:
 | On-call / release owner | `docs/operations/review-rollout-playbook.md` |
 | Adding a new card kind | `docs/architecture/card-kind-extensibility.md` |
 | Understanding latest product-polish step | `docs/plans/step-17-user-testing-bugs-and-small-improvements.md` |
+| Understanding current planned architecture step | `docs/plans/step-23-auth-feature-boundaries-and-ui-foundations.md` |
 
 ---
 
@@ -55,6 +56,7 @@ The roadmap and all step plans live in [`docs/plans/`](plans/).
 - [`docs/plans/chunked-learning-roadmap.md`](plans/chunked-learning-roadmap.md) — ordered step list with objectives and exit criteria; the authoritative source for what was built and why
 - [`docs/plans/README.md`](plans/README.md) — explains how plan files are organized and kept up to date
 - Latest product-polish step plan: [`docs/plans/step-17-user-testing-bugs-and-small-improvements.md`](plans/step-17-user-testing-bugs-and-small-improvements.md)
+- Current planned architecture step: [`docs/plans/step-23-auth-feature-boundaries-and-ui-foundations.md`](plans/step-23-auth-feature-boundaries-and-ui-foundations.md)
 
 Rule: when docs conflict, prefer future-facing planning docs over completed historical step notes.
 

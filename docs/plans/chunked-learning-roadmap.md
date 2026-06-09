@@ -619,6 +619,33 @@ Implementation plan:
 
 ---
 
+## Step 23: Auth feature boundaries and UI foundations
+
+**Objective:** Improve frontend feature ownership and SRP around authentication and shared UI without introducing speculative cross-project packages or changing current behavior.
+
+**Why now:**
+The auth feature is functional, but its provider, route guards, logout flow, token constant, and direct browser-storage access are split across `features/auth` and `shared`. Shared component exports and design-token ownership can also be made more explicit before further product growth increases the cost of moving them.
+
+**Deliverables:**
+- move frontend auth infrastructure into `web/src/features/auth`
+- add one feature-local `tokenStorage` module as the only production owner of auth-token `localStorage` access
+- add one shared `completeAuthentication` operation for login and registration
+- keep `next-intl` routing, React Query, and `ManageService` integration inside the Memora application
+- tighten `shared/components/index.ts` to explicit, intentional, non-duplicate exports
+- move CSS custom-property design tokens into `web/src/styles/tokens.css`
+- keep `Button`, `Modal`, and `Grid` inside Memora until a second real application proves package extraction is useful
+- verify behavior after every task with characterization tests, focused regression gates, type-check/lint, and manual smoke checks
+
+**Exit criteria:**
+- All exit criteria in `docs/plans/step-23-auth-feature-boundaries-and-ui-foundations.md` are satisfied.
+- Authentication behavior and current UI appearance remain unchanged.
+- Full web lint, test, type-check, and production build gates pass.
+
+Implementation plan:
+- `docs/plans/step-23-auth-feature-boundaries-and-ui-foundations.md`
+
+---
+
 ## Suggested execution order
 
 1. Step 1
@@ -644,6 +671,7 @@ Implementation plan:
 21. Step 20
 22. Step 21
 23. Step 22
+24. Step 23
 
 ---
 
