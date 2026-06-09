@@ -21,7 +21,7 @@ jest.mock('@/i18n/navigation', () => ({
   }),
 }));
 
-jest.mock('@/shared/components/AuthProvider', () => ({
+jest.mock('../../providers', () => ({
   useAuth: () => ({
     setAuthenticated: mockSetAuthenticated,
   }),

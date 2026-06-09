@@ -6,7 +6,7 @@ import {
   GuestOnlyRoute,
   ProtectedRoute,
   useAuth,
-} from '@/shared/components/AuthProvider';
+} from './AuthProvider';
 
 const mockReplace = jest.fn();
 

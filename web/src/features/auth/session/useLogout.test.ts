@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
-import { AUTH_TOKEN_KEY } from '@/shared/constants';
+import { AUTH_TOKEN_KEY } from '@shared/constants';
+
 import { useLogout } from './useLogout';
 
 const mockReplace = jest.fn();
@@ -19,7 +20,7 @@ jest.mock('@/i18n/navigation', () => ({
   }),
 }));
 
-jest.mock('@/shared/components/AuthProvider', () => ({
+jest.mock('../providers', () => ({
   useAuth: () => ({
     setAuthenticated: mockSetAuthenticated,
   }),

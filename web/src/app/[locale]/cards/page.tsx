@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
-import { ProtectedRoute } from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
 import { APP_ROUTES } from '@shared/constants';
 import type { CardRecord } from '@features/decks';
 import {

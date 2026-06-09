@@ -1,6 +1,6 @@
 'use client';
 
-import { useLogout } from '@shared/hooks';
+import { useLogout } from '../../session';
 
 export default function LogoutButton() {
   const logout = useLogout();

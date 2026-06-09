@@ -5,10 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { TRANSLATION_KEYS } from '@/i18n';
+import { ProtectedRoute } from '@features/auth';
 import {
   ErrorMessage,
   PageLoader,
-  ProtectedRoute,
 } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {

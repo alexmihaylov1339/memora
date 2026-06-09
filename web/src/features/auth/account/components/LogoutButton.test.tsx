@@ -1,10 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { useLogout } from '@shared/hooks';
-
 import LogoutButton from './LogoutButton';
+import { useLogout } from '../../session';
 
-jest.mock('@shared/hooks', () => ({
+jest.mock('../../session', () => ({
   useLogout: jest.fn(),
 }));
 

@@ -1,7 +1,6 @@
 'use client';
 
-import { GuestOnlyRoute } from '@/shared/components/AuthProvider';
-
+import { GuestOnlyRoute } from '@features/auth';
 import { AuthShell } from '@features/auth/components';
 import { LoginForm } from '@features/auth/login/components';
 

@@ -2,11 +2,11 @@
 
 import { useSearchParams } from 'next/navigation';
 
+import { ProtectedRoute } from '@features/auth';
 import { useDeckDetailQuery } from '@features/decks';
 import {
   ErrorMessage,
   PageLoader,
-  ProtectedRoute,
 } from '@shared/components';
 import KidsPracticeScreen from './components/KidsPracticeScreen';
 import PracticeScreen from './components/PracticeScreen';

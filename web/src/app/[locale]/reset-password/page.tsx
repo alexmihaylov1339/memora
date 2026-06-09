@@ -5,9 +5,9 @@ import { Suspense } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 
-import { GuestOnlyRoute } from '@/shared/components/AuthProvider';
 import { APP_ROUTES } from '@/shared/constants';
 
+import { GuestOnlyRoute } from '@features/auth';
 import { AuthShell } from '@features/auth/components';
 import { ResetPasswordForm } from '@features/auth/reset-password/components';
 

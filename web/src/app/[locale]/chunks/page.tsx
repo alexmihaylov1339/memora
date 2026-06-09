@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Link, useRouter } from '@/i18n/navigation';
+import { ProtectedRoute } from '@features/auth';
 import {
   BackLinkButton,
   Button,
@@ -9,7 +10,6 @@ import {
   Grid,
   type GridColumnDef,
   PageLoader,
-  ProtectedRoute,
 } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import type { ChunkRecord } from '@features/chunks';

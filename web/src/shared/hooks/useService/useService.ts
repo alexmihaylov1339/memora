@@ -5,8 +5,8 @@ import type {
   UseServiceResult,
   UseServiceOptions,
 } from './types';
+import { useAuth } from '@features/auth';
 import { UnauthorizedError } from '@/shared/services';
-import { useAuth } from '@/shared/components/AuthProvider';
 import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 /**
@@ -68,4 +68,3 @@ export function useService<TParams = void, TData = unknown>(
     reset: mutation.reset,
   };
 }
-

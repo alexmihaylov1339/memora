@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { useAuth } from '@/shared/components/AuthProvider';
+import { useAuth } from '@features/auth';
 
 import Navigation from './Navigation';
 

@@ -14,10 +14,13 @@ jest.mock('@features/decks', () => ({
   useDeckDetailQuery: jest.fn(),
 }));
 
+jest.mock('@features/auth', () => ({
+  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 jest.mock('@shared/components', () => ({
   ErrorMessage: ({ message }: { message: string }) => <div>{message}</div>,
   PageLoader: () => <div>loading</div>,
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('./components/PracticeScreen', () => {

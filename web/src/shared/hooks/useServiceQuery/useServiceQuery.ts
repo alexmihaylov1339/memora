@@ -5,8 +5,8 @@ import type {
   UseServiceQueryResult,
   UseServiceQueryOptions,
 } from './types';
+import { useAuth } from '@features/auth';
 import { UnauthorizedError } from '@/shared/services';
-import { useAuth } from '@/shared/components/AuthProvider';
 import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 // Default configuration values
@@ -129,4 +129,3 @@ export function useServiceQuery<TParams = void, TData = unknown>(
     isRefetching: query.isRefetching,
   };
 }
-

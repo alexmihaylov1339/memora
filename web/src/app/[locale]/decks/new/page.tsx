@@ -1,6 +1,7 @@
 'use client';
 
-import { BackLinkButton, ProtectedRoute } from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
+import { BackLinkButton } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import { CreateDeckForm } from '@features/decks';
 

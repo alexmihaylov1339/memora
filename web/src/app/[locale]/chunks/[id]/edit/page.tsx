@@ -4,11 +4,11 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 
+import { ProtectedRoute } from '@features/auth';
 import {
   BackLinkButton,
   ErrorMessage,
   PageLoader,
-  ProtectedRoute,
 } from '@shared/components';
 import { APP_ROUTES } from '@shared/constants';
 import {

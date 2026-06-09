@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - T1 complete; T2 is next
+**Status:** In progress - T2 complete; T3 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -317,7 +317,7 @@ Verification evidence - 2026-06-09:
 
 ### T2 - Move authentication infrastructure into `features/auth`
 
-**Status:** Planned
+**Status:** Done
 
 What to do:
 
@@ -373,6 +373,41 @@ Manual checkpoint:
 - load login/register while signed in and confirm redirect home
 - refresh a protected page while signed in and confirm it remains accessible
 - verify the existing page loader still appears while auth state initializes
+
+Implementation notes - 2026-06-09:
+
+- Moved `AuthProvider`, `useAuth`, `ProtectedRoute`, and `GuestOnlyRoute` from
+  `shared/components` into `features/auth/providers`.
+- Moved `useLogout` and its tests from `shared/hooks` into
+  `features/auth/session`.
+- Added `features/auth/index.ts` as the intentional public API for auth state,
+  route guards, and logout behavior.
+- Migrated layouts, pages, navigation, service hooks, auth hooks, and tests to
+  consume auth infrastructure through the feature public API or a colocated
+  feature barrel.
+- Removed the old shared auth implementations and all auth/logout exports from
+  the shared component and hook barrels.
+- Kept React Query and locale-aware routing integration in the Memora
+  application layer; this task introduced no cross-project adapters or
+  compatibility re-export shims.
+
+Verification evidence - 2026-06-09:
+
+- Focused auth and affected route suite passed: 10 suites, 22 tests.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm run lint` passed.
+- Searches found no stale `shared/components/AuthProvider`,
+  `shared/hooks/useLogout`, or shared-barrel auth imports.
+- `git diff --check` passed.
+- Live Chrome smoke against the running web/API stack passed:
+  - protected routes rendered the existing auth loading state
+  - signed-out `/decks` redirected to `/login`
+  - registration stored a token and redirected to `/decks`
+  - authenticated refresh remained on `/decks`
+  - authenticated `/login` redirected to `/decks`
+  - logout cleared the token and redirected to `/login`
+  - login stored a token and redirected to `/decks`
+  - final logout returned to a clean signed-out state
 
 ---
 

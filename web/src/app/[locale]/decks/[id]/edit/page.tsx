@@ -4,7 +4,8 @@ import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/i18n/navigation';
 
-import { ErrorMessage, PageLoader, ProtectedRoute } from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
+import { ErrorMessage, PageLoader } from '@shared/components';
 import { useNotification } from '@shared/providers';
 import { APP_ROUTES } from '@shared/constants';
 import { TRANSLATION_KEYS } from '@/i18n';

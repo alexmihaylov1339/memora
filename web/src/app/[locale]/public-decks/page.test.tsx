@@ -8,10 +8,13 @@ jest.mock('@features/decks', () => ({
   usePublicDecksQuery: jest.fn(),
 }));
 
+jest.mock('@features/auth', () => ({
+  ProtectedRoute: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 jest.mock('@shared/components', () => ({
   ErrorMessage: ({ message }: { message: string }) => <div>{message}</div>,
   PageLoader: () => <div>loading</div>,
-  ProtectedRoute: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('./components/PublicDecksWorkspace', () => {

@@ -1,6 +1,7 @@
 'use client';
 
-import { ProtectedRoute, ErrorMessage, PageLoader } from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
+import { ErrorMessage, PageLoader } from '@shared/components';
 import { useDecksListQuery } from '@features/decks';
 import DecksWorkspace from './components/DecksWorkspace';
 

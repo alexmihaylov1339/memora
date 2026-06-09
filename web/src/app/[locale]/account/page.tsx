@@ -1,9 +1,7 @@
 'use client';
 
-import {
-  LanguageSwitcher,
-  ProtectedRoute,
-} from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
+import { LanguageSwitcher } from '@shared/components';
 
 import {
   LogoutButton,

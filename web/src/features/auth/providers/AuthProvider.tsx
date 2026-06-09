@@ -4,8 +4,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useRouter } from '@/i18n/navigation';
 
-import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
-import { PageLoader } from '@/shared/components/PageLoader';
+import { PageLoader } from '@shared/components';
+import { APP_ROUTES, AUTH_TOKEN_KEY } from '@shared/constants';
 import { isBrowserEnvironment } from '@shared/utils';
 
 interface AuthContextType {

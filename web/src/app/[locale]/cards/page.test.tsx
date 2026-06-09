@@ -38,6 +38,10 @@ jest.mock('@/i18n/navigation', () => ({
   },
 }));
 
+jest.mock('@features/auth', () => ({
+  ProtectedRoute: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 jest.mock('@shared/components', () => ({
   BackLinkButton: ({
     href,
@@ -78,7 +82,6 @@ jest.mock('@shared/components', () => ({
         </button>
       </div>
     ) : null,
-  ProtectedRoute: ({ children }: { children: ReactNode }) => <>{children}</>,
   PageLoader: () => <div>loading</div>,
   ErrorMessage: ({ message }: { message: string }) => <div>{message}</div>,
   Button: ({ children, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) => (

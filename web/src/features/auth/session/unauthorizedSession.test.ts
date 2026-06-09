@@ -14,7 +14,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => mockUseQuery(options),
 }));
 
-jest.mock('@/shared/components/AuthProvider', () => ({
+jest.mock('@features/auth', () => ({
   useAuth: () => ({
     setAuthenticated: mockSetAuthenticated,
   }),

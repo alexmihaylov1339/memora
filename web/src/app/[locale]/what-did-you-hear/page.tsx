@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import { ProtectedRoute } from '@shared/components';
+import { ProtectedRoute } from '@features/auth';
 import WhatDidYouHearScreen from './components/WhatDidYouHearScreen';
 
 export default function WhatDidYouHearPage() {
