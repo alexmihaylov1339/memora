@@ -25,13 +25,33 @@ export function useWhatDidYouHearScreen(deckId: string | null) {
   const [postCorrectState, setPostCorrectState] =
     useState<PostCorrectState | null>(null);
 
+  function resetRoundInteraction() {
+    setWrongAttemptCount(0);
+    setWrongChoiceId(null);
+    setCorrectChoiceId(null);
+    setPostCorrectState(null);
+  }
+
   useEffect(() => {
-    if (!roundQuery.result) {
+    const nextRoundResponse = roundQuery.result;
+    if (!nextRoundResponse) {
       return;
     }
 
-    setRoundResponse(roundQuery.result);
-    resetRoundInteraction();
+    let isCancelled = false;
+
+    queueMicrotask(() => {
+      if (isCancelled) {
+        return;
+      }
+
+      setRoundResponse(nextRoundResponse);
+      resetRoundInteraction();
+    });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [roundQuery.result]);
 
   useEffect(() => {
@@ -60,13 +80,6 @@ export function useWhatDidYouHearScreen(deckId: string | null) {
       null,
     [correctChoiceId, readyRound?.choices],
   );
-
-  function resetRoundInteraction() {
-    setWrongAttemptCount(0);
-    setWrongChoiceId(null);
-    setCorrectChoiceId(null);
-    setPostCorrectState(null);
-  }
 
   function handleChoiceSelect(choice: WhatDidYouHearChoice) {
     if (

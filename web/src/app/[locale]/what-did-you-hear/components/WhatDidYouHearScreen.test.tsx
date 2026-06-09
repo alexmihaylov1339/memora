@@ -22,8 +22,10 @@ jest.mock('@features/reviews', () => ({
 }));
 
 jest.mock('@shared/components', () => ({
-  Button: ({ children, isLoading: _isLoading, ...props }: MockButtonProps) => (
-    <button {...props}>{children}</button>
+  Button: ({ children, isLoading, ...props }: MockButtonProps) => (
+    <button {...props} disabled={isLoading || props.disabled}>
+      {children}
+    </button>
   ),
   ErrorMessage: ({ message }: { message: string }) => <p>{message}</p>,
   PageLoader: () => <p>Loading...</p>,

@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - characterization coverage complete; blocked by pre-existing full-repo lint errors and the running-app manual checkpoint
+**Status:** In progress - T1 complete; T2 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -200,7 +200,7 @@ If any gate fails, fix it before starting the next task. Do not stack later refa
 
 ### T1 - Capture the baseline and add characterization coverage
 
-**Status:** In progress - automated auth baseline is complete; full lint and manual smoke gates remain
+**Status:** Done
 
 What to do:
 
@@ -265,6 +265,15 @@ Implementation notes - 2026-06-09:
   - no retry after `UnauthorizedError`
 - Strengthened login, registration, and logout tests to state their full
   observable side-effect contracts.
+- Cleared the pre-existing full-repo lint blockers with narrow,
+  behavior-preserving changes:
+  - split kids practice card composition, image loading, and audio playback
+    into separate feature-local components; audio state resets by remounting
+    the audio control when its URL changes instead of setting state
+    synchronously in an effect
+  - What Did You Hear query-to-round synchronization now runs in a cancellable
+    microtask instead of synchronously inside an effect
+  - removed two unused test/type imports reported by ESLint
 - Production auth-token storage access currently exists in:
   - `features/auth/account/hooks/useGetCurrentUser.ts`
   - `features/auth/account/hooks/useUpdateAccountMutation.ts`
@@ -291,15 +300,18 @@ Implementation notes - 2026-06-09:
 Verification evidence - 2026-06-09:
 
 - Focused auth baseline suite passed: 5 suites, 14 tests.
+- Focused auth plus affected lint-blocker regression suite passed: 8 suites,
+  21 tests.
 - `cd web && npx tsc --noEmit --pretty false` passed.
-- Targeted ESLint over all touched tests and characterized auth modules passed.
+- `cd web && npm run lint` passed.
 - `git diff --check` passed.
-- Full `cd web && npm run lint` remains blocked by pre-existing errors outside
-  Step 23 T1:
-  - `app/[locale]/practice/components/KidsPracticeCard.tsx:61`
-  - `features/reviews/hooks/useWhatDidYouHearScreen.ts:34`
-- The running-app manual checkpoint remains required before T1 can be marked
-  Done.
+- Live Chrome smoke against the running web/API stack passed:
+  - signed-out `/decks` redirected to `/login`
+  - disposable-account registration stored a token and redirected to `/decks`
+  - authenticated `/login` redirected to `/decks`
+  - account logout cleared the token and redirected to `/login`
+  - login with the disposable account stored a token and redirected to `/decks`
+  - final logout returned to a clean signed-out state
 
 ---
 
