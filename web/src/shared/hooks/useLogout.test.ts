@@ -45,4 +45,16 @@ describe('useLogout', () => {
     expect(mockSetAuthenticated).toHaveBeenCalledWith(false);
     expect(mockReplace).toHaveBeenCalledWith('/login');
   });
+
+  it('uses the configured redirect target', () => {
+    const { result } = renderHook(() =>
+      useLogout({ redirectTo: '/signed-out' }),
+    );
+
+    act(() => {
+      result.current();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith('/signed-out');
+  });
 });

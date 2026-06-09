@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** Planned
+**Status:** In progress - characterization coverage complete; blocked by pre-existing full-repo lint errors and the running-app manual checkpoint
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -200,7 +200,7 @@ If any gate fails, fix it before starting the next task. Do not stack later refa
 
 ### T1 - Capture the baseline and add characterization coverage
 
-**Status:** Planned
+**Status:** In progress - automated auth baseline is complete; full lint and manual smoke gates remain
 
 What to do:
 
@@ -251,6 +251,55 @@ Manual checkpoint:
 - sign out
 - register a disposable account in a local/test environment
 - confirm protected and guest-only redirects
+
+Implementation notes - 2026-06-09:
+
+- Added auth-provider characterization coverage for:
+  - token-present initialization
+  - token-missing initialization
+  - protected-route loading, redirect, and authenticated rendering
+  - guest-only redirect and guest rendering
+- Added unauthorized-session characterization coverage for:
+  - mutation token/auth-state clearing
+  - query token/auth-state clearing
+  - no retry after `UnauthorizedError`
+- Strengthened login, registration, and logout tests to state their full
+  observable side-effect contracts.
+- Production auth-token storage access currently exists in:
+  - `features/auth/account/hooks/useGetCurrentUser.ts`
+  - `features/auth/account/hooks/useUpdateAccountMutation.ts`
+  - `features/auth/login/hooks/useLoginMutation.ts`
+  - `features/auth/register/hooks/useRegisterMutation.ts`
+  - `shared/components/AuthProvider.tsx`
+  - `shared/hooks/useLogout.ts`
+  - `shared/hooks/useService/useService.ts`
+  - `shared/hooks/useServiceQuery/useServiceQuery.ts`
+  - `shared/services/authHeaders.ts`
+- Auth token key ownership currently exists in:
+  - `shared/constants/auth.ts`
+  - `shared/constants/index.ts`
+- Auth infrastructure is currently consumed through direct
+  `shared/components/AuthProvider` imports and through the auth exports in
+  `shared/components/index.ts`.
+- The current intentional shared component barrel exports are:
+  - UI primitives: `Button`, `BackLinkButton`, `ConfirmationModal`, `Modal`,
+    `BrandLogo`, `ErrorMessage`, `FormBuilder`, `Grid`, and `PageLoader`
+  - app-level shared UI: notifications, translations, language switching,
+    navigation, and entity search
+  - auth exports are recorded as temporary misplaced exports to remove in T2
+
+Verification evidence - 2026-06-09:
+
+- Focused auth baseline suite passed: 5 suites, 14 tests.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- Targeted ESLint over all touched tests and characterized auth modules passed.
+- `git diff --check` passed.
+- Full `cd web && npm run lint` remains blocked by pre-existing errors outside
+  Step 23 T1:
+  - `app/[locale]/practice/components/KidsPracticeCard.tsx:61`
+  - `features/reviews/hooks/useWhatDidYouHearScreen.ts:34`
+- The running-app manual checkpoint remains required before T1 can be marked
+  Done.
 
 ---
 

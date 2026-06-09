@@ -34,7 +34,7 @@ describe('useRegisterMutation', () => {
     mockUseMutation.mockImplementation((options) => options);
   });
 
-  it('clears cached queries and updates auth state after register success', () => {
+  it('stores the token, clears cached queries, updates auth state, and redirects after registration', () => {
     renderHook(() => useRegisterMutation());
 
     const options = mockUseMutation.mock.calls[0]?.[0] as {
