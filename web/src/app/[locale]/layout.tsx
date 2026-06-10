@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
 import { AuthProvider } from '@features/auth';
-import { AppShell } from '@/shared/components/Navigation';
+import { AppShell } from '@shared/components';
 import { QueryProvider, NotificationProvider } from '@shared/providers';
 import "../globals.css";
 

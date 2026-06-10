@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - T4 complete; T5 is next
+**Status:** In progress - T5 complete; T6 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -594,7 +594,7 @@ Verification evidence - 2026-06-10:
 
 ### T5 - Tighten the shared component public API
 
-**Status:** Planned
+**Status:** Done
 
 What to do:
 
@@ -642,6 +642,52 @@ Manual checkpoint:
 
 - inspect representative Button, Modal, Grid, and FormBuilder screens
 - verify no visual or interaction change
+
+Implementation notes - 2026-06-10:
+
+- Audited every export in `shared/components/index.ts` against current root
+  barrel consumers and component ownership.
+- Kept stable Memora primitives and their intentional public contracts:
+  `Button`, `BackLinkButton`, `ConfirmationModal`, `Modal`, `BrandLogo`,
+  `ErrorMessage`, `FormBuilder`, `Grid`, and `PageLoader`.
+- Kept the cross-feature composites currently consumed through the public API:
+  `EntitySearch`, `LanguageSwitcher`, and `Translate`.
+- Replaced the root export of the lower-level `Navigation` implementation with
+  the application-facing `AppShell`, and migrated the locale layout to the
+  intentional root component API.
+- Removed notification rendering components and notification data types from
+  the root barrel. They remain encapsulated in their colocated module and are
+  consumed by `NotificationProvider`.
+- Confirmed no auth API, wildcard export, duplicate Grid export, or internal
+  Grid/Modal/FormBuilder helper is exposed from the component barrel.
+- Left the unused legacy `shared/components/auth-form` folder private; deleting
+  unrelated dead code is outside this behavior-preserving task.
+- Added the required `"use client"` boundary to `Grid.tsx`. The live Next.js
+  route gate exposed this missing declaration when the server layout began
+  consuming `AppShell` through the root barrel.
+
+Verification evidence - 2026-06-10:
+
+- Focused Button, Grid, Grid pagination, FormBuilder, and Navigation suite
+  passed: 5 suites, 61 tests.
+- The FormBuilder suite still emits its pre-existing React suspended-resource
+  `act(...)` warning; all assertions pass.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm run lint` passed.
+- `git diff --check` passed.
+- Import searches found no stale deep Navigation imports and no root
+  notification or auth consumers.
+- The running Next.js `/register` route returned `200` after the Grid client
+  boundary correction.
+- Live Chrome smoke against the running web/API stack passed:
+  - registration submitted through `FormBuilder`
+  - the empty deck `Grid` rendered
+  - a shared `Button` opened the CSV modal
+  - the modal closed without behavior changes
+  - deck creation submitted through `FormBuilder`
+  - the created deck appeared in the populated `Grid`
+  - authenticated refresh, account load/update, logout, and login remained
+    unchanged
 
 ---
 
