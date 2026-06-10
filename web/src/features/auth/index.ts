@@ -4,5 +4,12 @@ export {
   ProtectedRoute,
   useAuth,
 } from './providers';
-export { useLogout } from './session';
-export type { UseLogoutOptions } from './session';
+export {
+  clearAccessToken,
+  getAccessToken,
+  getAuthHeaders,
+  hasAccessToken,
+  setAccessToken,
+} from './session';
+export { useLogout } from './session/useLogout';
+export type { UseLogoutOptions } from './session/useLogout';

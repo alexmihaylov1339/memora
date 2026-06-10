@@ -1,6 +1,8 @@
 import { renderHook } from '@testing-library/react';
 
-import { AUTH_TOKEN_KEY, APP_ROUTES } from '@/shared/constants';
+import { APP_ROUTES } from '@/shared/constants';
+
+import { getAccessToken } from '../../session';
 import { useRegisterMutation } from './useRegisterMutation';
 
 const mockReplace = jest.fn();
@@ -42,7 +44,7 @@ describe('useRegisterMutation', () => {
     };
     options.onSuccess({ accessToken: 'new-token' });
 
-    expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBe('new-token');
+    expect(getAccessToken()).toBe('new-token');
     expect(mockClear).toHaveBeenCalledTimes(1);
     expect(mockSetAuthenticated).toHaveBeenCalledWith(true);
     expect(mockReplace).toHaveBeenCalledWith(APP_ROUTES.home);

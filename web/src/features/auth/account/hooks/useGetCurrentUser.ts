@@ -3,19 +3,18 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { getCurrentUser } from '../../services';
-import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
+import { getAccessToken } from '../../session';
 
 export function useGetCurrentUser() {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
+  const accessToken = getAccessToken();
 
   return useQuery({
-    queryKey: ['me', token],
+    queryKey: ['me', accessToken],
     queryFn: async () => {
-      if (!token) throw new Error('Not authenticated');
-      const { user } = await getCurrentUser(token);
+      if (!accessToken) throw new Error('Not authenticated');
+      const { user } = await getCurrentUser(accessToken);
       return user;
     },
-    enabled: typeof window !== 'undefined' && !!token,
+    enabled: !!accessToken,
   });
 }

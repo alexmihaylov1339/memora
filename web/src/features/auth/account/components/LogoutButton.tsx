@@ -1,6 +1,6 @@
 'use client';
 
-import { useLogout } from '../../session';
+import { useLogout } from '../../session/useLogout';
 
 export default function LogoutButton() {
   const logout = useLogout();

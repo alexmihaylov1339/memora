@@ -1,13 +1,15 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
 
+import { useAuth } from '@features/auth/providers';
+import { clearAccessToken } from '@features/auth/session';
+
+import { UnauthorizedError } from '@/shared/services';
+
 import type {
   ServiceFunction,
   UseServiceResult,
   UseServiceOptions,
 } from './types';
-import { useAuth } from '@features/auth';
-import { UnauthorizedError } from '@/shared/services';
-import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 /**
  * Custom hook for calling services with TanStack Query
@@ -44,9 +46,7 @@ export function useService<TParams = void, TData = unknown>(
     },
     onError: (error) => {
       if (error instanceof UnauthorizedError) {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(AUTH_TOKEN_KEY);
-        }
+        clearAccessToken();
         setAuthenticated(false);
         return;
       }

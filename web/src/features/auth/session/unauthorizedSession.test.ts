@@ -1,9 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { AUTH_TOKEN_KEY } from '@/shared/constants';
 import { useService } from '@/shared/hooks/useService';
 import { useServiceQuery } from '@/shared/hooks/useServiceQuery';
 import { UnauthorizedError } from '@/shared/services';
+
+import { getAccessToken, setAccessToken } from './tokenStorage';
 
 const mockSetAuthenticated = jest.fn();
 const mockUseMutation = jest.fn();
@@ -14,7 +15,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => mockUseQuery(options),
 }));
 
-jest.mock('@features/auth', () => ({
+jest.mock('@features/auth/providers', () => ({
   useAuth: () => ({
     setAuthenticated: mockSetAuthenticated,
   }),
@@ -28,7 +29,7 @@ describe('unauthorized session clearing', () => {
 
   it('clears the token and auth state after an unauthorized mutation', () => {
     const unauthorizedError = new UnauthorizedError();
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'expired-token');
+    setAccessToken('expired-token');
     mockUseMutation.mockImplementation((options) => ({
       data: undefined,
       error: unauthorizedError,
@@ -50,13 +51,13 @@ describe('unauthorized session clearing', () => {
       mutationOptions.onError(unauthorizedError);
     });
 
-    expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull();
+    expect(getAccessToken()).toBeNull();
     expect(mockSetAuthenticated).toHaveBeenCalledWith(false);
   });
 
   it('clears the token and auth state after an unauthorized query', async () => {
     const unauthorizedError = new UnauthorizedError();
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'expired-token');
+    setAccessToken('expired-token');
     mockUseQuery.mockReturnValue({
       data: undefined,
       error: unauthorizedError,
@@ -69,7 +70,7 @@ describe('unauthorized session clearing', () => {
     renderHook(() => useServiceQuery(['account'], async () => undefined));
 
     await waitFor(() => {
-      expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull();
+      expect(getAccessToken()).toBeNull();
       expect(mockSetAuthenticated).toHaveBeenCalledWith(false);
     });
   });

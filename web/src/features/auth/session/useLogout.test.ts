@@ -1,7 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 
-import { AUTH_TOKEN_KEY } from '@shared/constants';
-
+import { getAccessToken, setAccessToken } from './tokenStorage';
 import { useLogout } from './useLogout';
 
 const mockReplace = jest.fn();
@@ -33,7 +32,7 @@ describe('useLogout', () => {
   });
 
   it('clears auth state, query cache, and redirects to login', () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'old-token');
+    setAccessToken('old-token');
 
     const { result } = renderHook(() => useLogout());
 
@@ -41,7 +40,7 @@ describe('useLogout', () => {
       result.current();
     });
 
-    expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull();
+    expect(getAccessToken()).toBeNull();
     expect(mockClear).toHaveBeenCalledTimes(1);
     expect(mockSetAuthenticated).toHaveBeenCalledWith(false);
     expect(mockReplace).toHaveBeenCalledWith('/login');

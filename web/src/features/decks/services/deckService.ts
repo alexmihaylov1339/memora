@@ -1,4 +1,6 @@
-import { ManageService, HTTP_METHODS, getAuthHeaders } from '@shared/services';
+import { getAuthHeaders } from '@features/auth/session';
+
+import { HTTP_METHODS, ManageService } from '@shared/services';
 import type {
   CopyPublicDeckResponse,
   CreateDeckShareDto,

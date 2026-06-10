@@ -5,8 +5,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from '@/i18n/navigation';
 
 import { PageLoader } from '@shared/components';
-import { APP_ROUTES, AUTH_TOKEN_KEY } from '@shared/constants';
-import { isBrowserEnvironment } from '@shared/utils';
+import { APP_ROUTES } from '@shared/constants';
+
+import { hasAccessToken } from '../session';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -25,10 +26,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!isBrowserEnvironment()) return;
-    const token = !!localStorage.getItem(AUTH_TOKEN_KEY);
+    const isAuthenticatedSession = hasAccessToken();
+
     queueMicrotask(() => {
-      setAuthenticated(token);
+      setAuthenticated(isAuthenticatedSession);
       setIsReady(true);
     });
   }, []);

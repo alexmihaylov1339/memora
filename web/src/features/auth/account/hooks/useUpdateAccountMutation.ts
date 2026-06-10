@@ -3,17 +3,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { updateAccount, type UpdateAccountInput } from '../../services';
-import { AUTH_TOKEN_KEY } from '@/shared/constants/auth';
+import { getAccessToken } from '../../session';
 
 export function useUpdateAccountMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: UpdateAccountInput) => {
-      const token =
-        typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
-      if (!token) throw new Error('Not authenticated');
-      const { user } = await updateAccount(token, input);
+      const accessToken = getAccessToken();
+
+      if (!accessToken) throw new Error('Not authenticated');
+      const { user } = await updateAccount(accessToken, input);
       return user;
     },
     onSuccess: () => {

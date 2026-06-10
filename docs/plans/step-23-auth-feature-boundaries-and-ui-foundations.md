@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - T2 complete; T3 is next
+**Status:** In progress - T3 complete; T4 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -413,7 +413,7 @@ Verification evidence - 2026-06-09:
 
 ### T3 - Centralize auth token storage
 
-**Status:** Planned
+**Status:** Done
 
 What to do:
 
@@ -464,6 +464,48 @@ Manual checkpoint:
 - refresh after login and confirm the session is restored
 - force an unauthorized API response and confirm the user is signed out
 - confirm account data still loads and updates
+
+Implementation notes - 2026-06-10:
+
+- Added the feature-local `features/auth/session/tokenStorage.ts` module with
+  the narrow `getAccessToken`, `setAccessToken`, `clearAccessToken`, and
+  `hasAccessToken` API.
+- Moved ownership of the `authToken` storage key into `tokenStorage.ts` and
+  removed the old shared auth constant.
+- Added a feature-owned `getAuthHeaders` helper that reads through
+  `tokenStorage` while keeping `ManageService` generic.
+- Kept `features/auth/session/index.ts` framework-free so plain feature
+  services can consume token/header operations without loading React routing
+  or provider modules.
+- Migrated provider initialization, login, registration, logout, account
+  loading/update, unauthorized-session clearing, and authenticated feature
+  services to the centralized session API.
+- Removed the old shared auth-header implementation and export.
+- Added focused account-hook tests to cover active-token and missing-token
+  behavior for account reads and updates.
+
+Verification evidence - 2026-06-10:
+
+- Focused auth, account, and representative review-service regression suite
+  passed: 11 suites, 30 tests.
+- Token storage tests cover browser read/write/detection/removal and
+  server-rendering safety with no `window`.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm run lint` passed.
+- The required production search returns only
+  `features/auth/session/tokenStorage.ts` for auth-token key and direct
+  `localStorage` access.
+- Searches found no stale shared auth-header or auth-key imports.
+- `git diff --check` passed.
+- Live Chrome smoke against the running web/API stack passed:
+  - protected routes rendered the auth loading state and redirected guests
+  - registration persisted the token and authenticated deck requests included
+    the bearer header
+  - authenticated refresh and guest-only redirects remained unchanged
+  - account loading included the bearer header
+  - account update sent an authenticated `PATCH /v1/me` and returned `200`
+  - logout cleared the token, login restored it, and final logout returned to
+    a clean signed-out state
 
 ---
 

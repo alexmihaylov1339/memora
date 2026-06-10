@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
-import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
+import { APP_ROUTES } from '@/shared/constants';
+
+import { setAccessToken } from '../session';
 import {
   AuthProvider,
   GuestOnlyRoute,
@@ -34,7 +36,7 @@ describe('AuthProvider', () => {
   });
 
   it('initializes an authenticated session when a token exists', async () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'existing-token');
+    setAccessToken('existing-token');
 
     render(
       <AuthProvider>
@@ -96,7 +98,7 @@ describe('auth route guards', () => {
   });
 
   it('renders protected content for authenticated users', async () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'existing-token');
+    setAccessToken('existing-token');
 
     render(
       <AuthProvider>
@@ -111,7 +113,7 @@ describe('auth route guards', () => {
   });
 
   it('redirects authenticated users away from guest-only routes', async () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'existing-token');
+    setAccessToken('existing-token');
 
     render(
       <AuthProvider>

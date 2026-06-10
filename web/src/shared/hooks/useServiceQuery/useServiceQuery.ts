@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+
+import { useAuth } from '@features/auth/providers';
+import { clearAccessToken } from '@features/auth/session';
+
+import { UnauthorizedError } from '@/shared/services';
+
 import type {
   QueryServiceFunction,
   UseServiceQueryResult,
   UseServiceQueryOptions,
 } from './types';
-import { useAuth } from '@features/auth';
-import { UnauthorizedError } from '@/shared/services';
-import { AUTH_TOKEN_KEY } from '@/shared/constants';
 
 // Default configuration values
 const DEFAULT_RETRY_COUNT = 3;
@@ -111,9 +114,7 @@ export function useServiceQuery<TParams = void, TData = unknown>(
 
   useEffect(() => {
     if (query.error instanceof UnauthorizedError) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-      }
+      clearAccessToken();
       setAuthenticated(false);
     }
   }, [query.error, setAuthenticated]);

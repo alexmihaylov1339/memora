@@ -1,11 +1,14 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { useRouter } from '@/i18n/navigation';
 
-import { login, type LoginCredentials } from '../../services';
-import { APP_ROUTES, AUTH_TOKEN_KEY } from '@/shared/constants';
+import { APP_ROUTES } from '@/shared/constants';
+
 import { useAuth } from '../../providers';
+import { login, type LoginCredentials } from '../../services';
+import { setAccessToken } from '../../session';
 
 export function useLoginMutation() {
   const router = useRouter();
@@ -15,9 +18,7 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => login(credentials),
     onSuccess: ({ accessToken }) => {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
-      }
+      setAccessToken(accessToken);
       queryClient.clear();
       setAuthenticated(true);
       router.replace(APP_ROUTES.home);
