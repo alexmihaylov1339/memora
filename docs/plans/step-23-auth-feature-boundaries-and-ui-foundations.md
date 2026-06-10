@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - T3 complete; T4 is next
+**Status:** In progress - T4 complete; T5 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -511,7 +511,7 @@ Verification evidence - 2026-06-10:
 
 ### T4 - Share successful authentication completion
 
-**Status:** Planned
+**Status:** Done
 
 What to do:
 
@@ -548,6 +548,47 @@ Manual checkpoint:
 - complete login and registration independently
 - verify both land on the same existing home route
 - verify stale query data is not retained across either authentication flow
+
+Implementation notes - 2026-06-10:
+
+- Added one feature-local `completeAuthentication` operation that owns the
+  successful-authentication sequence:
+  - persist the returned access token
+  - clear the React Query cache
+  - mark auth context authenticated
+  - redirect to the existing home route
+- Added `useCompleteAuthentication` as the small Memora application adapter
+  that supplies the query client, auth context setter, and locale-aware router.
+- Kept `tokenStorage` independent of React Query, routing, and React.
+- Simplified login and registration hooks to own only their API mutation and
+  delegate successful responses to the same completion hook.
+- Kept the completion hook internal to the auth feature rather than expanding
+  the root public API for an implementation detail.
+
+Verification evidence - 2026-06-10:
+
+- Focused completion, delegation, provider, and storage suite passed:
+  6 suites, 13 tests.
+- Login and registration tests independently prove delegation to the shared
+  completion hook.
+- Completion tests prove token persistence occurs before cache clearing, auth
+  state update, and redirect.
+- The application-adapter test proves query-cache clearing, authenticated
+  context update, and redirect to `APP_ROUTES.home`.
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm run lint` passed.
+- Architecture searches confirm the completion sequence is no longer
+  duplicated in login and registration, and `tokenStorage` has no React Query
+  or routing dependency.
+- `git diff --check` passed.
+- Live Chrome smoke against the running web/API stack passed:
+  - registration persisted the token and redirected to `/decks`
+  - authenticated deck/account requests retained bearer headers
+  - authenticated refresh and guest-only redirects remained unchanged
+  - account update succeeded
+  - logout cleared the token
+  - login persisted the token and redirected to `/decks`
+  - final logout returned to a clean signed-out state
 
 ---
 
