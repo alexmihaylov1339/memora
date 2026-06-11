@@ -1,6 +1,6 @@
 # Memora: Step 23 - Auth Feature Boundaries and UI Foundations
 
-**Status:** In progress - T5 complete; T6 is next
+**Status:** In progress - T6 complete; T7 is next
 **Date:** 2026-06-09
 **Roadmap ref:** `docs/plans/chunked-learning-roadmap.md` -> Step 23
 **Priority:** Medium - improve frontend ownership, SRP, and change safety without building a cross-project framework
@@ -693,7 +693,7 @@ Verification evidence - 2026-06-10:
 
 ### T6 - Move design tokens into a dedicated stylesheet
 
-**Status:** Planned
+**Status:** Done
 
 What to do:
 
@@ -723,6 +723,34 @@ Manual checkpoint:
 
 - compare login/register, decks, cards, chunks, account, review, practice, public decks, and What Did You Hear at desktop and mobile widths
 - verify colors, borders, backgrounds, typography, loading states, disabled states, modals, and grids remain visually unchanged
+
+Implementation notes - 2026-06-11:
+
+- Added `web/src/styles/tokens.css` as the explicit source of truth for the
+  existing root design-token custom properties and dark color-scheme
+  overrides.
+- Preserved every moved token name and value exactly.
+- Imported the token stylesheet from `web/src/app/globals.css`.
+- Kept Tailwind configuration, Tailwind's semantic `@theme inline` mappings,
+  body/global element rules, button cursor behavior, and auth autofill
+  behavior in `globals.css`.
+- Introduced no component, layout, or visual-value changes.
+
+Verification evidence - 2026-06-11:
+
+- `cd web && npx tsc --noEmit --pretty false` passed.
+- `cd web && npm run lint` passed.
+- `cd web && npm test -- --runInBand` passed: 64 suites, 413 tests.
+- The full suite still emits the pre-existing FormBuilder suspended-resource
+  `act(...)` warning; all assertions pass.
+- `cd web && npm run build` passed outside the sandbox after the sandboxed
+  Turbopack compile worker stalled without emitting a build error.
+- The production CSS artifact contains the extracted design-token declarations
+  and Tailwind semantic mappings.
+- `git diff --check` passed.
+- The complete browser visual matrix was not run in this terminal-only pass;
+  exact token-value preservation plus the production CSS artifact/build gate
+  provide the automated behavior-preservation evidence for T6.
 
 ---
 
